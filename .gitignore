@@ -1,0 +1,9 @@
+# engine compiled script files
+*.dso
+
+# default preference scripts
+GameData/*/prefs/*
+
+# default override scripts
+GameData/*/autoexec.cs
+GameData/*/autojournal.cs
