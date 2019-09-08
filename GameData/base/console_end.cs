@@ -6,10 +6,6 @@ else
 // load default controls:
 exec("scripts/controlDefaults.cs");
 
-// override with control settings
-if ( $pref::Input::ActiveConfig !$= "" )
-   exec( "prefs/" @ $pref::Input::ActiveConfig @ ".cs", false, true );
-
 // ---------------------------------------------------------------------------------
 // z0dd - ZOD, 5/8/02. Moved here so scripters can use the message callback feature.
 // message.cs is loaded so autoexec can add new message callbacks
@@ -272,7 +268,6 @@ loadGui("TestGui");
 loadGui("HUDDlgs");
 
 // TR2 Huds
-exec("prefs/TR2HudPrefs.cs");
 exec("scripts/TR2BonusHud.cs");
 exec("scripts/TR2EventHud.cs");
 exec("scripts/TR2FlagToss.cs");
