@@ -64,24 +64,6 @@ datablock ItemData(SensorJammerPack)
    computeCRC = true;
 };
 
-// datablock SensorData(JammerSensorObjectPassive)
-// {
-//    // same detection info as 'PlayerObject' sensorData
-//    detects = true;
-//    detectsUsingLOS = true;
-//    detectsPassiveJammed = true;
-//    detectRadius = 2000;
-//    detectionPings = false;
-//    detectsFOVOnly = true;
-//    detectFOVPercent = 1.3;
-//    useObjectFOV = true;
-// 
-//    jams = true;
-//    jamsOnlyGroup = true;
-//    jamsUsingLOS = true;
-//    jamRadius = 0;
-// };
-
 datablock SensorData(JammerSensorObjectActive)
 {
    // same detection info as 'PlayerObject' sensorData
@@ -110,8 +92,7 @@ function SensorJammerPackImage::onActivate(%data, %obj, %slot)
 {
    messageClient(%obj.client, 'MsgSensorJammerPackOn', '\c2Sensor jammer pack on.');
    setTargetSensorData(%obj.client.target, JammerSensorObjectActive);
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setSenJamIconOn' );
+   commandToClient( %obj.client, 'setSenJamIconOn' );
 
    %obj.setJammerFX( true );
 }
@@ -121,8 +102,7 @@ function SensorJammerPackImage::onDeactivate(%data, %obj, %slot)
    messageClient(%obj.client, 'MsgSensorJammerPackOff', '\c2Sensor jammer pack off.');
    %obj.setImageTrigger(%slot, false);
    setTargetSensorData(%obj.client.target, PlayerSensor);
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setSenJamIconOff' );
+   commandToClient( %obj.client, 'setSenJamIconOff' );
 
    %obj.setJammerFX( false );
 }

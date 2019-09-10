@@ -1611,13 +1611,7 @@ function DefaultGame::clientMissionDropReady(%game, %client)
    
    %game.sendClientTeamList( %client );
    %game.setupClientHuds( %client );
-   
-   if($CurrentMissionType $= "SinglePlayer")
-   {  
-      //CommandToClient( %client, 'setPlayContent');
-      return;
-   }
-      
+
    %observer = false;
    if( !$Host::TournamentMode )
    {
@@ -3462,12 +3456,6 @@ function DefaultGame::getServerStatusString(%game)
       %status = %status NL %playerStr;
    }
    return( %status );
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::OptionsDlgSleep( %game )
-{
-   // ignore in the default game...
 }
 
 //------------------------------------------------------------------------------

@@ -224,7 +224,7 @@ function TR2Game::getTeamSkin(%game, %team)
 		 case 2:  return 'TR2-2';
 	 }
 
-	 if(isDemo() || $host::tournamentMode)
+	 if($host::tournamentMode)
 	 {
 		  return $teamSkin[%team];
 	 }
@@ -288,7 +288,7 @@ function TR2Game::getTeamSkin(%game, %team)
 
 function TR2Game::getTeamName(%game, %team)
 {
-	if ( isDemo() || $host::tournamentMode)
+	if ($host::tournamentMode)
 		 return $TeamName[%team];
 
 	//error("TR2Game::getTeamName");
@@ -1324,15 +1324,6 @@ function TR2Game::clientMissionDropReady(%game, %client)
 	// were ready to go.
 	%client.matchStartReady = true;
 	echo("TR2: Client" SPC %client SPC "is ready.");
-
-	if ( isDemo() )
-	{
-		if ( %client.demoJustJoined )
-		{
-			%client.demoJustJoined = false;
-			centerPrint( %client, "Welcome to the Tribes 2 Demo." NL "You have been assigned the name \"" @ %client.nameBase @ "\"." NL "Press FIRE to join the game.", 0, 3 );
-		}
-	}
 }
 function TR2Game::resetScore(%game, %client)
 {
@@ -2560,7 +2551,7 @@ function TR2Game::resetTheField(%this, %team)
 
 function TR2Game::sendGameVoteMenu( %game, %client, %key )
 {
-	if( (($Host::TournamentMode && !MatchStarted) || !$Host::TournamentMode) && !$TR2::SpecLock && %client.queueSlot !$= "" && %client.queueSlot <= ((6 * 2) - getActiveCount()) )
+	if( (($Host::TournamentMode && !$MatchStarted) || !$Host::TournamentMode) && !$TR2::SpecLock && %client.queueSlot !$= "" && %client.queueSlot <= ((6 * 2) - getActiveCount()) )
 	{
 		messageClient( %client, 'MsgVoteItem', "", %key, 'tr2JoinGame', 'Join the game', 'Join the game' );
 	}
@@ -2806,11 +2797,11 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 				%col1Style = %team1Client == %client ? "<color:dcdcdc>" : "";
 				%team1playersTotalScore += %team1Client.score;
 			}
-			else if( %index == $teamRank[1, count] && $teamRank[1, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+			else if( %index == $teamRank[1, count] && $teamRank[1, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team1ClientScore = "--------------";
 			}
-			else if( %index == $teamRank[1, count]+1 && $teamRank[1, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+			else if( %index == $teamRank[1, count]+1 && $teamRank[1, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team1ClientScore = %team1playersTotalScore != 0 ? %team1playersTotalScore : 0;
 			}
@@ -2825,11 +2816,11 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 				%col2Style = %team2Client == %client ? "<color:dcdcdc>" : "";
 				%team2playersTotalScore += %team2Client.score;
 			}
-			else if( %index == $teamRank[2, count] && $teamRank[2, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+			else if( %index == $teamRank[2, count] && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team2ClientScore = "--------------";
 			}
-			else if( %index == $teamRank[2, count]+1 && $teamRank[2, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+			else if( %index == $teamRank[2, count]+1 && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team2ClientScore = %team2playersTotalScore != 0 ? %team2playersTotalScore : 0;
 			}

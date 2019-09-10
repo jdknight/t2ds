@@ -221,8 +221,7 @@ function RepairPackImage::onDeactivate(%data, %obj, %slot)
 function RepairGunImage::onMount(%this,%obj,%slot)
 {
    %obj.setImageAmmo(%slot,true);
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setRepairPackIconOn' );
+   commandToClient( %obj.client, 'setRepairPackIconOn' );
 }
 
 function RepairGunImage::onUnmount(%this,%obj,%slot)
@@ -237,8 +236,7 @@ function RepairGunImage::onUnmount(%this,%obj,%slot)
    // "turn off" the repair pack -- player needs to hit the "pack" key to
    // activate the repair gun again
    %obj.setImageTrigger($BackpackSlot, false);
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setRepairPackIconOff' );
+   commandToClient( %obj.client, 'setRepairPackIconOff' );
 }
 
 function RepairGunImage::onActivateReady(%this,%obj,%slot)

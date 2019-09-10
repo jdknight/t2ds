@@ -93,16 +93,10 @@ function HuntersGame::initGameVars(%game)
 
    %game.teamMode = false;
 
-   if (!isDemo())
-      %game.greedMode = $Host::HuntersGreedMode;
-   else
-      %game.greedMode = false;
+   %game.greedMode = $Host::HuntersGreedMode;
    %game.greedMinFlags = 8;   //min number of flags you must have before you can cap
 
-   if (!isDemo())
-      %game.hoardMode = $Host::HuntersHoardMode;
-   else
-      %game.hoardMode = false;
+   %game.hoardMode = $Host::HuntersHoardMode;
    %game.HoardStartTime = 5;  //time left in the game at which hoard mode will start
    %game.HoardDuration = 3;   //duration of the hoard period
    %game.HoardEndTime = %game.HoardStartTime - %game.HoardDuration;
@@ -1066,8 +1060,6 @@ function HuntersGame::sendGameVoteMenu( %game, %client, %key )
       // First send the common options:
       DefaultGame::sendGameVoteMenu( %game, %client, %key );
 
-      if (!isDemo())
-      {
          if(!%client.isAdmin)
          {
             // Now send the Hunters-specific options:
@@ -1093,7 +1085,6 @@ function HuntersGame::sendGameVoteMenu( %game, %client, %key )
             else
                messageClient( %client, 'MsgVoteItem', "", %key, 'VoteHoardMode', 'enable hoard mode', 'Enable HOARD Mode' );
          }
-      }
    }
 }
 

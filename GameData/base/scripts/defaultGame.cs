@@ -1523,13 +1523,7 @@ function DefaultGame::clientMissionDropReady(%game, %client)
    
    %game.sendClientTeamList( %client );
    %game.setupClientHuds( %client );
-   
-   if($CurrentMissionType $= "SinglePlayer")
-   {  
-      //CommandToClient( %client, 'setPlayContent');
-      return;
-   }
-      
+
    %observer = false;
    if( !$Host::TournamentMode )
    {
@@ -1594,15 +1588,6 @@ function DefaultGame::clientMissionDropReady(%game, %client)
    // were ready to go.
    %client.matchStartReady = true;
    echo("Client" SPC %client SPC "is ready.");
-   
-   if ( isDemo() )
-   {
-      if ( %client.demoJustJoined )
-      {   
-         %client.demoJustJoined = false;
-         centerPrint( %client, "Welcome to the Tribes 2 Demo." NL "You have been assigned the name \"" @ %client.nameBase @ "\"." NL "Press FIRE to join the game.", 0, 3 );       
-      }
-   }
 }
 
 function DefaultGame::sendClientTeamList(%game, %client)
@@ -2448,7 +2433,7 @@ function DefaultGame::sendGamePlayerPopupMenu( %game, %client, %targetClient, %k
    else if ( %client.isAdmin )
       %outrankTarget = !%targetClient.isAdmin;
    
-   if( %client.isSuperAdmin && %targetClient.guid != 0 && !isDemo() )
+   if( %client.isSuperAdmin && %targetClient.guid != 0 )
    {   
       messageClient( %client, 'MsgPlayerPopupItem', "", %key, "addAdmin", "", 'Add to Server Admin List', 10);
       messageClient( %client, 'MsgPlayerPopupItem', "", %key, "addSuperAdmin", "", 'Add to Server SuperAdmin List', 11);
@@ -2477,7 +2462,7 @@ function DefaultGame::sendGamePlayerPopupMenu( %game, %client, %targetClient, %k
    // regular vote options on players
    if ( %game.scheduleVote $= "" && !%isAdmin && !%isTargetAdmin )
    {
-      if ( $Host::allowAdminPlayerVotes && !%isTargetBot && !isDemo() )
+      if ( $Host::allowAdminPlayerVotes && !%isTargetBot )
          messageClient( %client, 'MsgPlayerPopupItem', "", %key, "AdminPlayer", "", 'Vote to Make Admin', 2 );
       
       if ( !%isTargetSelf )
@@ -2488,7 +2473,7 @@ function DefaultGame::sendGamePlayerPopupMenu( %game, %client, %targetClient, %k
 
 
    // Admin only options on players:
-   else if ( %isAdmin && !isDemo() )
+   else if ( %isAdmin )
    {
       if ( !%isTargetBot && !%isTargetAdmin )
          messageClient( %client, 'MsgPlayerPopupItem', "", %key, "AdminPlayer", "", 'Make Admin', 2 );
@@ -2570,9 +2555,6 @@ function DefaultGame::sendGameVoteMenu( %game, %client, %key )
    if( !%client.canVote && !%isAdmin )
       return;
 
-   if (isDemo())
-      return;
-   
    if ( %game.scheduleVote $= "" )
    {
       if(!%client.isAdmin)
@@ -3117,11 +3099,11 @@ function DefaultGame::updateScoreHud(%game, %client, %tag)
             %col1Style = %team1Client == %client ? "<color:dcdcdc>" : "";
             %team1playersTotalScore += %team1Client.score;
          }
-         else if( %index == $teamRank[1, count] && $teamRank[1, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+         else if( %index == $teamRank[1, count] && $teamRank[1, count] != 0 && %game.class $= "CTFGame")
          {
             %team1ClientScore = "--------------";
          }
-         else if( %index == $teamRank[1, count]+1 && $teamRank[1, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+         else if( %index == $teamRank[1, count]+1 && $teamRank[1, count] != 0 && %game.class $= "CTFGame")
          {
             %team1ClientScore = %team1playersTotalScore != 0 ? %team1playersTotalScore : 0;
          }
@@ -3136,11 +3118,11 @@ function DefaultGame::updateScoreHud(%game, %client, %tag)
             %col2Style = %team2Client == %client ? "<color:dcdcdc>" : "";
             %team2playersTotalScore += %team2Client.score;
          }
-         else if( %index == $teamRank[2, count] && $teamRank[2, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+         else if( %index == $teamRank[2, count] && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
          {
             %team2ClientScore = "--------------";
          }
-         else if( %index == $teamRank[2, count]+1 && $teamRank[2, count] != 0 && !isDemo() && %game.class $= "CTFGame")
+         else if( %index == $teamRank[2, count]+1 && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
          {
             %team2ClientScore = %team2playersTotalScore != 0 ? %team2playersTotalScore : 0;
          }
@@ -3363,12 +3345,6 @@ function DefaultGame::getServerStatusString(%game)
       %status = %status NL %playerStr;
    }
    return( %status );
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::OptionsDlgSleep( %game )
-{
-   // ignore in the default game...
 }
 
 //------------------------------------------------------------------------------

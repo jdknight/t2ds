@@ -98,8 +98,7 @@ function CloakingPackImage::onActivate(%data, %obj, %slot)
       {
          messageClient(%obj.client, 'MsgCloakingPackOn', '\c2Cloaking pack on.');
          %obj.setCloaked(true);
-         if ( !isDemo() )
-            commandToClient( %obj.client, 'setCloakIconOn' );
+         commandToClient( %obj.client, 'setCloakIconOn' );
       }
       else
       {
@@ -130,8 +129,7 @@ function CloakingPackImage::onDeactivate(%data, %obj, %slot)
 
    %obj.setCloaked(false);
    %obj.setImageTrigger(%slot, false);
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setCloakIconOff' );
+   commandToClient( %obj.client, 'setCloakIconOff' );
 }
 
 function CloakingPack::onPickup(%this, %obj, %shape, %amount)

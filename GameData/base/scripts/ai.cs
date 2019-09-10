@@ -3,7 +3,6 @@
 //-----------------------------------//
 
 //first, exec the supporting scripts
-exec("scripts/aiDebug.cs");
 exec("scripts/aiDefaultTasks.cs");
 exec("scripts/aiObjectives.cs");
 exec("scripts/aiInventory.cs");
@@ -489,12 +488,8 @@ function AIConnection::onAIConnect(%client, %name, %team, %skill, %offense, %voi
 
 	//setup the target for use with the sensor net, etc...
    %client.target = allocClientTarget(%client, %client.name, %client.skin, %client.voiceTag, '_ClientConnection', 0, 0, %client.voicePitch);
-   
-   //i need to send a "silent" version of this for single player but still use the callback  -jr`
-   if($currentMissionType $= "SinglePlayer")
-		messageAllExcept(%client, -1, 'MsgClientJoin', "", %name, %client, %client.target, true);
-   else
-	   messageAllExcept(%client, -1, 'MsgClientJoin', '\c1%1 joined the game.', %name, %client, %client.target, true);
+
+   messageAllExcept(%client, -1, 'MsgClientJoin', '\c1%1 joined the game.', %name, %client, %client.target, true);
 
 	//assign the skill
 	%client.setSkillLevel(%skill);

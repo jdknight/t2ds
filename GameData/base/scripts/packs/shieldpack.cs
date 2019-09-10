@@ -74,8 +74,7 @@ function ShieldPackImage::onActivate(%data, %obj, %slot)
 {
    messageClient(%obj.client, 'MsgShieldPackOn', '\c2Shield pack on.');
    %obj.isShielded = true;
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setShieldIconOn' );
+   commandToClient( %obj.client, 'setShieldIconOn' );
 }
 
 function ShieldPackImage::onDeactivate(%data, %obj, %slot)
@@ -83,8 +82,7 @@ function ShieldPackImage::onDeactivate(%data, %obj, %slot)
    messageClient(%obj.client, 'MsgShieldPackOff', '\c2Shield pack off.');
 	%obj.setImageTrigger(%slot,false);
    %obj.isShielded = "";
-   if ( !isDemo() )
-      commandToClient( %obj.client, 'setShieldIconOff' );
+   commandToClient( %obj.client, 'setShieldIconOff' );
 }
 
 function ShieldPack::onPickup(%this, %obj, %shape, %amount)

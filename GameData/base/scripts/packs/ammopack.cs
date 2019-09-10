@@ -46,12 +46,6 @@ datablock ItemData(AmmoPack)
 
    computeCRC = true;
 
-
-//   lightType = "PulsingLight";
-//   lightColor = "0.2 0.4 0.0 1.0";
-//   lightTime = "1200";
-//   lightRadius = "1.0";
-
 	max[PlasmaAmmo] = 30;
 	max[ChaingunAmmo] = 150;
 	max[DiscAmmo] = 15;

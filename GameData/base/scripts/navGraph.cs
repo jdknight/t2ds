@@ -2,8 +2,6 @@
 // functions for ai nav graph
 //
 
-$OFFLINE_NAV_BUILD = false;
-
 function NavGraph::generateInterior()
 {
    %p = new FloorPlan();
@@ -31,40 +29,6 @@ function NavGraph::exteriorInspect()
 }
 
 //----------------------------------------------------------------------------
-
-function BuildNavigationGraph(%type)
-{
-   exec("scripts/graphBuild.cs");
-   
-   echo("Building Navigation Graph...");
-   
-   // disable asserts
-   $FP::DisableAsserts = true;
-   $OFFLINE_NAV_BUILD = true;
-   
-   if(%type $= "nav")
-   {
-      makeJettableGraphOffline(Nav);
-      doTablebuildOffline(); 
-   }
-   else if(%type $= "spn")
-      makeJettableGraphOffline(Spawn);
-   else
-      echo("unknown type for nav build!");
-   
-   navGraph.saveGraph();
-   writeNavMetrics();
-}
-
-function NavigationGraph::navBuildComplete()
-{
-   echo( "Navigation Graph build complete." );
-   
-   if( $OFFLINE_NAV_BUILD )
-   {   
-      quit();
-   }
-}
 
 // this will keep mod authors happy since they can create new 
 // traversable shapes, and it will be handled by the navigation system

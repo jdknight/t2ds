@@ -22,21 +22,10 @@ $Host::holoName[4] = "DSword";
 $Host::holoName[5] = "BloodEagle";
 $Host::holoName[6] = "Harbinger";
 
-// Demo-specific preferences:
-if ( isDemo() )
-{
-   $Host::GameName = "Tribes 2 Demo Server";
-   $Host::Info = "This is a Tribes 2 Demo Server.";
-   $Host::Map = "SlapDash";
-   $Host::MaxPlayers = 32;
-}
-else
-{
-   $Host::GameName = "Tribes 2 Server";
-   $Host::Info = "This is a Tribes 2 Server.";
-   $Host::Map = "Katabatic";
-   $Host::MaxPlayers = 64;
-}
+$Host::GameName = "Tribes 2 Server";
+$Host::Info = "This is a Tribes 2 Server.";
+$Host::Map = "Katabatic";
+$Host::MaxPlayers = 64;
                   
 $Host::AdminList = "";       // all players that will be automatically an admin upon joining server
 $Host::SuperAdminList = "";  // all players that will be automatically a super admin upon joining server               

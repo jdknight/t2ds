@@ -13,117 +13,73 @@ exec("scripts/aiCTF.cs");
 //-- tracking  ---
 function CTFGame::initGameVars(%game)
 {
-    
-    if(isDemo())
-    {
-       %game.SCORE_PER_SUICIDE = -1; 
-       %game.SCORE_PER_TEAMKILL = -1;
-       %game.SCORE_PER_DEATH = -1;  
+   %game.SCORE_PER_SUICIDE                  = -10; 
+   %game.SCORE_PER_TEAMKILL                 = -10;
+   %game.SCORE_PER_DEATH                    = 0;  
 
-       %game.SCORE_PER_KILL = 1; 
-       %game.SCORE_PER_PLYR_FLAG_CAP = 3;
-       %game.SCORE_PER_TEAM_FLAG_CAP = 100;
-       %game.SCORE_PER_TEAM_FLAG_TOUCH = 1;
-       %game.SCORE_PER_GEN_DESTROY = 2;
-       %game.SCORE_PER_ESCORT_ASSIST = 1;
+   %game.SCORE_PER_KILL                     = 10; 
+   %game.SCORE_PER_PLYR_FLAG_CAP            = 30;
+   %game.SCORE_PER_PLYR_FLAG_TOUCH          = 20;
+   %game.SCORE_PER_TEAM_FLAG_CAP            = 100;
+   %game.SCORE_PER_TEAM_FLAG_TOUCH          = 1;
+   %game.SCORE_PER_ESCORT_ASSIST            = 5;
+   %game.SCORE_PER_HEADSHOT                 = 1;
 
-       %game.SCORE_PER_TURRET_KILL = 1; 
-       %game.SCORE_PER_FLAG_DEFEND = 1; 
-       %game.SCORE_PER_CARRIER_KILL = 1;
-       %game.SCORE_PER_FLAG_RETURN = 1;
-       %game.SCORE_PER_GEN_DEFEND = 1;
-       %game.SCORE_PER_GEN_REPAIR = 1;
-       
-       %game.FLAG_RETURN_DELAY = 45 * 1000; //45 seconds
+   %game.SCORE_PER_TURRET_KILL              = 10;   // controlled
+   %game.SCORE_PER_TURRET_KILL_AUTO         = 3;   // uncontrolled
+   %game.SCORE_PER_FLAG_DEFEND              = 5; 
+   %game.SCORE_PER_CARRIER_KILL             = 5;
+   %game.SCORE_PER_FLAG_RETURN              = 10;
+   %game.SCORE_PER_STALEMATE_RETURN         = 15;
+   %game.SCORE_PER_GEN_DEFEND               = 5;
+   
+   %game.SCORE_PER_DESTROY_GEN              = 10;
+   %game.SCORE_PER_DESTROY_SENSOR           = 4;
+   %game.SCORE_PER_DESTROY_TURRET           = 5;
+   %game.SCORE_PER_DESTROY_ISTATION         = 2;
+   %game.SCORE_PER_DESTROY_VSTATION         = 5;
+   %game.SCORE_PER_DESTROY_SOLAR            = 5;
+   %game.SCORE_PER_DESTROY_SENTRY           = 4;
+   %game.SCORE_PER_DESTROY_DEP_SENSOR       = 1;
+   %game.SCORE_PER_DESTROY_DEP_INV          = 2;
+   %game.SCORE_PER_DESTROY_DEP_TUR          = 3;
+   
+   %game.SCORE_PER_DESTROY_SHRIKE           = 5;
+   %game.SCORE_PER_DESTROY_BOMBER           = 8;
+   %game.SCORE_PER_DESTROY_TRANSPORT        = 5;
+   %game.SCORE_PER_DESTROY_WILDCAT          = 5;
+   %game.SCORE_PER_DESTROY_TANK             = 8;
+   %game.SCORE_PER_DESTROY_MPB              = 12;
+   %game.SCORE_PER_PASSENGER                = 2;
+   
+   %game.SCORE_PER_REPAIR_GEN               = 8;
+   %game.SCORE_PER_REPAIR_SENSOR            = 1;
+   %game.SCORE_PER_REPAIR_TURRET            = 4;
+   %game.SCORE_PER_REPAIR_ISTATION          = 2;
+   %game.SCORE_PER_REPAIR_VSTATION          = 4;
+   %game.SCORE_PER_REPAIR_SOLAR             = 4;
+   %game.SCORE_PER_REPAIR_SENTRY            = 2;
+   %game.SCORE_PER_REPAIR_DEP_TUR           = 3;
+   %game.SCORE_PER_REPAIR_DEP_INV           = 2;
+   
+   %game.FLAG_RETURN_DELAY = 45 * 1000; //45 seconds
 
-       %game.TIME_CONSIDERED_FLAGCARRIER_THREAT = 3 * 1000;  //after damaging enemy flag carrier
-       %game.RADIUS_GEN_DEFENSE = 20;  //meters
-       %game.RADIUS_FLAG_DEFENSE = 20;  //meters 
+   %game.TIME_CONSIDERED_FLAGCARRIER_THREAT = 3 * 1000;  //after damaging enemy flag carrier
+   %game.RADIUS_GEN_DEFENSE = 20;  //meters
+   %game.RADIUS_FLAG_DEFENSE = 20;  //meters 
 
-	    %game.TOUCH_DELAY_MS = 20000;  //20 secs
+   %game.TOUCH_DELAY_MS = 20000;  //20 secs
 
-       %game.fadeTimeMS = 2000;
+   %game.fadeTimeMS = 2000;
 
-       %game.notifyMineDist = 7.5;
-
-
-       %game.stalemate = false;
-       %game.stalemateObjsVisible = false;
-       %game.stalemateTimeMS = 60000;
-       %game.stalemateFreqMS = 15000;
-       %game.stalemateDurationMS = 6000;
-    }
-    if( !isDemo() )
-    {
-       %game.SCORE_PER_SUICIDE                  = -10; 
-       %game.SCORE_PER_TEAMKILL                 = -10;
-       %game.SCORE_PER_DEATH                    = 0;  
-
-       %game.SCORE_PER_KILL                     = 10; 
-       %game.SCORE_PER_PLYR_FLAG_CAP            = 30;
-       %game.SCORE_PER_PLYR_FLAG_TOUCH          = 20;
-       %game.SCORE_PER_TEAM_FLAG_CAP            = 100;
-       %game.SCORE_PER_TEAM_FLAG_TOUCH          = 1;
-       %game.SCORE_PER_ESCORT_ASSIST            = 5;
-       %game.SCORE_PER_HEADSHOT                 = 1;
-
-       %game.SCORE_PER_TURRET_KILL              = 10;   // controlled
-       %game.SCORE_PER_TURRET_KILL_AUTO         = 3;   // uncontrolled
-       %game.SCORE_PER_FLAG_DEFEND              = 5; 
-       %game.SCORE_PER_CARRIER_KILL             = 5;
-       %game.SCORE_PER_FLAG_RETURN              = 10;
-       %game.SCORE_PER_STALEMATE_RETURN         = 15;
-       %game.SCORE_PER_GEN_DEFEND               = 5;
-       
-       %game.SCORE_PER_DESTROY_GEN              = 10;
-       %game.SCORE_PER_DESTROY_SENSOR           = 4;
-       %game.SCORE_PER_DESTROY_TURRET           = 5;
-       %game.SCORE_PER_DESTROY_ISTATION         = 2;
-       %game.SCORE_PER_DESTROY_VSTATION         = 5;
-       %game.SCORE_PER_DESTROY_SOLAR            = 5;
-       %game.SCORE_PER_DESTROY_SENTRY           = 4;
-       %game.SCORE_PER_DESTROY_DEP_SENSOR       = 1;
-       %game.SCORE_PER_DESTROY_DEP_INV          = 2;
-       %game.SCORE_PER_DESTROY_DEP_TUR          = 3;
-       
-       %game.SCORE_PER_DESTROY_SHRIKE           = 5;
-       %game.SCORE_PER_DESTROY_BOMBER           = 8;
-       %game.SCORE_PER_DESTROY_TRANSPORT        = 5;
-       %game.SCORE_PER_DESTROY_WILDCAT          = 5;
-       %game.SCORE_PER_DESTROY_TANK             = 8;
-       %game.SCORE_PER_DESTROY_MPB              = 12;
-       %game.SCORE_PER_PASSENGER                = 2;
-       
-       %game.SCORE_PER_REPAIR_GEN               = 8;
-       %game.SCORE_PER_REPAIR_SENSOR            = 1;
-       %game.SCORE_PER_REPAIR_TURRET            = 4;
-       %game.SCORE_PER_REPAIR_ISTATION          = 2;
-       %game.SCORE_PER_REPAIR_VSTATION          = 4;
-       %game.SCORE_PER_REPAIR_SOLAR             = 4;
-       %game.SCORE_PER_REPAIR_SENTRY            = 2;
-       %game.SCORE_PER_REPAIR_DEP_TUR           = 3;
-       %game.SCORE_PER_REPAIR_DEP_INV           = 2;
-       
-       %game.FLAG_RETURN_DELAY = 45 * 1000; //45 seconds
-
-       %game.TIME_CONSIDERED_FLAGCARRIER_THREAT = 3 * 1000;  //after damaging enemy flag carrier
-       %game.RADIUS_GEN_DEFENSE = 20;  //meters
-       %game.RADIUS_FLAG_DEFENSE = 20;  //meters 
-
-	    %game.TOUCH_DELAY_MS = 20000;  //20 secs
-
-       %game.fadeTimeMS = 2000;
-
-       %game.notifyMineDist = 7.5;
+   %game.notifyMineDist = 7.5;
 
 
-       %game.stalemate = false;
-       %game.stalemateObjsVisible = false;
-       %game.stalemateTimeMS = 60000;
-       %game.stalemateFreqMS = 15000;
-       %game.stalemateDurationMS = 6000;
-    }
-    
+   %game.stalemate = false;
+   %game.stalemateObjsVisible = false;
+   %game.stalemateTimeMS = 60000;
+   %game.stalemateFreqMS = 15000;
+   %game.stalemateDurationMS = 6000;
 }
 
 package CTFGame {
@@ -348,7 +304,7 @@ function SimGroup::clearFlagWaypoints(%this)
 function CTFGame::getTeamSkin(%game, %team)
 {
 
-    if(isDemo() || $host::tournamentMode)
+    if($host::tournamentMode)
     {
         return $teamSkin[%team];
     }
@@ -412,7 +368,7 @@ function CTFGame::getTeamSkin(%game, %team)
 
 function CTFGame::getTeamName(%game, %team)
 {
-   if ( isDemo() || $host::tournamentMode)
+   if ($host::tournamentMode)
        return $TeamName[%team];
 
    //error("CTFGame::getTeamName");
@@ -694,11 +650,7 @@ function CTFGame::flagReturn(%game, %flag, %player)
       messageTeam(0, 'MsgCTFFlagReturned', '\c2%1 returned the %2 flag.~wfx/misc/flag_return.wav', %client.name, %teamName, %flag.team);
       messageClient(%client, 'MsgCTFFlagReturned', '\c2You returned your flag.~wfx/misc/flag_return.wav', 0, %teamName, %flag.team);
       logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") returned team "@%flag.team@" flag");
-      
-      // find out what type of return it is
-      // stalemate return?
-      if(!isDemo())
-      {
+
           if(%game.stalemate)
           {
             //error("Stalemate return!!!");
@@ -715,8 +667,6 @@ function CTFGame::flagReturn(%game, %flag, %player)
             %percentage = mFloor( (%ratio) * 10 ) * 10;
             %game.awardScoreFlagReturn(%player.client, %percentage); 
           }
-      }
-      else %game.awardScoreFlagReturn(%player.client); 
    }      
    else
    {
@@ -953,8 +903,6 @@ function CTFGame::recalcScore(%game, %cl)
    else
       %killPoints = (%killValue * %killValue) / (%killValue - %deathValue);
 
-   if(!isDemo())
-   {
         %cl.offenseScore = %killPoints +
                         %cl.suicides            * %game.SCORE_PER_SUICIDE + 
                         %cl.escortAssists       * %game.SCORE_PER_ESCORT_ASSIST +
@@ -990,25 +938,6 @@ function CTFGame::recalcScore(%game, %cl)
                         %cl.depInvRepairs       * %game.SCORE_PER_REPAIR_DEP_INV         +
                         %cl.depTurretRepairs    * %game.SCORE_PER_REPAIR_DEP_TUR  +
                         %cl.returnPts; 
-        }
-
-    if( isDemo() )
-    {
-        %cl.offenseScore = %killPoints +
-                            %cl.flagDefends         * %game.SCORE_PER_FLAG_DEFEND +
-                            %cl.suicides * %game.SCORE_PER_SUICIDE + //-1
-                            %cl.escortAssists * %game.SCORE_PER_ESCORT_ASSIST + // 1
-                            %cl.teamKills * %game.SCORE_PER_TEAMKILL + // -1
-                            %cl.flagCaps * %game.SCORE_PER_PLYR_FLAG_CAP + // 3
-                            %cl.genDestroys * %game.SCORE_PER_GEN_DESTROY; // 2
-
-        %cl.defenseScore =   %cl.genDefends * %game.SCORE_PER_GEN_DEFEND +   // 1
-                            %cl.carrierKills * %game.SCORE_PER_CARRIER_KILL +  // 1
-                            %cl.escortAssists * %game.SCORE_PER_ESCORT_ASSIST + // 1
-                            %cl.turretKills * %game.SCORE_PER_TURRET_KILL +  // 1
-                            %cl.flagReturns * %game.SCORE_PER_FLAG_RETURN +  // 1
-                            %cl.genRepairs * %game.SCORE_PER_GEN_REPAIR;  // 1
-    } 
 
    %cl.score = mFloor(%cl.offenseScore + %cl.defenseScore);
 
@@ -1142,15 +1071,6 @@ function CTFGame::awardScoreFlagCap(%game, %cl, %flag)
         %plural = (%game.SCORE_PER_PLYR_FLAG_CAP != 1 ? 's' : "");
         %plural2 = (%game.SCORE_PER_PLYR_FLAG_TOUCH != 1 ? 's' : "");
 
-        if(isDemo())
-        {
-            messageTeam(%flag.team, 'msgCTFEnemyCap', '\c0Enemy %1 received %2 point%3 for capturing your flag!', %cl.name, %game.SCORE_PER_PLYR_FLAG_CAP, %plural);
-            messageTeamExcept(%cl, 'msgCTFFriendCap', '\c0Teammate %1 receives %2 point%3 for capturing the enemy flag!', %cl.name, %game.SCORE_PER_PLYR_FLAG_CAP, %plural); 
-            messageClient(%cl, 'msgCTFFriendCap', '\c0You receive %1 point%2 for stealing and capturing the enemy flag!', %game.SCORE_PER_PLYR_FLAG_CAP, %plural);
-        }
-
-        if(!isDemo())
-        {
             if(%cl == %flag.grabber)
             {
                 messageClient(%cl, 'msgCTFFriendCap', '\c0You receive %1 point%2 for stealing and capturing the enemy flag!', %game.SCORE_PER_PLYR_FLAG_CAP+%game.SCORE_PER_PLYR_FLAG_TOUCH, %plural);
@@ -1170,7 +1090,6 @@ function CTFGame::awardScoreFlagCap(%game, %cl, %flag)
                 messageTeamExcept(%cl, 'msgCTFFriendCap', '\c0Teammate %1 receives %2 point%3 for capturing the enemy flag!', %cl.name, %game.SCORE_PER_PLYR_FLAG_CAP, %plural); 
                 messageTeam(%flag.team, 'msgCTFEnemyCap', '\c0Enemy %1 received %2 point%3 for capturing your flag!', %cl.name, %game.SCORE_PER_PLYR_FLAG_CAP, %plural);
             }
-        }
     }
 
     %game.recalcScore(%cl);
@@ -1225,32 +1144,19 @@ function CTFGame::checkScoreLimit(%game, %team)
 
 function CTFGame::awardScoreFlagReturn(%game, %cl, %perc)
 {
-   if(isDemo())
+   if (%game.SCORE_PER_FLAG_RETURN != 0)
    {
-       %cl.flagReturns++;
-       if (%game.SCORE_PER_FLAG_RETURN != 0)
-       {
-          messageClient(%cl, 'scoreFlaRetMsg', '\c0You received a %1 point bonus for returning your flag.', %game.SCORE_PER_FLAG_RETURN);
-          //messageTeamExcept(%cl, 'scoreFlaRetMsg', '\c0Teammate %1 received a %2 point bonus for returning your flag.', %cl.name, %game.SCORE_PER_FLAG_RETURN);
-       }
-       %game.recalcScore(%cl);
+        %pts = mfloor( %game.SCORE_PER_FLAG_RETURN * (%perc/100) );
+        if(%perc  == 100)
+            messageClient(%cl, 'scoreFlaRetMsg', 'Flag return - exceeded capping distance - %1 point bonus.', %pts, %perc);
+        else if(%perc  == 0)
+            messageClient(%cl, 'scoreFlaRetMsg', 'You gently place the flag back on the stand.', %pts, %perc);
+        else 
+            messageClient(%cl, 'scoreFlaRetMsg', '\c0Flag return from %2%% of capping distance - %1 point bonus.', %pts, %perc);
+        %cl.returnPts += %pts;
    }
-   else
-   {
-       if (%game.SCORE_PER_FLAG_RETURN != 0)
-       {
-            %pts = mfloor( %game.SCORE_PER_FLAG_RETURN * (%perc/100) );
-            if(%perc  == 100)
-                messageClient(%cl, 'scoreFlaRetMsg', 'Flag return - exceeded capping distance - %1 point bonus.', %pts, %perc);
-            else if(%perc  == 0)
-                messageClient(%cl, 'scoreFlaRetMsg', 'You gently place the flag back on the stand.', %pts, %perc);
-            else 
-                messageClient(%cl, 'scoreFlaRetMsg', '\c0Flag return from %2%% of capping distance - %1 point bonus.', %pts, %perc);
-            %cl.returnPts += %pts;
-       }
-       %game.recalcScore(%cl);
-        return %game.SCORE_PER_FLAG_RETURN;
-    }
+   %game.recalcScore(%cl);
+   return %game.SCORE_PER_FLAG_RETURN;
 }
 
 function CTFGame::awardScoreStalemateReturn(%game, %cl)
@@ -1868,9 +1774,6 @@ function CTFGame::vehicleDestroyed(%game, %vehicle, %destroyer)
 
 function CTFGame::awardScoreVehicleDestroyed(%game, %client, %vehicleType, %mult, %passengers)
 {
-    if(isDemo())
-        return 0;
-    
     if(%vehicleType $= "Grav Cycle")
         %base = %game.SCORE_PER_DESTROY_WILDCAT;
     else if(%vehicleType $= "Assault Tank")
@@ -1895,9 +1798,6 @@ function CTFGame::awardScoreVehicleDestroyed(%game, %client, %vehicleType, %mult
 
 function CTFGame::shareScore(%game, %client, %amount)
 {
-    if(isDemo())
-        return 0;
-    
     //error("share score of"SPC %amount SPC "from client:" SPC %client); 
     // all of the player in the bomber and tank share the points
     // gained from any of the others

@@ -39,9 +39,6 @@ function Observer::onTrigger(%data,%obj,%trigger,%state)
    switch$ (%obj.mode)
    {
       case "justJoined":
-         if (isDemo())
-            clearCenterPrint(%client);
-
          //press FIRE
          if (%trigger == 0)
          {

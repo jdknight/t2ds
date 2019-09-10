@@ -666,29 +666,6 @@ function findTargetInView(%client, %maxDist)
       return %losObject;
 }
 
-//-----------------------------------------------------------------------------------------------------
-//It would be nice to create server tasks for these voice commands
-
-// installChatItem( 'ChatCmdDefendCarrier', "Cover our flag carrier!", "def.carrier", true );
-// installChatItem( 'ChatCmdAttackFlag', "Get the enemy flag!", "att.flag", true );
-// installChatItem( 'ChatCmdAttackGenerator', "Destroy the enemy generator!", "att.generator", true );
-// installChatItem( 'ChatCmdAttackVehicle', "Destroy the enemy vehicle!", "att.vehicle", true );
-// 
-// installChatItem( 'ChatCmdDefendCarrier', "Cover our flag carrier!", "def.carrier", true );
-// installChatItem( 'ChatCmdDefendFlag', "Defend our flag!", "def.flag", true );
-// installChatItem( 'ChatCmdDefendGenerator', "Protect the generator!", "def.generator", true );
-// installChatItem( 'ChatCmdDefendSensors', "Defend our sensors!", "def.sensors", true );
-// installChatItem( 'ChatCmdDefendTurrets', "Defend our turrets!", "def.turrets", true );
-// installChatItem( 'ChatCmdDefendVehicle', "Defend our vehicle!", "def.vehicle", true );
-// installChatItem( 'ChatCmdDefendNexus', "Defend the nexus!", "def.nexus", true );
-// 
-// installChatItem( 'ChatCmdGiveMeFlag', "Give me the flag!", "flg.give", true );
-// installChatItem( 'ChatCmdReturnFlag', "Retrieve our flag!", "flg.retrieve", true );
-// installChatItem( 'ChatCmdTakeFlag', "Take the flag from me!", "flg.take", true );
-// installChatItem( 'ChatCmdHunterGiveFlags', "Give your flags to me!", "flg.huntergive", true );
-// installChatItem( 'ChatCmdHunterTakeFlags', "Take my flags!", "flg.huntertake", true );
-//-----------------------------------------------------------------------------------------------------
-
 $LookAtClientDistance = 35;
 $LookAtObjectDistance = 400;
 function CreateVoiceServerTask(%client, %cmdCode)

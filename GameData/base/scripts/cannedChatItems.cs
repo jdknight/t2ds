@@ -44,35 +44,6 @@ function installChatItem( %command, %text, %audioFile, %animCel, %teamOnly, %def
 }
 
 //--------------------------------------------------------------------------
-function installChatItemCallback( %command, %callback )
-{
-   %cmdId = getSubStr( %command, 1, strlen( %command ) - 1 );
-
-   // make sure there is a chat item created
-   if(isObject($ChatTable[%cmdId]))
-   {
-      for(%i = 0; (%aCallback = $ChatCallbacks[%cmdId, %i]) !$= ""; %i++)
-      {
-         // dont allow multiple instances
-         if(%aCallback == %callback)
-            return;
-      }
-
-      $ChatCallbacks[%cmdId, %i] = %callback;
-   }
-}
-
-function processChatItemCallbacks( %command )
-{
-   %cmdId = getSubStr( %command, 1, strlen( %command ) - 1 );
-
-   // make sure an actual chat item
-   if(isObject($ChatTable[%cmdId]))
-      for(%i = 0; (%callback = $ChatCallbacks[%cmdId, %i]) !$= ""; %i++)
-         call(%callback, $ChatTable[%cmdId]);
-}
-
-//--------------------------------------------------------------------------
 // ANIMATIONS
 installChatItem( 'ChatAnimAnnoyed', "", "vqk.move", 4, false, "VGAA", true );
 installChatItem( 'ChatAnimGetSome', "", "gbl.brag", 3, false, "VGAG", true );

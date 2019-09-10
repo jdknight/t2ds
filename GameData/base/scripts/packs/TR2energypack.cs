@@ -56,8 +56,7 @@ function TR2EnergyPackImage::onActivate(%data, %obj, %slot)
     }
    //messageClient(%obj.client, 'MsgShieldPackOn', '\c2Shield pack on.');
    //%obj.isShielded = true;
-   //if ( !isDemo() )
-   //   commandToClient( %obj.client, 'setShieldIconOn' );
+   //commandToClient( %obj.client, 'setShieldIconOn' );
 }
 
 function TR2EnergyPackImage::onDeactivate(%data, %obj, %slot)
@@ -65,8 +64,7 @@ function TR2EnergyPackImage::onDeactivate(%data, %obj, %slot)
    //messageClient(%obj.client, 'MsgShieldPackOff', '\c2Shield pack off.');
 	//%obj.setImageTrigger(%slot,false);
    //%obj.isShielded = "";
-   //if ( !isDemo() )
-   //   commandToClient( %obj.client, 'setShieldIconOff' );
+   //commandToClient( %obj.client, 'setShieldIconOff' );
 }
 
 function TR2EnergyPack::onPickup(%this, %obj, %shape, %amount)

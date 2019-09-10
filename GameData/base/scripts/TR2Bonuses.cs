@@ -260,7 +260,7 @@ function BonusHistory::calculateVariance(%this)
        %categoryData = %this.bonus[%i].categoryData[%j];
       if (%categoryData !$= "")
          for(%k=0; %k<%categoryData.numParameters; %k++)
-            %this.variance += abs(%categoryData.parameter[%k] -
+            %this.variance += mabs(%categoryData.parameter[%k] -
                         %this.bonus[%i-1].categoryData[%j].parameter[%k]);
      }
 

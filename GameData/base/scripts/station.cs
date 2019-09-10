@@ -22,12 +22,6 @@ datablock EffectProfile(StationVehicleDeactivateEffect)
    maxDistance = 5.0;
 };
 
-//datablock EffectProfile(MobileBaseInventoryActivateEffect)
-//{
-//   effectname = "misc/diagnostic_on";
-//   minDistance = 3.0;
-//};
-
 datablock EffectProfile(StationAccessDeniedEffect)
 {
    effectname = "powered/station_denied";

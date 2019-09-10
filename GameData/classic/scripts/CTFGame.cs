@@ -411,7 +411,6 @@ function CTFGame::getTeamName(%game, %team)
 {
    // ---------------------------------------------------
    // z0dd - ZOD 3/30/02. Only display default team names
-   //if ( isDemo() || $host::tournamentMode)
    return $TeamName[%team];
    // ---------------------------------------------------
 }

@@ -4,11 +4,6 @@
 //
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-// Server side functions:
-//------------------------------------------------------------------------------
-$lastScoreUpdate = 0;
-
 function updateScores()
 {
    if ( !isObject( Game ) )
@@ -35,7 +30,6 @@ function updateScores()
       Game.teamCount[%team]++;
    }
 }
-
 
 //------------------------------------------------------------------------------
 function serverCmdGetScores( %client )
@@ -82,48 +76,3 @@ function serverCmdGetScores( %client )
 		}
    }
 }
-
-
-//------------------------------------------------------------------------------
-// Client side functions:
-//------------------------------------------------------------------------------
-addMessageCallback( 'MsgTeamScore', handleTeamScore );
-addMessageCallback( 'MsgPlayerScore', handlePlayerScore );
-
-//------------------------------------------------------------------------------
-// client team score list is called $clTeamScore
-// number of teams is $clTeamCount
-$clTeamCount = 0;
-
-function handleTeamScore( %msgType, %msgString, %team, %teamScore )
-{
-   if ( %teamScore $= "" )
-      %score = "0";
-   else
-      %score = %teamScore;
-
-   // Add the new entry:
-   $clTeamScore[%team, 1] = %score;
-
-   if ( %team > $clTeamCount )
-      $clTeamCount = %team;
-}
-
-
-//------------------------------------------------------------------------------
-// Store the player score on the client-side player object:
-function handlePlayerScore( %msgType, %msgString, %clientId, %score, %ping, %packetLoss )
-{
-   %player = $PlayerList[%clientId];
-   if ( %player )
-   {
-      %player.score = %score;
-      %player.ping = %ping;
-      %player.packetLoss = %packetLoss;
-      lobbyUpdatePlayer( %clientId );
-   }
-   else
-      warn( "Received score for client that hasn't joined!" );
-}
-
-
