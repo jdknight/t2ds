@@ -95,6 +95,8 @@ activatePackage(__PkgFix);
 function onExit()
 {
     BanList::Export("prefs/banlist.cs");
+
+    cleanupDsos();
 }
 
 //------------------------------------------------------------------------------
