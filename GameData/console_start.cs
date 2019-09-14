@@ -156,7 +156,8 @@ for ($i = 1; $i < $Game::argc; $i++)
 //------------------------------------------------------------------------------
 
 // load autoexec once for command-line overrides
-exec("autoexec.cs", true);
+if (isFile("autoexec.cs"))
+    exec("autoexec.cs", true);
 
 // load defaults
 exec("scripts/serverDefaults.cs", true);
