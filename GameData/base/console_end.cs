@@ -29,12 +29,6 @@ if ($CmdLineBotCount !$= "")
 // z0dd - ZOD, 5/8/02. Moved so scripters can use the message callback feature.
 //exec("scripts/message.cs");
 
-//function to be called when the game exits
-function onExit()
-{
-    BanList::Export("prefs/banlist.cs");
-}
-
 //--------------------------------------------------------------------------
 
 exec("scripts/GameGui.cs");

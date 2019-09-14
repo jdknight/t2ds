@@ -91,6 +91,12 @@ package __PkgFix
 };
 activatePackage(__PkgFix);
 
+// hook invoked when the game is safely shutdown
+function onExit()
+{
+    BanList::Export("prefs/banlist.cs");
+}
+
 //------------------------------------------------------------------------------
 
 $serverprefs = "prefs/serverPrefs.cs";
