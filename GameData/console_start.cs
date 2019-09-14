@@ -9,91 +9,76 @@ enableWinConsole(true);
 // disable performance counters to prevent client-observed stuttering
 setPerfCounterEnable(false);
 
-// z0dd - ZOD - Founder (founder@mechina.com), 10/23/02. Fixes bug where by
-// parent functions are lost when packages are deactivated.
-package PackageFix
+// package stacking deactivation corrections
+//
+// When a package overrides a method that is already overridden by another
+// package, the deactivation of the package will result in the "Parent::" calls
+// to not work as expected. This corrections will deactivate all packages that
+// have been loaded after a specific package that is requested to be
+// deactivated; an in turn reactivate the packages again.
+$__PkgFix_TotalPkgs = 0;
+package __PkgFix
 {
-    function isActivePackage(%package)
+    function isActivePackage(%pkg)
     {
-        for (%i = 0; %i < $TotalNumberOfPackages; %i++)
-        {
-            if ($Package[%i] $= %package)
-            {
+        for (%i = 0; %i < $__PkgFix_TotalPkgs; %i++)
+            if ($__PkgFix_Pkgs[%i] $= %pkg)
                 return true;
-                break;
-            }
-        }
+
         return false;
     }
 
-    function ActivatePackage(%this)
+    function activatePackage(%pkg)
     {
-        Parent::ActivatePackage(%this);
-        if ($TotalNumberOfPackages $= "")
-            $TotalNumberOfPackages = 0;
-        else
-        {
-            // This package name is already active, so lets not activate it again.
-            if (isActivePackage(%this))
-            {
-                error("ActivatePackage called for a currently active package!");
-                return;
-            }
-        }
-        $Package[$TotalNumberOfPackages] = %this;
-        $TotalNumberOfPackages++;
+        Parent::activatePackage(%pkg);
+
+        // package name is already active; internally ignore request
+        if (isActivePackage(%pkg))
+            return;
+
+        $__PkgFix_Pkgs[$__PkgFix_TotalPkgs] = %pkg;
+        $__PkgFix_TotalPkgs++;
     }
 
-    function DeactivatePackage(%this)
+    function deactivatePackage(%pkg)
     {
-        %count = 0;
-        %counter = 0;
         // find the index number of the package to deactivate
-        for (%i = 0; %i < $TotalNumberOfPackages; %i++)
+        for (%idx = 0; %idx < $__PkgFix_TotalPkgs; %idx++)
+            if ($__PkgFix_Pkgs[%idx] $= %pkg)
+                break;
+
+        // track packages queued for reactivation
+        %cnt = 0;
+        for (%i = (%idx + 1); %i < $__PkgFix_TotalPkgs; %i++)
         {
-            if ($Package[%i] $= %this)
-            %breakpoint = %i;
-        }
-        for (%j = 0; %j < $TotalNumberOfPackages; %j++)
-        {
-            if (%j < %breakpoint)
-            {
-                // go ahead and assign temp array, save code
-                %tempPackage[%count] = $Package[%j];
-                %count++;
-            }
-            else if (%j > %breakpoint)
-            {
-                %reactivate[%counter] = $Package[%j];
-                $Package[%j] = "";
-                %counter++;
-            }
+            %reactivate[%cnt] = $__PkgFix_Pkgs[%i];
+            $__PkgFix_Pkgs[%i] = "";
+            %cnt++;
         }
 
-        //deactivate all the packagess from the last to the current one
-        for (%k = (%counter - 1); %k > -1; %k--)
-            Parent::DeactivatePackage(%reactivate[%k]);
+        // deactivate all the packages from the last to the current one
+        for (%k = (%cnt - 1); %k > -1; %k--)
+            Parent::deactivatePackage(%reactivate[%k]);
 
-        //deactivate the package that started all this
-        Parent::DeactivatePackage(%this);
+        // deactivate the package that started all this
+        Parent::deactivatePackage(%pkg);
 
-        //don't forget this
-        $TotalNumberOfPackages = %breakpoint;
+        // reset tracked package count to existing activated packages
+        $__PkgFix_TotalPkgs = %idx;
 
-        //reactivate all those other packages
-        for (%l = 0; %l < %counter; %l++)
-            ActivatePackage(%reactivate[%l]);
+        // reactivate all those other packages
+        for (%l = 0; %l < %cnt; %l++)
+            activatePackage(%reactivate[%l]);
     }
 
     function listPackages()
     {
-        echo("Activated Packages:");
-        for (%i = 0; %i < $TotalNumberOfPackages; %i++)
-            echo($Package[%i]);
+        for (%i = 0; %i < $__PkgFix_TotalPkgs; %i++)
+            echo($__PkgFix_Pkgs[%i]);
     }
 };
-activatePackage(PackageFix);
-// End z0dd - ZOD - Founder
+activatePackage(__PkgFix);
+
 //------------------------------------------------------------------------------
 
 $serverprefs = "prefs/serverPrefs.cs";
