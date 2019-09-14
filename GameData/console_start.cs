@@ -4,6 +4,17 @@
 //
 //------------------------------------------------------------------------------
 
+// cleanup pre-compiled dso's
+//
+// Utility method to delete script files to help reduce issues when introducing
+// new script modifications.
+function cleanupDsos()
+{
+    while((%f = findFirstFile("*.dso")) !$= "")
+        deleteFile(%f);
+}
+cleanupDsos();
+
 // enable logging information to the console
 enableWinConsole(true);
 
