@@ -108,7 +108,7 @@ $serverprefs = "prefs/serverPrefs.cs";
 
 //------------------------------------------------------------------------------
 
-for ($i = 1; $i < $Game::argc ; $i++)
+for ($i = 1; $i < $Game::argc; $i++)
 {
     $arg = $Game::argv[$i];
     $nextArg = $Game::argv[$i+1];
@@ -116,23 +116,24 @@ for ($i = 1; $i < $Game::argc ; $i++)
     $hasNextArg = $Game::argc - $i > 1;
     $has2NextArgs = $Game::argc - $i > 2;
 
-    if ($arg $= "-mod" && $hasNextArg)
+    if (($arg $= "-mod" || $arg $= "--mod") && $hasNextArg)
     {
         setModPaths($nextArg);
         $i += 2;
     }
-    else if ($arg $= "-serverprefs" && $hasNextArg)
+    else if (($arg $= "-serverprefs" || $arg $= "--serverprefs") && $hasNextArg)
     {
         $i++;
         $serverprefs = $nextArg;
     }
-    else if ($arg $= "-mission" && $has2NextArgs)
+    else if (($arg $= "-mission" || $arg $= "--mission") && $has2NextArgs)
     {
         $i += 2;
         $mission = $nextArg;
         $missionType = $nextArg2;
     }
-    else if ($arg $= "-telnetParams" && $has2NextArgs)
+    else if (($arg $= "-telnetParams" || $arg $= "--telnetParams")
+                && $has2NextArgs)
     {
         $i += 3;
         $telnetPort = $nextArg;
@@ -140,12 +141,12 @@ for ($i = 1; $i < $Game::argc ; $i++)
         $telnetListenPass = $nextArg3;
         telnetSetParameters($telnetPort, $telnetPassword, $telnetListenPass);
     }
-    else if ($arg $= "-bot" && $hasNextArg)
+    else if (($arg $= "-bot" || $arg $= "--bot") && $hasNextArg)
     {
         $i++;
         $CmdLineBotCount = $nextArg;
     }
-    else if ($arg $= "-quit")
+    else if ($arg $= "-quit" || $arg $= "--quit")
     {
         quit();
         return;
