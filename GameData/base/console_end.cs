@@ -54,7 +54,6 @@ exec("scripts/centerPrint.cs");
 if ($mission !$= "" && $missionType !$= "")
     validateMissionAndType($mission, $missionType);
 
-enableWinConsole(true);
 $Host::Dedicated = true;
 $ServerName = $Host::GameName;
 setNetPort($Host::Port);
