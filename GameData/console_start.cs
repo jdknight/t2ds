@@ -6,6 +6,9 @@
 
 enableWinConsole(true);
 
+// disable performance counters to prevent client-observed stuttering
+setPerfCounterEnable(false);
+
 // z0dd - ZOD - Founder (founder@mechina.com), 10/23/02. Fixes bug where by
 // parent functions are lost when packages are deactivated.
 package PackageFix
