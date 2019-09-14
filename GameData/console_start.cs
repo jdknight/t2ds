@@ -21,6 +21,9 @@ enableWinConsole(true);
 // disable performance counters to prevent client-observed stuttering
 setPerfCounterEnable(false);
 
+// configure a random seed based off the current time
+setRandomSeed();
+
 // package stacking deactivation corrections
 //
 // When a package overrides a method that is already overridden by another
@@ -183,7 +186,5 @@ while ($Host::holoName[$index] !$= "")
 }
 
 //------------------------------------------------------------------------------
-
-setRandomSeed();
 
 exec("console_end.cs");
