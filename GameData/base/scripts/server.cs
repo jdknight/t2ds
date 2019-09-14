@@ -8,16 +8,6 @@ $SB::DFDec = 0.02; // damageFlash
 // modders can change this value to match theirs.
 $DefaultGravity = -20;
 
-// -----------------------------------------------------
-// z0dd - ZOD, 5/27/02. Addition. Tribes2.exe will call
-// this for competition mod to alert players on server
-// during tournament that a remote connection has been
-// established to the server.
-function onTelnetConnect(%ip, %access)
-{
-    // Thou shall not spam
-}
-
 // z0dd - ZOD, 9/13/02. Anti spam
 function serverCMDpracticeHudInitialize(%client, %val)
 {

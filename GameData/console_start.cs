@@ -139,7 +139,6 @@ for ($i = 1; $i < $Game::argc; $i++)
         $telnetPort = $nextArg;
         $telnetPassword = $nextArg2;
         $telnetListenPass = $nextArg3;
-        telnetSetParameters($telnetPort, $telnetPassword, $telnetListenPass);
     }
     else if (($arg $= "-bot" || $arg $= "--bot") && $hasNextArg)
     {

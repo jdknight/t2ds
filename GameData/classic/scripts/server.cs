@@ -8,31 +8,6 @@ $Classic::gravSetting = -26.9; // z0dd - ZOD, 9/13/02. Classic Gravity setting
 $Classic::cameraSpeed = 50;
 $Camera::movementSpeed = $Classic::cameraSpeed; // z0dd - ZOD, 9/13/02. Classic camera speed.
 
-// -----------------------------------------------------
-// z0dd - ZOD, 6/22/02. Addition.
-// Alert players on server that a remote connection has
-// been established to the server.
-$TelnetSpam = 0;
-function onTelnetConnect(%ip, %access)
-{
-    %level = %access == 1 ? "full" : "read";
-    %snd = '~wfx/misc/diagnostic_on.wav';
-    %msg = '\c1Remote telnet connection established.%1';
-    if ($Host::TournamentMode && $TelnetSpam == 0)
-    {
-        messageAll('MsgTelnetConnect', %msg, %snd);
-        logEcho("Incomming telnet connection from: " @ %ip @ " with " @ %level @ " access privledges");
-        $TelnetSpam = 1;
-        schedule(2000, 0, "clearTelnetSpam");
-    }
-}
-
-function clearTelnetSpam()
-{
-    $TelnetSpam = 0;
-}
-// -----------------------------------------------------
-
 function logEcho(%msg)
 {
     // z0dd - ZOD, 4/10/02. Changed from $ClassicLogEchoEnabled, allow server owners to modify
@@ -65,10 +40,6 @@ function CreateServer(%mission, %missionType)
     $AutoRestart = 0; // Paranoia
     if ($Host::ClassicAutoRestartServer == 1)
         schedule($Host::ClassicRestartTime * 3600000, 0, "AutoRestart");
-
-    if ($Host::ClassicTelnet)
-        telnetsetparameters($Host::ClassicTelnetPort,
-            $Host::ClassicTelnetPassword, $Host::ClassicTelnetListenPass);
 
     // Load server data blocks
     exec("scripts/commanderMapIcons.cs");

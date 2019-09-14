@@ -34,6 +34,7 @@ if ($CmdLineBotCount !$= "")
 exec("scripts/GameGui.cs");
 exec("scripts/scoreList.cs");
 exec("scripts/server.cs");
+exec("scripts/telnet.cs");
 exec("scripts/hud.cs");
 exec("scripts/inventoryHud.cs");
 exec("scripts/chatMenuHud.cs");
@@ -50,5 +51,6 @@ if ($mission !$= "" && $missionType !$= "")
 
 $Host::Dedicated = true;
 $ServerName = $Host::GameName;
+initializeTelnet();
 setNetPort($Host::Port);
 CreateServer($Host::Map, $Host::MissionType);
