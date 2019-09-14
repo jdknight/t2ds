@@ -90,91 +90,88 @@ $TR2::JoinMotd = "<just:center><color:CDAD00>Team Rabbit 2 (<color:778899>build 
 
 function TR2Game::sendMotd(%game, %client)
 {
-	bottomPrint(%client, $TR2::JoinMotd, 5, 3);
-	%client.sentTR2Motd = true;
+    bottomPrint(%client, $TR2::JoinMotd, 5, 3);
+    %client.sentTR2Motd = true;
 }
 
-function TR2Game::spawnPlayer( %game, %client, %respawn )
+function TR2Game::spawnPlayer(%game, %client, %respawn)
 {
-	if( !isObject(%client) || %client.team <= 0 )
+	if (!isObject(%client) || %client.team <= 0)
 		return 0;
-		
-	%client.lastSpawnPoint = %game.pickPlayerSpawn( %client, false );
-	%client.suicidePickRespawnTime = getSimTime() + 20000;
-	%game.createPlayer( %client, %client.lastSpawnPoint, %respawn );
 
-	if(!$MatchStarted && !$CountdownStarted) // server has not started anything yet
+	%client.lastSpawnPoint = %game.pickPlayerSpawn(%client, false);
+	%client.suicidePickRespawnTime = getSimTime() + 20000;
+	%game.createPlayer(%client, %client.lastSpawnPoint, %respawn);
+
+	if (!$MatchStarted && !$CountdownStarted) // server has not started anything yet
 	{
-		%client.camera.getDataBlock().setMode( %client.camera, "pre-game", %client.player );
-		%client.setControlObject( %client.camera );
-		if( $Host::TournamentMode )
+		%client.camera.getDataBlock().setMode(%client.camera, "pre-game", %client.player);
+		%client.setControlObject(%client.camera);
+		if ($Host::TournamentMode)
 		{
 			%client.observerMode = "pregame";
 			%client.notReady = true;
-			centerprint( %client, "\nPress FIRE when ready.", 0, 3 );
+			centerprint(%client, "\nPress FIRE when ready.", 0, 3);
 			checkTourneyMatchStart();
-		}		
+		}
 		%client.camera.mode = "pre-game";
-		//schedule(1000, 0, "commandToClient", %client, 'setHudMode', 'Observer');
 		schedule(1000, 0, "commandToClient", %client, 'displayHuds');
 	}
-	else if(!$MatchStarted && $CountdownStarted) // server has started the countdown
+	else if (!$MatchStarted && $CountdownStarted) // server has started the countdown
 	{
-		%client.camera.getDataBlock().setMode( %client.camera, "pre-game", %client.player );
-		%client.setControlObject( %client.camera );
-		if( $Host::TournamentMode )
+		%client.camera.getDataBlock().setMode(%client.camera, "pre-game", %client.player);
+		%client.setControlObject(%client.camera);
+		if ($Host::TournamentMode)
 		{
 			%client.observerMode = "pregame";
-		}		
+		}
 		%client.camera.mode = "pre-game";
-		//schedule(1000, 0, "commandToClient", %client, 'setHudMode', 'Observer');
 		schedule(1000, 0, "commandToClient", %client, 'displayHuds');
 	}
 	else
 	{
 		%client.camera.setFlyMode();
-		%client.setControlObject( %client.player );
+		%client.setControlObject(%client.player);
 		commandToClient(%client, 'setHudMode', 'Standard'); // the game has already started
-	}
+    }
 }
-
 
 function TR2Game::initGameVars(%game)
 {
-	 if (%game.oldCorpseTimeout $= "")
-		 %game.oldCorpseTimeout = $CorpseTimeoutValue;
+    if (%game.oldCorpseTimeout $= "")
+        %game.oldCorpseTimeout = $CorpseTimeoutValue;
 
-	 $CorpseTimeoutValue = $TR2::CorpseTimeoutValue;
-	%game.TR2FlagSmoke = 0;
-	%game.addFlagTrail = "";
-	 %game.currentBonus = 0;
-	 %game.updateCurrentBonusAmount(0, -1);
- 
-	%game.FLAG_RETURN_DELAY = 12 * 1000; //12 seconds
-	%game.fadeTimeMS = 2000;
-	%game.crowdLevel = -1;
-	%game.crowdLevelSlot = 0;
-	
-	%game.resetPlayerRoles();
+    $CorpseTimeoutValue = $TR2::CorpseTimeoutValue;
+    %game.TR2FlagSmoke = 0;
+    %game.addFlagTrail = "";
+    %game.currentBonus = 0;
+    %game.updateCurrentBonusAmount(0, -1);
+
+    %game.FLAG_RETURN_DELAY = 12 * 1000; //12 seconds
+    %game.fadeTimeMS = 2000;
+    %game.crowdLevel = -1;
+    %game.crowdLevelSlot = 0;
+
+    %game.resetPlayerRoles();
 }
 
 function TR2Game::onClientLeaveGame(%game, %client)
 {
 	//remove them from the team rank arrays
-	%game.removeFromTeamRankArray(%client);	
+	%game.removeFromTeamRankArray(%client);
 	// First set to outer role (just to be safe)
 	%game.assignOuterMostRole(%client);
 
 	// Then release client's role
 	%game.releaseRole(%client);
 
-	if( isObject(%client.player))
+	if (isObject(%client.player))
 		%client.player.scriptKill(0);
 
-	if( %client.team > 0 )  // hes on a team...
+	if (%client.team > 0)  // hes on a team...
 	{
 		%nextCl = getClientFromQueue();
-		if( %nextCl != -1 )
+		if (%nextCl != -1)
 		{
 			%game.assignClientTeam(%nextCl);
 			%game.spawnPlayer(%nextCl);
@@ -190,8 +187,6 @@ function TR2Game::onClientLeaveGame(%game, %client)
 	logEcho(%client.nameBase@" (cl "@%client@") dropped");
 }
 
-  // END package TR2Game
-
 //--------------------------------------------------------------------------
 // need to have this for the corporate maps which could not be fixed
 function SimObject::clearFlagWaypoints(%this)
@@ -201,13 +196,13 @@ function SimObject::clearFlagWaypoints(%this)
 function WayPoint::clearFlagWaypoints(%this)
 {
 	logEcho("Removing flag waypoint: " @ %this);
-	if(%this.nameTag $= "Flag")
+	if (%this.nameTag $= "Flag")
 		%this.delete();
 }
 
 function SimGroup::clearFlagWaypoints(%this)
 {
-	for(%i = %this.getCount() - 1; %i >= 0; %i--)
+	for (%i = %this.getCount() - 1; %i >= 0; %i--)
 		%this.getObject(%i).clearFlagWaypoints();
 }
 
@@ -217,134 +212,84 @@ function TR2Game::AIInit()
 
 function TR2Game::getTeamSkin(%game, %team)
 {
-	 // TR2 experiment
-	 switch (%team)
-	 {
-		 case 1:  return 'TR2-1';
-		 case 2:  return 'TR2-2';
-	 }
+    // TR2 experiment
+    switch (%team)
+    {
+    case 1: return 'TR2-1';
+    case 2: return 'TR2-2';
+    }
 
-	 if($host::tournamentMode)
-	 {
-		  return $teamSkin[%team];
-	 }
+    if ($host::tournamentMode)
+    {
+        return $teamSkin[%team];
+    }
+    else
+    {
+        //error("TR2Game::getTeamSkin");
+        if (!$host::useCustomSkins)
+        {
+        }
+        else
+            %skin = $teamSkin[%team];
 
-	 else
-	 {
-	 //error("TR2Game::getTeamSkin");
-	 if(!$host::useCustomSkins)
-	 {
-//		  %terrain = MissionGroup.musicTrack;
-//		  //error("Terrain type is: " SPC %terrain);
-//		  switch$(%terrain)
-//		  {
-//				case "lush":
-//					 if(%team == 1)
-//						  %skin = 'beagle';
-//					 else if(%team == 2)
-//						  %skin = 'dsword';
-//					 else %skin = 'base';
-//
-//				case "badlands":
-//					 if(%team == 1)
-//						  %skin = 'swolf';
-//					 else if(%team == 2)
-//						  %skin = 'dsword';
-//					 else %skin = 'base';
-//
-//				case "ice":
-//					 if(%team == 1)
-//						  %skin = 'swolf';
-//					 else if(%team == 2)
-//						  %skin = 'beagle';
-//					 else %skin = 'base';
-//
-//				case "desert":
-//					 if(%team == 1)
-//						  %skin = 'cotp';
-//					 else if(%team == 2)
-//						  %skin = 'beagle';
-//					 else %skin = 'base';
-//
-//				case "Volcanic":
-//					 if(%team == 1)
-//						  %skin = 'dsword';
-//					 else if(%team == 2)
-//						  %skin = 'cotp';
-//					 else %skin = 'base';
-//
-//				default:
-//					 if(%team == 2)
-//						  %skin = 'baseb';
-//					 else %skin = 'base';
-//		  }
-	 }
-	 else %skin = $teamSkin[%team];
-	 
-	 //error("%skin = " SPC getTaggedString(%skin));
-	 return %skin;
-	 }
+        //error("%skin = " SPC getTaggedString(%skin));
+        return %skin;
+    }
 }
 
 function TR2Game::getTeamName(%game, %team)
 {
-	if ($host::tournamentMode)
-		 return $TeamName[%team];
+    if ($host::tournamentMode)
+        return $TeamName[%team];
 
-	//error("TR2Game::getTeamName");
-	if(!$host::useCustomSkins)
+	if (!$host::useCustomSkins)
 	{
-		%terrain = MissionGroup.musicTrack;
-		//error("Terrain type is: " SPC %terrain);
-		switch$(%terrain)
+        %terrain = MissionGroup.musicTrack;
+		switch$ (%terrain)
 		{
-			case "lush":
-				if(%team == 1)
-					%name = 'Blood Eagle';
-				else if(%team == 2)
-					%name = 'Diamond Sword';
+        case "lush":
+            if (%team == 1)
+                %name = 'Blood Eagle';
+            else if (%team == 2)
+                %name = 'Diamond Sword';
 
-			case "badlands":
-				if(%team == 1)
-					%name = 'Starwolf';
-				else if(%team == 2)
-					%name = 'Diamond Sword';
-		  
-				case "ice":
-					if(%team == 1)
-						%name = 'Starwolf';
-					else if(%team == 2)
-						%name = 'Blood Eagle';
-		  
-				case "desert":
-					if(%team == 1)
-						%name = 'Phoenix';
-					else if(%team == 2)
-						%name = 'Blood Eagle';
-		  
-				case "Volcanic":
-					if(%team == 1)
-						%name = 'Diamond Sword';
-					else if(%team == 2)
-						%name = 'Phoenix';
-		  
-				default:
-					if(%team == 2)
-						%name = 'Inferno';
-					else 
-						%name = 'Storm';
+        case "badlands":
+            if (%team == 1)
+                %name = 'Starwolf';
+            else if (%team == 2)
+                %name = 'Diamond Sword';
+
+        case "ice":
+            if (%team == 1)
+                %name = 'Starwolf';
+            else if (%team == 2)
+                %name = 'Blood Eagle';
+
+        case "desert":
+            if (%team == 1)
+                %name = 'Phoenix';
+            else if (%team == 2)
+                %name = 'Blood Eagle';
+
+        case "Volcanic":
+            if (%team == 1)
+                %name = 'Diamond Sword';
+            else if (%team == 2)
+                %name = 'Phoenix';
+
+        default:
+            if (%team == 2)
+                %name = 'Inferno';
+            else
+                %name = 'Storm';
 		}
 
-		if(%name $= "")
-		{
-			//error("No team Name =============================");
+		if (%name $= "")
 			%name = $teamName[%team];
-		}
 	}
-	else 
-	  %name = $TeamName[%team];
+	else
+        %name = $TeamName[%team];
 
-	//error("%name = " SPC getTaggedString(%name));
 	return %name;
 }
 
@@ -352,67 +297,66 @@ function TR2Game::getTeamName(%game, %team)
 function TR2Game::missionLoadDone(%game)
 {
 	//default version sets up teams - must be called first...
-	DefaultGame::missionLoadDone(%game);
+    DefaultGame::missionLoadDone(%game);
 
-	for(%i = 1; %i < (%game.numTeams + 1); %i++)
+	for (%i = 1; %i < (%game.numTeams + 1); %i++)
 	{
 		$teamScore[%i] = 0;
 		$teamScoreJackpot[%i] = 0;
 		$teamScoreCreativity[%i] = 0;
 		$teamScorePossession[%i] = 0;
 	}
-	
+
 	// AO: if there are more players on a team than open TR2 spots, we just switched from another game mode
 	//	  first 12 in the clientgroup get to play, rest spec.
 	%count = ClientGroup.getCount();
 	%playing = 0;
-	for( %i = 0; %i < %count; %i++ )
+	for (%i = 0; %i < %count; %i++)
 	{
 		%cl = ClientGroup.getObject(%i);
-		if( %cl.team > 0 )
+		if (%cl.team > 0)
 			%playing++;
 	}
-	
-	if( %playing > 12 )
+
+	if (%playing > 12)
 	{
 		%idx = 0;
-		for( %j = 0; %j < %count; %j++ )
+		for (%j = 0; %j < %count; %j++)
 		{
 			%cl = ClientGroup.getObject(%i);
-			if( %idx < 12 )
-			{ 
-				if( %cl.team != 0 )
+			if (%idx < 12)
+			{
+				if (%cl.team != 0)
 					%idx++;
 				else
 					addToQueue(%cl);
 			}
 			else
 			{
-				if( %cl.team != 0 )
+				if (%cl.team != 0)
 					%game.forceObserver(%cl, "teamsMaxed");
 				else
 					addToQueue(%cl);
 			}
 		}
 	}
-	
-		
+
 	// KP:  Reset accumulated score
 	$accumulatedScore = 0;
 
-	// remove 
+	// remove
 	MissionGroup.clearFlagWaypoints();
 
 	//reset some globals, just in case...
 	$dontScoreTimer[1] = false;
 	$dontScoreTimer[2] = false;
- 
+
 	// KP:  Over-ride the sensor settings to remove alpha transparency
 	// update colors:
 	// - enemy teams are red
 	// - same team is green
 	// - team 0 is white
-	for(%i = 0; %i < 32; %i++)
+	for (%i = 0; %i < 32; %i++)
 	{
 		%team = (1 << %i);
 		setSensorGroupColor(%i, %team, "0 255 0 -1");
@@ -427,20 +371,19 @@ function TR2Game::missionLoadDone(%game)
 	setSensorGroupFriendlyMask(1, 0xffffffff);
 	setSensorGroupAlwaysVisMask(2, 0xffffffff);
 	setSensorGroupFriendlyMask(2, 0xffffffff);
-	
+
 	// Init TR2 bonuses
     initializeBonuses();
-	
+
 	// Set gravity
 	setGravity($TR2::Gravity);
-	
+
 	// Locate goals
-	
 	for (%i=1; %i<=2; %i++)
 	{
 		%group = nameToID("MissionGroup/Teams/team" @ %i @ "/Goal" @ %i);
 		%count = %group.getCount();
-		
+
 		for (%j=0; %j<%count; %j++)
 		{
 			%obj = %group.getObject(%j);
@@ -452,19 +395,19 @@ function TR2Game::missionLoadDone(%game)
 			}
 		}
 	}
-	
-	%sphereGroup = nameToID("MissionGroup/Sphere");
+
+    %sphereGroup = nameToID("MissionGroup/Sphere");
 	%count = %sphereGroup.getCount();
 
-		for (%j=0; %j<%count; %j++)
-		{
-			%obj = %sphereGroup.getObject(%j);
-			if (%obj.interiorFile $= "sphere.dif")
-			{
-				$TR2::TheSphere = %obj;
-				break;
-			}
-		}
+    for (%j=0; %j<%count; %j++)
+    {
+        %obj = %sphereGroup.getObject(%j);
+        if (%obj.interiorFile $= "sphere.dif")
+        {
+            $TR2::TheSphere = %obj;
+            break;
+        }
+    }
 
 	// Make sure everyone's spawnBuilding flag is set
 	%count = ClientGroup.getCount();
@@ -476,11 +419,11 @@ function TR2Game::missionLoadDone(%game)
 
 		%cl.inSpawnBuilding = true;
 	}
-		
+
 	%bounds = MissionArea.area;
 	%boundsWest = firstWord(%bounds);
 	%boundsNorth = getWord(%bounds, 1);
-		// Hack to get a permanent dynamic object for playAudio()
+    // Hack to get a permanent dynamic object for playAudio()
 	//$AudioObject = new Player()
 	//{
 	//	datablock = TR2LightMaleHumanArmor;
@@ -493,7 +436,7 @@ function TR2Game::missionLoadDone(%game)
 function TR2Game::startMatch(%game)
 {
 	//serverPlay2D(GameStartSound);
-	return Parent::startMatch(%game);
+    return Parent::startMatch(%game);
 }
 
 function TR2Game::dynamicUpdate(%game)
@@ -502,21 +445,21 @@ function TR2Game::dynamicUpdate(%game)
 	// Keep checking for flag and flag carrier oob because T2's enter/leave
 	// mission callbacks aren't reliable
 	//%game.keepFlagInBounds(true);
-	
+
 	// Only start the flag return timer if the flag is moving slowly
 	if ($TheFlag.getSpeed() < 8 && $TheFlag.carrier $= "")
 	{
 		if (($FlagReturnTimer[$TheFlag] $= "" || $FlagReturnTimer[$TheFlag] <= 0) && !$TheFlag.onGoal && !$TheFlag.isHome)
 			$FlagReturnTimer[$TheFlag] = Game.schedule(Game.FLAG_RETURN_DELAY - Game.fadeTimeMS, "flagReturnFade", $TheFlag);
 	}
- 
+
     // Little trick to alternate between queue validation and role validation with
     // each dynamic update tick
     if ($TR2::validatingQueue)
         validateQueue();
     else
         %game.validateRoles();
-        
+
     $TR2::validatingQueue = !$TR2::validatingQueue;
 
 	if ($TR2::enableRoles)
@@ -533,7 +476,7 @@ function TR2Game::keepFlagInBounds(%game, %firstTime)
 {
 	if (%firstTime && ($TheFlag.isOutOfBounds() || $TheFlag.carrier.OutOfBounds))
 	// Double-check, just in case we caught a gridjump
-			%game.oobCheckThread = %game.schedule(500, "keepFlagInBounds", false);
+        %game.oobCheckThread = %game.schedule(500, "keepFlagInBounds", false);
 	else
 	{
 		cancel(%game.oobCheckThread);
@@ -552,9 +495,9 @@ function TR2Game::endMission(%game)
 {
 	if ($DefaultGravity !$= "")
 		setGravity($DefaultGravity);
-		
+
 	$CorpseTimeoutValue = %game.oldCorpseTimeout;
-		
+
 	cancel(%game.roleUpdateThread);
 
 	// Try setting everyone's inSpawnBuilding flag to avoid weird death messages
@@ -565,20 +508,20 @@ function TR2Game::endMission(%game)
 	//	%cl = ClientGroup.getObject(%i);
 	//	if (%cl $= "" || %cl.player $= "")
 	//		continue;
-			
+
 	//	%cl.inSpawnBuilding = true;
 	//}
 	%game.forceTeamRespawn(1);
 	%game.forceTeamRespawn(2);
-	
+
 	// End dynamic updates
 	cancel(%game.dynamicUpdateThread);
 	cancel(%game.addFlagTrail);
 	cancel(%game.pointsPerTimeSliceThread);
     cancel(%game.roleValidationThread);
-    
+
     %game.stopCrowd();
-		
+
 	Parent::endMission(%game);
 }
 
@@ -587,22 +530,22 @@ function TR2Game::playerTouchFlag(%game, %player, %flag)
 	//echo("playerTouchFlag()	(client = " @ %player.client @ ")");
 	%client = %player.client;
 
-   if (%player.getState() $= "Dead")
-      return;
+    if (%player.getState() $= "Dead")
+        return;
 
 	%grabTime = getSimTime();
 	%flagVel = %flag.getVelocity();
 	%flagSpeed = %flag.getSpeed();
-	
+
 	if (Game.goalJustScored || %client.OutOfBounds)
 		return;
-		
+
 	if (%flag.isOutOfBounds() || %player.inSpawnBuilding)
 	{
 		Game.flagReturn(%flag);
 		return;
 	}
-	
+
 	// TR2:  Try to fix the infamous flag re-catch bug
 	//if (%player == %flag.dropper && %grabTime - %flag.dropTime <= 200)
 	//{
@@ -610,153 +553,152 @@ function TR2Game::playerTouchFlag(%game, %player, %flag)
 		//%flag.setVelocity(%flag.throwVelocity);
 		//return;
 	//}
-	
+
 	// TR2:  don't allow players to re-grab
 	if (!$TR2::PracticeMode)
-		if (%player == %flag.dropper && (%grabTime - %flag.dropTime) <= $TR2::selfPassTimeout) // && %flag.oneTimer == 0)
+		if (%player == %flag.dropper && (%grabTime - %flag.dropTime) <= $TR2::selfPassTimeout)
 		{
 			messageClient(%client, 'MsgTR2SelfPass', '\c1You can\'t pass to yourself!');
 			return;
 		}
-  
 
 	if (%flag.carrier $= "")
-	{
-		// TR2:  Check for one-timer catches, hee
-		//if (getSimTime() - %flag.oneTimer < 1500 && %flagSpeed > 3)
-		//{
-		//	%newVel = VectorAdd(%player.getVelocity(), VectorScale(%flagVel, 10));
-		//	%player.setVelocity(%newVel);
-		//	echo("  ONE-TIMER ====== " @ %flagVel);
-		//}
+    {
+        // TR2:  Temporary invulnerability for goalies
+        if (%player.client.currentRole $= Goalie)
+        {
+            %player.setInvincible(true);
+            %player.schedule($TR2::GoalieInvincibilityTime, "setInvincible", false);
+        }
 
+        // Carrier health update
+        cancel(%game.updateCarrierHealth);
+        game.UpdateCarrierHealth(%player);
 
-		 // TR2:  Temporary invulnerability for goalies
-		 if (%player.client.currentRole $= Goalie)
-		 {
-			 %player.setInvincible(true);
-			 %player.schedule($TR2::GoalieInvincibilityTime, "setInvincible", false);
-		 }
-			 
-		 
-		 // Carrier health update
-  		cancel(%game.updateCarrierHealth);
-		game.UpdateCarrierHealth(%player);
-			 
-		 %chasingTeam = (%player.client.team == 1) ? 2 : 1;
-			 
-		 %client = %player.client;
-		 %player.holdingFlag = %flag;  //%player has this flag
-		 %flag.carrier = %player;  //this %flag is carried by %player
+        %chasingTeam = (%player.client.team == 1) ? 2 : 1;
 
-		  %player.mountImage(TR2FlagImage, $FlagSlot, true, %game.getTeamSkin(%flag.team));
+        %client = %player.client;
+        %player.holdingFlag = %flag;  //%player has this flag
+        %flag.carrier = %player;  //this %flag is carried by %player
 
-		 %game.playerGotFlagTarget(%player);
-		 //only cancel the return timer if the player is in bounds...
-		 if (!%client.outOfBounds)
-		 {
-			 cancel($FlagReturnTimer[%flag]);
-			 $FlagReturnTimer[%flag] = "";
-		 }
+        %player.mountImage(TR2FlagImage, $FlagSlot, true, %game.getTeamSkin(%flag.team));
 
-		 %flag.hide(true);
-		 %flag.startFade(0, 0, false);
-		 %flag.isHome = false;
-		 %flag.onGoal = false;
-		 %flag.dropperKilled = false;
-		 //if(%flag.stand)
-		 //	%flag.stand.getDataBlock().onFlagTaken(%flag.stand);//animate, if exterior stand
+        %game.playerGotFlagTarget(%player);
+        //only cancel the return timer if the player is in bounds...
+        if (!%client.outOfBounds)
+        {
+            cancel($FlagReturnTimer[%flag]);
+            $FlagReturnTimer[%flag] = "";
+        }
 
-		 $flagStatus[%flag.team] = %client.nameBase;
-		 %teamName = %game.getTeamName(%flag.team);
-		 setTargetSensorGroup(%flag.target, %player.team);
-		 //~wfx/misc/flag_snatch.wav
-		 //~wfx/misc/flag_taken.wav
-		 if (!%player.flagThrowStart)
-		 {
-			 messageTeamExcept(%client, 'MsgTR2FlagTaken', '\c2Teammate %1 took the flag.~wfx/misc/Flagfriend.wav', %client.name, %teamName, %flag.team, %client.nameBase);
-			 messageTeam(%chasingTeam, 'MsgTR2FlagTaken', '\c2%1 took the flag!~wfx/misc/Flagenemy.wav',%client.name, 0, %flag.team, %client.nameBase);
-			 messageClient(%client, 'MsgTR2FlagTaken', '\c2You took the flag.~wfx/misc/Flagself.wav', %client.name, %teamName, %flag.team, %client.nameBase);
+        %flag.hide(true);
+        %flag.startFade(0, 0, false);
+        %flag.isHome = false;
+        %flag.onGoal = false;
+        %flag.dropperKilled = false;
+        //if (%flag.stand)
+        //	%flag.stand.getDataBlock().onFlagTaken(%flag.stand);//animate, if exterior stand
 
-			 if (%flag.dropper $= "")
-				 messageTeam(0, 'MsgTR2FlagTaken', '\c4%1 took the flag.~wfx/misc/Flagself.wav', %client.name, %teamName, %flag.team, %client.nameBase);
-			 else if (%flag.dropper.team != %player.team)
-				 messageTeam(0, 'MsgTR2FlagTaken', '\c2%1 intercepted the flag!~wfx/misc/Flagenemy.wav', %client.name, %teamName, %flag.team, %client.nameBase);
-			 else
-				 messageTeam(0, 'MsgTR2FlagTaken', '\c3%1 caught the flag.~wfx/misc/Flagfriend.wav', %client.name, %teamName, %flag.team, %client.nameBase);
+        $flagStatus[%flag.team] = %client.nameBase;
+        %teamName = %game.getTeamName(%flag.team);
+        setTargetSensorGroup(%flag.target, %player.team);
+        //~wfx/misc/flag_snatch.wav
+        //~wfx/misc/flag_taken.wav
+        if (!%player.flagThrowStart)
+        {
+            messageTeamExcept(%client, 'MsgTR2FlagTaken',
+                '\c2Teammate %1 took the flag.~wfx/misc/Flagfriend.wav',
+                %client.name, %teamName, %flag.team, %client.nameBase);
+            messageTeam(%chasingTeam, 'MsgTR2FlagTaken',
+                '\c2%1 took the flag!~wfx/misc/Flagenemy.wav',
+                %client.name, 0, %flag.team, %client.nameBase);
+            messageClient(%client, 'MsgTR2FlagTaken',
+                '\c2You took the flag.~wfx/misc/Flagself.wav',
+                %client.name, %teamName, %flag.team, %client.nameBase);
 
-			 logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") took team "@%flag.team@" flag");
-		  }
+            if (%flag.dropper $= "")
+                messageTeam(0, 'MsgTR2FlagTaken',
+                    '\c4%1 took the flag.~wfx/misc/Flagself.wav',
+                    %client.name, %teamName, %flag.team, %client.nameBase);
+            else if (%flag.dropper.team != %player.team)
+                messageTeam(0, 'MsgTR2FlagTaken',
+                    '\c2%1 intercepted the flag!~wfx/misc/Flagenemy.wav',
+                    %client.name, %teamName, %flag.team, %client.nameBase);
+            else
+                messageTeam(0, 'MsgTR2FlagTaken',
+                    '\c3%1 caught the flag.~wfx/misc/Flagfriend.wav',
+                    %client.name, %teamName, %flag.team, %client.nameBase);
 
-		 //call the AI function
-		 //%game.AIplayerTouchEnemyFlag(%player, %flag);
+            logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") took team "@%flag.team@" flag");
+        }
 
+        //call the AI function
+        //%game.AIplayerTouchEnemyFlag(%player, %flag);
 
-		 //if the player is out of bounds, then in 3 seconds, it should be thrown back towards the in bounds area...
-		 //if (%client.outOfBounds)
-		 //	%game.schedule(3000, "boundaryLoseFlag", %player);
-			 
-		 // TR2:  Schedule new hot potato
-		 if (%game.hotPotatoThread !$= "")
-			 cancel(%game.hotPotatoThread);
-		 if (!$TR2::PracticeMode)
-		 {
-			 %game.hotPotatoThread = %game.schedule($TR2::hotPotatoTime, "hotPotato", %player, true);
-			 
-			 // Schedule points-per-second
-			 %game.pointsPerTimeSliceThread = %game.schedule($TR2::timeSlice, "awardPointsPerTimeSlice");
-		 }
+        //if the player is out of bounds, then in 3 seconds, it should be thrown back towards the in bounds area...
+        //if (%client.outOfBounds)
+        //	%game.schedule(3000, "boundaryLoseFlag", %player);
 
-		 //%flag.oneTimer = 0;
+        // TR2:  Schedule new hot potato
+        if (%game.hotPotatoThread !$= "")
+            cancel(%game.hotPotatoThread);
+        if (!$TR2::PracticeMode)
+        {
+            %game.hotPotatoThread = %game.schedule($TR2::hotPotatoTime, "hotPotato", %player, true);
 
-		 // Set observers to flag carrier
-		  for( %i = 0; %i <ClientGroup.getCount(); %i++ )
-	 	{
-	 		%cl = ClientGroup.getObject(%i);
-	 		if(%cl.team <= 0 && %cl.tr2SpecMode == 1)
-	 		{
-	 			%game.observeObject(%cl, %player.client, 1);
-	 		}
-	 	}
-	  
-		 // Finally, calculate bonus (potentially processor intensive)
-		 // TR2:  Flag bonus evaluation function
-		 if ($TR2::PracticeMode ||
-				 ($TheFlag.specialPass $= "" &&
-				  %player != %flag.dropper && %player.client.name !$= %flag.dropperName)) // && !%player.flagThrowStart)
-			 FlagBonus.evaluate(%flag.dropper, %player, %flag);
-		 else
-			 $TheFlag.specialPass = "";
-			 
-		 // TR2:  Check for one-timers
-		 if (%player.flagThrowStart)
-		 {
-			 %player.flagThrowStrength = 1.2;
-			 %flag.lastOneTimer = %flag.oneTimer;
-			 %flag.oneTimer = getSimTime();
-			 if (%flag.oneTimer - %flag.lastOneTimer < 2000)
-				 $TheFlag.specialPass = "OneTimer";
-			 Game.dropFlag(%player);
-			 ServerPlay2D(SlapshotSound);
-		 }
-		 else
-			 %flag.oneTimer = 0;
+            // Schedule points-per-second
+            %game.pointsPerTimeSliceThread = %game.schedule($TR2::timeSlice, "awardPointsPerTimeSlice");
+        }
+
+        //%flag.oneTimer = 0;
+
+        // Set observers to flag carrier
+        for (%i = 0; %i <ClientGroup.getCount(); %i++)
+        {
+            %cl = ClientGroup.getObject(%i);
+            if (%cl.team <= 0 && %cl.tr2SpecMode == 1)
+            {
+                %game.observeObject(%cl, %player.client, 1);
+            }
+        }
+
+        // Finally, calculate bonus (potentially processor intensive)
+        // TR2:  Flag bonus evaluation function
+        if ($TR2::PracticeMode ||
+                ($TheFlag.specialPass $= "" &&
+                %player != %flag.dropper && %player.client.name !$= %flag.dropperName))
+            FlagBonus.evaluate(%flag.dropper, %player, %flag);
+        else
+            $TheFlag.specialPass = "";
+
+        // TR2:  Check for one-timers
+        if (%player.flagThrowStart)
+        {
+            %player.flagThrowStrength = 1.2;
+            %flag.lastOneTimer = %flag.oneTimer;
+            %flag.oneTimer = getSimTime();
+            if (%flag.oneTimer - %flag.lastOneTimer < 2000)
+                $TheFlag.specialPass = "OneTimer";
+            Game.dropFlag(%player);
+            ServerPlay2D(SlapshotSound);
+        }
+        else
+            %flag.oneTimer = 0;
 	}
 
-	// toggle visibility of the flag
+    // toggle visibility of the flag
 	//setTargetRenderMask(%flag.waypoint.getTarget(), %flag.isHome ? 0 : 1);
-	
-	 // TR2:  cancel a hack
-	 cancel($UpdateFlagThread);
+
+    // TR2:  cancel a hack
+    cancel($UpdateFlagThread);
 }
 
 function TR2Game::awardPointsPerTimeSlice(%game)
 {
-  //echo("........TICK.......");
-  cancel(%game.pointsPerTimeSliceThread);
-  %game.giveInstantBonus($TheFlag.carrier.team, $TR2::pointsPerTimeSlice);
-  $TeamScorePossession[$TheFlag.carrier.team] += $TR2::pointsPerTimeSlice;
-  %game.pointsPerTimeSliceThread = %game.schedule($TR2::timeSlice, "awardPointsPerTimeSlice");
+    cancel(%game.pointsPerTimeSliceThread);
+    %game.giveInstantBonus($TheFlag.carrier.team, $TR2::pointsPerTimeSlice);
+    $TeamScorePossession[$TheFlag.carrier.team] += $TR2::pointsPerTimeSlice;
+    %game.pointsPerTimeSliceThread = %game.schedule($TR2::timeSlice, "awardPointsPerTimeSlice");
 }
 
 function TR2Game::UpdateCarrierHealth(%game, %player)
@@ -773,7 +715,7 @@ function TR2Game::UpdateCarrierHealth(%game, %player)
 	messageTeam(0,  'MsgTR2CarrierHealth', "", %amt / 100, %player.client.team);
 
 	//echo("Carrier health: " @ %amt @ " - Damage Level: " @ %health);
-	%game.updateCarrierHealthThread = %game.schedule( 700, "UpdateCarrierHealth", %player);
+	%game.updateCarrierHealthThread = %game.schedule(700, "UpdateCarrierHealth", %player);
 }
 
 function TR2Game::playerGotFlagTarget(%game, %player)
@@ -781,8 +723,7 @@ function TR2Game::playerGotFlagTarget(%game, %player)
 	%player.scopeWhenSensorVisible(true);
 	%target = %player.getTarget();
 	setTargetRenderMask(%target, getTargetRenderMask(%target) | 0x2);
-	//if(%game.stalemateObjsVisible)
-		setTargetAlwaysVisMask(%target, 0x7);
+    setTargetAlwaysVisMask(%target, 0x7);
 }
 
 function TR2Game::playerLostFlagTarget(%game, %player)
@@ -790,15 +731,11 @@ function TR2Game::playerLostFlagTarget(%game, %player)
 	%player.scopeWhenSensorVisible(false);
 	%target = %player.getTarget();
 	setTargetRenderMask(%target, getTargetRenderMask(%target) & ~0x2);
-	// clear his always vis target mask
 	setTargetAlwaysVisMask(%target, (1 << getTargetSensorGroup(%target)));
 }
 
 function TR2Game::updateFlagTransform(%game)
 {
-	//%vel = $TheFlag.getVelocity();
-	//echo(%vel @ " => " @ VectorLen(%vel));
-	
 	// Try updating its transform to force a client update
 	$TheFlag.setTransform($TheFlag.getTransform());
 	$updateFlagThread = %game.schedule($TR2::FlagUpdateTime, "updateFlagTransform");
@@ -806,27 +743,26 @@ function TR2Game::updateFlagTransform(%game)
 
 function TR2Game::playerDroppedFlag(%game, %player)
 {
-	//echo("playerDroppedFlag()	(client = " @ %player.client @ ")");
 	%client = %player.client;
 	%flag = %player.holdingFlag;
-	
+
 	// Cancel points per time slice
 	cancel(%game.pointsPerTimeSliceThread);
 
 	%game.playerLostFlagTarget(%player);
 
 	%player.holdingFlag = ""; //player isn't holding a flag anymore
-	%flag.carrier = "";  //flag isn't held anymore 
+	%flag.carrier = "";  //flag isn't held anymore
 	$flagStatus[%flag.team] = "<In the Field>";
 	setTargetSensorGroup(%flag.target, 3);
-	
+
 	// Carrier health update
 	cancel(%game.updateCarrierHealthThread);
 	messageAll('MsgTR2CarrierHealth', "", 0);
-	
-	%player.unMountImage($FlagSlot);	
+
+	%player.unMountImage($FlagSlot);
 	%flag.hide(false); //Does the throwItem function handle this?
-	
+
 	// TR2:  Give the flag some extra oomph
 	//%flagVel = %flag.getVelocity();
 	//%playerVel = %player.getVelocity();
@@ -849,7 +785,7 @@ function TR2Game::playerDroppedFlag(%game, %player)
 	//%flag.setTransform(VectorAdd(VectorNormalize(%playerRot), %player.getPosition()));
 
 	//%newVel = VectorAdd(%newVel, %playerRot);
-	
+
 	// Don't apply the velocity impulse if the player is facing one direction
 	// but travelling in the other
 	//if (%testDirection > -0.85)
@@ -870,51 +806,55 @@ function TR2Game::playerDroppedFlag(%game, %player)
 
 	//%flag.setCollisionTimeout(%player);
 
-	 %teamName = %game.getTeamName(%flag.team);
-	 %chasingTeam = (%player.client.team == 1) ? 2 : 1;
-	 //~wfx/misc/flag_drop.wav
-	messageTeamExcept(%client, 'MsgTR2FlagDropped', '\c2Teammate %1 dropped the flag.~wfx/misc/flagflap.wav', %client.name, %teamName, %flag.team);
-	messageTeam(%chasingTeam, 'MsgTR2FlagDropped', '\c2The flag has been dropped by %1!~wfx/misc/flagflap.wav', %client.name, 0, %flag.team);
-	messageTeam(0, 'MsgTR2FlagDropped', '\c2%1 dropped the flag.~wfx/misc/flagflap.wav', %client.name, %teamName, %flag.team);
-	if(!%player.client.outOfBounds)
-		messageClient(%client, 'MsgTR2FlagDropped', '\c2You dropped the flag.~wfx/misc/flagflap.wav', 0, %teamName, %flag.team);
+    %teamName = %game.getTeamName(%flag.team);
+    %chasingTeam = (%player.client.team == 1) ? 2 : 1;
+    //~wfx/misc/flag_drop.wav
+	messageTeamExcept(%client, 'MsgTR2FlagDropped',
+        '\c2Teammate %1 dropped the flag.~wfx/misc/flagflap.wav',
+        %client.name, %teamName, %flag.team);
+	messageTeam(%chasingTeam, 'MsgTR2FlagDropped',
+        '\c2The flag has been dropped by %1!~wfx/misc/flagflap.wav',
+        %client.name, 0, %flag.team);
+	messageTeam(0, 'MsgTR2FlagDropped',
+        '\c2%1 dropped the flag.~wfx/misc/flagflap.wav',
+        %client.name, %teamName, %flag.team);
+	if (!%player.client.outOfBounds)
+		messageClient(%client, 'MsgTR2FlagDropped',
+            '\c2You dropped the flag.~wfx/misc/flagflap.wav',
+            0, %teamName, %flag.team);
 	logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") dropped team "@%flag.team@" flag");
 
 	// TR2:  Cancel hot potato thread
 	cancel(%game.hotPotatoThread);
 
-
-	//if( %flag.getSpeed() <= $TR2::MinSpeedForFlagSmoke && $FlagReturnTimer[%flag] <= 0)
+	//if (%flag.getSpeed() <= $TR2::MinSpeedForFlagSmoke && $FlagReturnTimer[%flag] <= 0)
 	//	$FlagReturnTimer[%flag] = %game.schedule(%game.FLAG_RETURN_DELAY - %game.fadeTimeMS, "flagReturnFade", %flag);
 
-	
 	// Set observers
-	for( %i = 0; %i <ClientGroup.getCount(); %i++ )
+	for (%i = 0; %i <ClientGroup.getCount(); %i++)
 	{
 		%cl = ClientGroup.getObject(%i);
-		if(%cl.team <= 0 && %cl.tr2SpecMode)
+		if (%cl.team <= 0 && %cl.tr2SpecMode)
 		{
 			%game.observeObject(%cl, $TheFlag, 2);
-		}
-	 }
-	  
+        }
+    }
+
 	//call the AI function
 	//%game.AIplayerDroppedFlag(%player, %flag);
 
-	
 	// TR2:  Hack to force an update of the flag's position
 	%game.updateFlagTransform();
 }
 
 function TR2Game::observeObject(%game, %client, %target, %type)
 {
-	 if (!isObject(%client) || !isObject(%target) || !isObject(%client.camera))
-		 return;
+    if (!isObject(%client) || !isObject(%target) || !isObject(%client.camera))
+        return;
 
-	if( %client.tr2SpecMode != 1 )
-		return;
+	if (%client.tr2SpecMode != 1)
+        return;
 
-	//echo("Camera rotation: " @ %client.camera.rotation );
 	//%client.lastRot = %client.camera.rotation;
 	%transform = %client.camera.getTransform();
 	%lastRot = getWord(%transform, 3) SPC getWord(%transform, 4) SPC getWord(%transform, 5) SPC getWord(%transform, 6);
@@ -923,19 +863,19 @@ function TR2Game::observeObject(%game, %client, %target, %type)
 	%client.observeTarget = %target;
 	%client.observeType = %type;
 
-	switch( %type )
+	switch (%type)
 	{
-		case 1: // observing players
-			%client.camera.getDataBlock().setMode(%client.camera, "observerFollow", %target.player);
-			%client.setControlObject(%client.camera);
-			clearBottomPrint(%client);
-		case 2: // observing a dropped flag
-			%client.camera.getDataBlock().setMode(%client.camera, "followFlag", $TheFlag);
-			%client.setControlObject(%client.camera);
-			clearBottomPrint(%client);
-		default:
-			clearBottomPrint(%client);
-		  	return;
+    case 1: // observing players
+        %client.camera.getDataBlock().setMode(%client.camera, "observerFollow", %target.player);
+        %client.setControlObject(%client.camera);
+        clearBottomPrint(%client);
+    case 2: // observing a dropped flag
+        %client.camera.getDataBlock().setMode(%client.camera, "followFlag", $TheFlag);
+        %client.setControlObject(%client.camera);
+        clearBottomPrint(%client);
+    default:
+        clearBottomPrint(%client);
+        return;
 	}
 	//%position = %client.camera.getPosition();
 	//%client.camera.setTransform(%position SPC %lastRot);
@@ -943,7 +883,7 @@ function TR2Game::observeObject(%game, %client, %target, %type)
 
 function TR2Game::flagReturnFade(%game, %flag)
 {
-	$FlagReturnTimer[%flag] = %game.schedule(%game.fadeTimeMS, "flagReturn", %flag);
+    $FlagReturnTimer[%flag] = %game.schedule(%game.fadeTimeMS, "flagReturn", %flag);
 	%flag.startFade(%game.fadeTimeMS, 0, true);
 }
 
@@ -951,27 +891,25 @@ function TR2Game::flagReturn(%game, %flag, %player)
 {
 	cancel($FlagReturnTimer[%flag]);
 	$FlagReturnTimer[%flag] = "";
-	
+
 	%flag.setVelocity("0 0 0");
 	%flag.setTransform(%flag.originalPosition);
 	%flag.isHome = true;
 	%game.flagReset(%flag);
-	
-	MessageAll('MsgFlagReturned', '\c2The flag has respawned in the middle of the map.~wfx/misc/flagreturn.wav');
+
+	messageAll('MsgFlagReturned',
+        '\c2The flag has respawned in the middle of the map.~wfx/misc/flagreturn.wav');
 
 	// TR2:  variable resets
 	//%game.currentBonus = 0;
 	//%game.updateCurrentBonusAmount(0, -1);
-	
+
 	// TR2:  cancel hack
 	cancel($UpdateFlagThread);
 }
 
-
-
 function TR2Game::flagReset(%game, %flag)
 {
-
 	//make sure if there's a player carrying it (probably one out of bounds...), it is stripped first
 	if (isObject(%flag.carrier))
 	{
@@ -987,15 +925,15 @@ function TR2Game::flagReset(%game, %flag)
 	%flag.dropper = "";
 	$flagStatus[%flag.team] = "<At Base>";
 	%flag.hide(false);
-	if(%flag.stand)
+	if (%flag.stand)
 		%flag.stand.getDataBlock().onFlagReturn(%flag.stand);//animate, if exterior stand
 
 	//fade the flag in...
-	%flag.startFade(%game.fadeTimeMS, 0, false);			
+	%flag.startFade(%game.fadeTimeMS, 0, false);
 
 	// dont render base target
 	setTargetRenderMask(%flag.waypoint.getTarget(), 0);
-	
+
 	FlagBonusHistory.initialize();
 
 	//call the AI function
@@ -1020,20 +958,23 @@ function TR2Game::hotPotato(%game, %player, %firstWarning)
 {
 	if (!isObject(%player) || %player.getState() $= "Dead")
 		return;
-		
+
 	if (%firstWarning)
 	{
 		// Display message
-		messageAll('TR2HotPotato', "The flag is getting hot!~wfx/misc/bounty_objrem1.wav");
+		messageAll('TR2HotPotato',
+            "The flag is getting hot!~wfx/misc/bounty_objrem1.wav");
 		%game.hotPotatoThread = %game.schedule(3000, "hotPotato", %player, false);
-	} else {
+	}
+    else
+    {
 		// Do damage
-		messageClient(%player.client, 'TR2HotPotato', "Hot potato...pass the flag!~wfx/misc/red_alert_short.wav");
+		messageClient(%player.client, 'TR2HotPotato',
+            "Hot potato...pass the flag!~wfx/misc/red_alert_short.wav");
 		%player.setDamageFlash(0.1);
 		%player.damage(0, %player.position, 0.12, $DamageType::HotPotato);
-		%game.hotPotatoThread = %game.schedule(1000, "hotPotato", %player, false);
+        %game.hotPotatoThread = %game.schedule(1000, "hotPotato", %player, false);
 	}
-	
 }
 
 function TR2Game::gameOver(%game)
@@ -1048,65 +989,46 @@ function TR2Game::gameOver(%game)
 	else if ($teamScore[2] > $teamScore[1])
 		%winner = %game.getTeamName(2);
 
-	//if (%winner $= 'Storm')
-	//	messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.stowins.wav" );
-	//else if (%winner $= 'Inferno')
-	//	messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.infwins.wav" );
-	//else if (%winner $= 'Starwolf')
-	//	messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.swwin.wav" );
-	//else if (%winner $= 'Blood Eagle')
-	//	messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.bewin.wav" );
-	//else if (%winner $= 'Diamond Sword')
-	//	messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.dswin.wav" );
-	//else if (%winner $= 'Phoenix')
-	//	messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.pxwin.wav" );
-	//else
-	messageAll('MsgGameOver', "Match has ended.~wfx/misc/gameover.wav" );
+	messageAll('MsgGameOver', "Match has ended.~wfx/misc/gameover.wav");
 
 	messageAll('MsgClearObjHud', "");
-	for(%i = 0; %i < ClientGroup.getCount(); %i ++) 
+	for (%i = 0; %i < ClientGroup.getCount(); %i++)
 	{
 		%client = ClientGroup.getObject(%i);
 		%game.resetScore(%client);
 	}
-	for(%j = 1; %j <= %game.numTeams; %j++)
+	for (%j = 1; %j <= %game.numTeams; %j++)
 		$TeamScore[%j] = 0;
 
 	$accumulatedScore = 0;
 }
 
 function TR2Game::onClientDamaged(%game, %clVictim, %clAttacker, %damageType, %implement, %damageLoc)
-{ 
+{
 	if (%game.goalJustScored)
 		return;
-		
-	//if(%clVictim.headshot && %damageType == $DamageType::Laser && %clVictim.team != %clAttacker.team)
-	//{
 
-	//}
-	
 	// Try to give a free self-inflicted wound when invincible
 	if (%clVictim.player.invincible && %clVictim == %clAttacker)
 	{
 		%clVictim.player.invincible = false;
 		return;
 	}
-	
+
 	//the DefaultGame will set some vars
 	DefaultGame::onClientDamaged(%game, %clVictim, %clAttacker, %damageType, %implement, %damageLoc);
-	
+
 	//if victim is carrying a flag and is not on the attackers team, mark the attacker as a threat for x seconds(for scoring purposes)
 	if ((%clVictim.holdingFlag !$= "") && (%clVictim.team != %clAttacker.team))
 	{
 		%clAttacker.dmgdFlagCarrier = true;
 	}
-	
+
 	if (!%clVictim.player.invincible)
 		G4Bonus.evaluate(%clAttacker.player, %clVictim.player, $TheFlag, %damageType, %damageLoc);
 	//$DamageBonus.evaluate(%clAttacker, %clVictim, %damageType, %damageLoc);
-
 }
-		
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //function TR2Game::assignClientTeam(%game, %client, %respawn)
 //{
@@ -1117,26 +1039,20 @@ function TR2Game::onClientDamaged(%game, %clVictim, %clAttacker, %damageType, %i
 
 function TR2Game::updateCurrentBonusAmount(%this, %bonus, %team)
 {
-	 %this.currentBonus += %bonus;
-	 if (%this.currentBonus > $TR2::MaximumJackpot)
-		 %this.currentBonus = $TR2::MaximumJackpot;
+    %this.currentBonus += %bonus;
+    if (%this.currentBonus > $TR2::MaximumJackpot)
+        %this.currentBonus = $TR2::MaximumJackpot;
 
-	 // Don't color the Jackpot until it's big enough
-	 if (%this.currentBonus < $TR2::MinimumJackpot)
-		 %team = -1;
-		 
-	 %this.setBonus(%this.currentBonus, %team);
-	//for( %i = 0; %i < ClientGroup.getCount(); %i++ )
-	//{
-	//	%cl = ClientGroup.getObject(%i);
-	//	%flag = %cl.team == %team ? 1 : 0;
-	//	messageClient(%cl, 'MsgTR2UpdateBonus', "", %this.currentBonus, %flag);
-	//}
+    // Don't color the Jackpot until it's big enough
+    if (%this.currentBonus < $TR2::MinimumJackpot)
+        %team = -1;
+
+    %this.setBonus(%this.currentBonus, %team);
 }
 
 function TR2Game::setBonus(%game, %bonus, %team)
 {
-	if( %bonus $= "0" || %team == -1 )
+	if (%bonus $= "0" || %team == -1)
 		messageAll('MsgTR2Bonus', "", %bonus, $TR2::NeutralColor);
 	else
 	{
@@ -1153,22 +1069,17 @@ function TR2Game::giveInstantBonus(%this, %team, %amount)
 
 function TR2Game::recalcScore(%game, %cl)
 {
-
 }
 
 function TR2Game::updateKillScores(%game, %clVictim, %clKiller, %damageType, %implement)
 {
-
 }
-
 
 function TR2Game::testCarrierKill(%game, %victimID, %killerID)
 {
 	%flag = %victimID.plyrDiedHoldingFlag;
-	return ((%flag !$= "") && (%flag.team == %killerID.team));  
+	return ((%flag !$= "") && (%flag.team == %killerID.team));
 }
-
-
 
 function TR2Game::resetDontScoreTimer(%game, %team)
 {
@@ -1177,18 +1088,17 @@ function TR2Game::resetDontScoreTimer(%game, %team)
 
 function TR2Game::checkScoreLimit(%game, %team)
 {
-
 }
 
 function TR2Game::clientMissionDropReady(%game, %client)
 {
 	// TR2 specific anti-non-vchat-wav-spam-thing...
-	if( getTaggedString(%client.voiceTag) $= "" )
+	if (getTaggedString(%client.voiceTag) $= "")
 	{
 		removeTaggedString(%client.voiceTag);
 
 		%raceGender = %client.race SPC %client.sex;
-	   switch$ ( %raceGender )
+	   switch$ (%raceGender)
 	   {
 	      case "Human Male":
 	         %voice = "Male1";
@@ -1201,32 +1111,31 @@ function TR2Game::clientMissionDropReady(%game, %client)
 	   }
 	   %client.voiceTag = addTaggedString(%voice);
 	}
-		
-	 %game.sendMotd(%client);
-	//error(%client @ " - " @ %client.nameBase @ " - Team: " @ %client.team @ " - Last: " @ %client.lastTeam);
-	if( %client.team <= 0 || %client.team $= "" )
+
+    %game.sendMotd(%client);
+	if (%client.team <= 0 || %client.team $= "")
 		addToQueue(%client);
-	if( %client.tr2SpecMode $= "" )
+	if (%client.tr2SpecMode $= "")
 		%client.tr2SpecMode = true;
-	if( %client.specOnly $= "" )
+	if (%client.specOnly $= "")
 		%client.specOnly = false;
-	messageClient(%client, 'MsgClientReady',"", %game.class);
+	messageClient(%client, 'MsgClientReady', "", %game.class);
 	%game.resetScore(%client);
 
 	%score1 = $Teams[1].score != 0 ? $Teams[1].score : 0;
 	%score2 = $Teams[2].score != 0 ? $Teams[2].score : 0;
 
-	if( $TheFlag.isHome )
+	if ($TheFlag.isHome)
 	{
 		%flagLoc = "Center";
 		%carrierHealth = 0;
 	}
-	else if( $TheFlag.onGoal )
+	else if ($TheFlag.onGoal)
 	{
 		%flagLoc = "On goal";
 		%carrierHealth = 0;
 	}
-	else if( $TheFlag.carrier !$= "" )
+	else if ($TheFlag.carrier !$= "")
 	{
 		%flagLoc = $TheFlag.carrier.client.name;
 		%maxDamage = $TheFlag.carrier.getDatablock().maxDamage;
@@ -1238,82 +1147,88 @@ function TR2Game::clientMissionDropReady(%game, %client)
 		%flagLoc = "Dropped";
 		%carrierHealth = 0;
 	}
-	
 
 	%client.inSpawnBuilding = true;
 
-	messageClient(%client, 'MsgTR2ObjInit', "", %game.getTeamName(1), %game.getTeamName(2), %score1, %score2, %flagLoc, %carrierHealth, %game.currentBonus );
-	messageClient(%client, 'MsgMissionDropInfo', '\c0You are in mission %1 (%2).', $MissionDisplayName, $MissionTypeDisplayName, $ServerName );
+	messageClient(%client, 'MsgTR2ObjInit', "",
+        %game.getTeamName(1), %game.getTeamName(2), %score1, %score2, %flagLoc,
+        %carrierHealth, %game.currentBonus);
+	messageClient(%client, 'MsgMissionDropInfo',
+        '\c0You are in mission %1 (%2).', $MissionDisplayName,
+        $MissionTypeDisplayName, $ServerName);
 
 	//synchronize the clock HUD
 	messageClient(%client, 'MsgSystemClock', "", 0, 0);
 
-	%game.sendClientTeamList( %client );
-	%game.setupClientHuds( %client );
+	%game.sendClientTeamList(%client);
+	%game.setupClientHuds(%client);
 
 	%client.camera.setFlyMode();
 
 	%observer = false;
-	if( !$Host::TournamentMode )
+	if (!$Host::TournamentMode)
 	{
-		if( 	%client.camera.mode $= "observerFly" || %client.camera.mode $= "justJoined" ||
-			 	%client.camera.mode $= "followFlag" || %client.camera.mode $= "observerFollow" )
+		if (%client.camera.mode $= "observerFly" ||
+                %client.camera.mode $= "justJoined" ||
+                %client.camera.mode $= "followFlag" ||
+                %client.camera.mode $= "observerFollow")
 		{
 			%observer = true;
 			%client.observerStartTime = getSimTime();
 			commandToClient(%client, 'setHudMode', 'Observer');
-			%client.setControlObject( %client.camera );
+			%client.setControlObject(%client.camera);
 		}
 
-		if( (%client.team <= 0 || %client.team $= "") && getActiveCount() < (6 * 2) )
+		if ((%client.team <= 0 || %client.team $= "") && getActiveCount() < (6 * 2))
 		{
 			%observer = false;
 			%game.assignClientTeam(%client, 0);
 			%game.spawnPlayer(%client, 0);
 		}
 
-		if( %observer )
+		if (%observer)
 		{
-			if( %client.tr2SpecMode == 1 )
+			if (%client.tr2SpecMode == 1)
 			{
-				if( $TheFlag.carrier $= "" )
+				if ($TheFlag.carrier $= "")
 					Game.observeObject(%client, $TheFlag, 2);
 				else
 					Game.observeObject(%client, $TheFlag.carrier.client, 1);
 			}
 			else
-				%client.camera.getDataBlock().setMode( %client.camera, "ObserverFly" );
+				%client.camera.getDataBlock().setMode(%client.camera, "ObserverFly");
 		}
 	}
 	else
 	{
-		// set all players into obs mode. setting the control object will handle further procedures...
-		if( %client.tr2SpecMode == 1 )
+		// set all players into obs mode. setting the control object will handle
+        // further procedures...
+		if (%client.tr2SpecMode == 1)
 		{
-			if( $TheFlag.carrier $= "" )
+			if ($TheFlag.carrier $= "")
 				Game.observeObject(%client, $TheFlag, 2);
 			else
 				Game.observeObject(%client, $TheFlag.carrier.client, 1);
 		}
 		else
-			%client.camera.getDataBlock().setMode( %client.camera, "ObserverFly" );
-		%client.setControlObject( %client.camera );
-		messageAll( 'MsgClientJoinTeam', "",%client.name, $teamName[0], %client, 0 );
+			%client.camera.getDataBlock().setMode(%client.camera, "ObserverFly");
+		%client.setControlObject(%client.camera);
+		messageAll('MsgClientJoinTeam', "", %client.name, $teamName[0], %client, 0);
 		%client.team = 0;
 
-		if( !$MatchStarted && !$CountdownStarted)
+		if (!$MatchStarted && !$CountdownStarted)
 		{
-			if($TeamDamage)
+			if ($TeamDamage)
 				%damMess = "ENABLED";
 			else
 				%damMess = "DISABLED";
 
-			if( %game.numTeams > 1 && %client.lastTeam != 0 && %client.lastTeam !$= "" )
-				BottomPrint(%client, "Server is Running in Tournament Mode.\nPick a Team\nTeam Damage is " @ %damMess, 0, 3 );
+			if (%game.numTeams > 1 && %client.lastTeam != 0 && %client.lastTeam !$= "")
+				BottomPrint(%client, "Server is Running in Tournament Mode.\nPick a Team\nTeam Damage is " @ %damMess, 0, 3);
 		}
 		else
 		{
-			BottomPrint( %client, "\nServer is Running in Tournament Mode", 0, 3 );
+			BottomPrint(%client, "\nServer is Running in Tournament Mode", 0, 3);
 		}
 	}
 
@@ -1325,6 +1240,7 @@ function TR2Game::clientMissionDropReady(%game, %client)
 	%client.matchStartReady = true;
 	echo("TR2: Client" SPC %client SPC "is ready.");
 }
+
 function TR2Game::resetScore(%game, %client)
 {
 	%client.kills = 0;
@@ -1341,16 +1257,15 @@ function TR2Game::resetScore(%game, %client)
 	%client.passingScore = 0;
 	%client.interceptingScore = 0;
 	%client.fcHits = 0;
-	
+
 	// Set outermost role
 	%game.assignOutermostRole(%client);
-	
+
 	for (%i=o; %i<$TR2::numRoles; %i++)
 	{
 		%role = $TR2::role[%i];
 		%client.roleChangeTicks[%role] = 0;
 	}
-	// etc...
 }
 
 function TR2Game::boundaryLoseFlag(%game, %player)
@@ -1385,13 +1300,15 @@ function TR2Game::boundaryLoseFlag(%game, %player)
 	%flag.applyImpulse(%player.getWorldBoxCenter(), %vec);
 
 	//don't forget to send the message
-	messageClient(%player.client, 'MsgTR2FlagDropped', '\c1You have left the mission area and lost the flag.~wfx/misc/flag_drop.wav', 0, 0, %player.holdingFlag.team);
+	messageClient(%player.client, 'MsgTR2FlagDropped',
+        '\c1You have left the mission area and lost the flag.~wfx/misc/flag_drop.wav',
+        0, 0, %player.holdingFlag.team);
 	logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") lost flag (out of bounds)");
 }
 
 function TR2Game::dropFlag(%game, %player)
 {
-	if(%player.holdingFlag > 0)
+	if (%player.holdingFlag > 0)
 	{
 		if (!%player.client.outOfBounds)
 			%player.throwObject(%player.holdingFlag);
@@ -1402,9 +1319,8 @@ function TR2Game::dropFlag(%game, %player)
 
 function TR2Game::applyConcussion(%game, %player)
 {
-	%game.dropFlag( %player );
+	%game.dropFlag(%player);
 }
-
 
 function TR2Game::testKill(%game, %victimID, %killerID)
 {
@@ -1414,7 +1330,7 @@ function TR2Game::testKill(%game, %victimID, %killerID)
 function TR2Game::equip(%game, %player)
 {
 	%cl = %player.client;
-	for(%i =0; %i<$InventoryHudCount; %i++)
+	for (%i =0; %i<$InventoryHudCount; %i++)
 		%cl.setInventoryHudItem($InventoryHudData[%i, itemDataName], 0, 1);
 	%cl.clearBackpackIcon();
 
@@ -1424,7 +1340,7 @@ function TR2Game::equip(%game, %player)
 	%player.setInventory(TR2GrenadeLauncher,1);
 	%player.setInventory(TR2Chaingun, 1);
 	%player.weaponCount = 3;
-	
+
 	if (%cl.restockAmmo)
 	{
 		%player.setInventory(TR2ChaingunAmmo, 100);
@@ -1440,13 +1356,13 @@ function TR2Game::equip(%game, %player)
 
 	%targetingLaser = (%player.team == 1) ? TR2GoldTargetingLaser : TR2SilverTargetingLaser;
 	%player.setInventory(%targetingLaser, 1);
-	
+
 	%player.use("TR2Disc");
 }
 
 function TR2Game::playerSpawned(%game, %player)
 {
-	if( %player.client.respawnTimer)
+	if (%player.client.respawnTimer)
 		cancel(%player.client.respawnTimer);
 
 	%player.client.observerStartTime = "";
@@ -1463,7 +1379,7 @@ function TR2Game::rememberAmmo(%game, %client)
 	%client.lastGrenadeLauncherAmmo = %pl.invTR2GrenadeLauncherAmmo;
 	%client.lastGrenades = %pl.invTR2Grenade;
 	%client.lastBeacons = %pl.invBeacon;
-	
+
 	// Remember role items
 	for (%i=0; %i<$TR2::roleNumExtraItems[%client.currentRole]; %i++)
 		%client.lastRoleItemCount[%i] = %pl.extraRoleItemCount[%i];
@@ -1475,9 +1391,9 @@ function TR2Game::restockRememberedAmmo(%game, %client)
 	%player.setInventory(TR2ChaingunAmmo, %client.lastChaingunAmmo);
 	%player.setInventory(TR2DiscAmmo, %client.lastDiscAmmo);
 	%player.setInventory(TR2GrenadeLauncherAmmo, %client.lastGrenadeLauncherAmmo);
-	%player.setInventory(TR2Grenade,%client.lastGrenades);
+	%player.setInventory(TR2Grenade, %client.lastGrenades);
 	%player.setInventory(Beacon, %client.lastBeacons);
-	
+
 	%game.equipRoleWeapons(%player.client);
 }
 
@@ -1489,20 +1405,19 @@ function TR2Game::penalty(%game, %player, %text, %amount)
 }
 
 function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %implement, %damageLocation)
-{	  
-	//echo ("CLIENT KILLED (" @ %clVictim @ ")");
+{
 	%plVictim = %clVictim.player;
 	%plKiller = %clKiller.player;
 	%clVictim.plyrPointOfDeath = %plVictim.position;
 	%clVictim.plyrDiedHoldingFlag = %plVictim.holdingFlag;
 	%clVictim.waitRespawn = 1;
-	
-	cancel( %plVictim.reCloak );
+
+	cancel(%plVictim.reCloak);
 	cancel(%clVictim.respawnTimer);
-	%clVictim.respawnTimer = %game.schedule(($Host::PlayerRespawnTimeout * 1000), "forceObserver", %clVictim, "spawnTimeout" );
+	%clVictim.respawnTimer = %game.schedule(($Host::PlayerRespawnTimeout * 1000), "forceObserver", %clVictim, "spawnTimeout");
 
 	// reset the alarm for out of bounds
-	if(%clVictim.outOfBounds)
+	if (%clVictim.outOfBounds)
 		messageClient(%clVictim, 'EnterMissionArea', "");
 
 	// TR2:  Get rid of suicide delay
@@ -1510,7 +1425,7 @@ function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %impl
 		%respawnDelay = 2;
 	else
 		%respawnDelay = 2;
-		
+
 	// TR2:  Teamkill penalty
 	if (%plVictim != %plKiller && %plVictim.team == %plKiller.team)
 	{
@@ -1528,35 +1443,35 @@ function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %impl
 		// Reset the bonus pot
 		//Game.currentBonus = 0;
 		//Game.updateCurrentBonusAmount(0, -1);
-		
-		if(%plVictim.team != %plKiller.team && %clKiller != 0)
+
+		if (%plVictim.team != %plKiller.team && %clKiller != 0)
 			WeaponBonus.evaluate(%plKiller, %plVictim, %damageType);
 	}
 
 	%game.schedule(%respawnDelay*1000, "clearWaitRespawn", %clVictim);
 	// if victim had an undetonated satchel charge pack, get rid of it
-	if(%plVictim.thrownChargeId != 0)
-		if(!%plVictim.thrownChargeId.kaboom)
+	if (%plVictim.thrownChargeId != 0)
+		if (!%plVictim.thrownChargeId.kaboom)
 			%plVictim.thrownChargeId.delete();
 
-	 //if(%plVictim.inStation)
-	 //  commandToClient(%plVictim.client,'setStationKeys', false);
+	 //if (%plVictim.inStation)
+	 //  commandToClient(%plVictim.client, 'setStationKeys', false);
 	%clVictim.camera.mode = "playerDeath";
 
-	// reset who triggered this station and cancel outstanding armor switch thread	
-	//if(%plVictim.station)
+	// reset who triggered this station and cancel outstanding armor switch thread
+	//if (%plVictim.station)
 	//{
 	//	%plVictim.station.triggeredBy = "";
 	//	%plVictim.station.getDataBlock().stationTriggered(%plVictim.station,0);
-	//	if(%plVictim.armorSwitchSchedule)
+	//	if (%plVictim.armorSwitchSchedule)
 	//		cancel(%plVictim.armorSwitchSchedule);
 	//}
 
 	//%clVictim.inSpawnBuilding = false;
-	
+
 	if (!$TR2::DisableDeath)
 		%plVictim.inSpawnBuilding = true;
-		
+
 	if (%damageType == $DamageType::Suicide)
 	{
         %clVictim.player.delayRoleChangeTime = 0;
@@ -1567,7 +1482,7 @@ function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %impl
 		%clVictim.inSpawnBuilding = true;
 		//%game.trySetRole(%plVictim, Offense);
 	}
-	
+
 	else if (%damageType == $DamageType::Lava)
 	{
 		%clVictim.forceRespawn = true;
@@ -1596,39 +1511,20 @@ function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %impl
 	// $weaponslot from item.cs
 	%plVictim.setRepairRate(0);
 	%plVictim.setImageTrigger($WeaponSlot, false);
-	
+
 	playDeathAnimation(%plVictim, %damageLocation, %damageType);
 	playDeathCry(%plVictim);
 
 	%victimName = %clVictim.name;
-	
+
 	// TR2:  Force generic message for suicide-by-weapon
 	if ($TR2::DisableDeath && %clVictim == %clKiller)
 		%damageType = $DamageType::suicide;
-		
+
 	%game.displayDeathMessages(%clVictim, %clKiller, %damageType, %implement);
 	//%game.updateKillScores(%clVictim, %clKiller, %damageType, %implement);
 
-	// toss whatever is being carried, '$flagslot' from item.cs
-	// MES - had to move this to after death message display because of Rabbit game type
-	// TR2:  Only throw all items if death is enabled
-	//if (!$TR2::DisableDeath || %clVictim.forceRespawn)
-	//{
-	//	 for(%index = 0 ; %index < 8; %index++)
-	//	 {
-	//		 %image = %plVictim.getMountedImage(%index);
-	//		 if(%image)
-	//		 {
-	//			 if(%index == $FlagSlot)
-	//				 %plVictim.throwObject(%plVictim.holdingFlag);
-	//			 else
-	//				 %plVictim.throw(%image.item);
-	//		 }
-	//	 }
-	//}
-	// TR2:  Otherwise just throw the flag if applicable
-	//else
-	if(%plVictim == $TheFlag.carrier)
+	if (%plVictim == $TheFlag.carrier)
 		%plVictim.throwObject(%plVictim.holdingFlag);
 
 	// target manager update
@@ -1641,7 +1537,7 @@ function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %impl
 	%clVictim.setAmmoHudCount(-1);
 
 	// clear out weapons, inventory and pack huds
-	messageClient(%clVictim, 'msgDeploySensorOff', "");  //make sure the deploy hud gets shut off 
+	messageClient(%clVictim, 'msgDeploySensorOff', "");  //make sure the deploy hud gets shut off
 	messageClient(%clVictim, 'msgPackIconOff', "");  // clear the pack icon
 
 	//clear the deployable HUD
@@ -1657,7 +1553,7 @@ function TR2Game::onClientKilled(%game, %clVictim, %clKiller, %damageType, %impl
 	// reset control object on this player: also sets 'playgui' as content
 	serverCmdResetControlObject(%clVictim);
 
-	// set control object to the camera	
+	// set control object to the camera
 	%clVictim.player = 0;
 	%transform = %plVictim.getTransform();
 
@@ -1694,23 +1590,21 @@ function TR2Game::trackKnockDown(%this, %player)
 	%client = %player.client;
 	%speed = %player.getSpeed();
 	%time = getSimTime();
-	
-	//echo("		 (" @ %client @ ")  Knockdown tracking");
 
 	if (%speed <= 0.1 && !%player.inCannon)
 	{
 		cancel(%client.knockDownThread);
-		
+
 		// Wait a bit longer
 		%client.suicideRespawnTime = %time + $TR2::delayAfterKnockdown;
-		
+
 		// Ensure the wait was at least a certain length of time
-	  if (%client.suicideRespawnTime - %client.knockDownTime < $TR2::MinimumKnockdownDelay)
-			%client.suicideRespawnTime = %time + $TR2::MinimumKnockdownDelay;
-		
+        if (%client.suicideRespawnTime - %client.knockDownTime < $TR2::MinimumKnockdownDelay)
+            %client.suicideRespawnTime = %time + $TR2::MinimumKnockdownDelay;
+
 		// Make the player spawn at his corpse's resting location
 		%client.plyrTransformAtDeath = %player.getTransform();
-		
+
 		// Hmm...hack this to delete the corpse when the player presses the
 		// trigger (used in TR2Game::onObserverTrigger()
 		%client.playerToDelete = %player;
@@ -1735,14 +1629,13 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 	%killerPoss = (%clKiller.sex $= "Male" ? 'his' : 'her');
 	%victimName = %clVictim.name;
 	%killerName = %clKiller.name;
-	//error("DamageType = " @ %damageType @ ", implement = " @ %implement @ ", implement class = " @ %implement.getClassName() @ ", is controlled = " @ %implement.getControllingClient());
 
-	if(%damageType == $DamageType::TouchedOwnGoal)
+	if (%damageType == $DamageType::TouchedOwnGoal)
 	{
 		messageAll('msgTouchedOwnGoal', '\c0%1 respawns for touching %3 own goal.', %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
 		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by own goal.");
 	}
-	else if(%damageType == $DamageType::Grid)
+	else if (%damageType == $DamageType::Grid)
 	{
 		%message = $TR2::DisableDeath ?
 			'\c0%1 was knocked down by the Grid.' :
@@ -1750,18 +1643,18 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 		messageAll('msgGrid', %message, %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
 		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by Grid.");
 	}
-	else if(%damageType == $DamageType::OOB)
+	else if (%damageType == $DamageType::OOB)
 	{
 		%message = '\c0%1 was thrown outside the Grid.';
 		messageAll('msgGrid', %message, %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
 		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed for OOB.");
 	}
-	else if(%damageType == $DamageType::respawnAfterScoring)
+	else if (%damageType == $DamageType::respawnAfterScoring)
 	{
 		//messageClient(%clVictim, 'msgRespawnAfterScoring', '\c0Your team scored!  Forcing respawn...', %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
 		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") forced to respawn.");
 	}
-	else if(%damageType == $DamageType::Suicide)
+	else if (%damageType == $DamageType::Suicide)
 	{
 		%message = $TR2::DisableDeath ?
 			'\c1%1 knocks %2self out.' :
@@ -1769,20 +1662,23 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 		messageAll('msgSuicide', %message, %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
 		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") is respawning.");
 	}
-	else if(%damageType == $DamageType::HotPotato)
+	else if (%damageType == $DamageType::HotPotato)
 	{
 		// Could display a newbie message here
-		messageAll('msgHotPotato', '\c1%1 held onto the flag for too long!', %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
+		messageAll('msgHotPotato', '\c1%1 held onto the flag for too long!',
+            %victimName, %victimGender, %victimPoss, %killerName, %killerGender,
+            %killerPoss, %damageType);
 		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by hot potato.");
 	}
-	else if(%damageType == $DamageType::G4)
+	else if (%damageType == $DamageType::G4)
 	{
 	}
 	else if ($TR2::DisableDeath && %damageType != $DamageType::Ground && %damageType != $DamageType::Lava
 				  && %clVictim.team != %clKiller.team)
-	
 	{
-		messageAll('msgTR2Knockdown', '\c0%4 knocks down %1.', %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
+		messageAll('msgTR2Knockdown', '\c0%4 knocks down %1.',
+            %victimName, %victimGender, %victimPoss, %killerName,
+            %killerGender, %killerPoss, %damageType);
 		//logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") knocked down by " @c%clKiller.nameBase);
 	}
 	else
@@ -1792,9 +1688,9 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 function TR2Game::createPlayer(%game, %client, %spawnLoc, %respawn)
 {
 	// do not allow a new player if there is one (not destroyed) on this client
-	if(isObject(%client.player) && (%client.player.getState() !$= "Dead"))
+	if (isObject(%client.player) && (%client.player.getState() !$= "Dead"))
 		return;
-		
+
 	if (%client $= "" || %client <= 0)
 	{
 		error("Invalid client sent to createPlayer()");
@@ -1802,14 +1698,12 @@ function TR2Game::createPlayer(%game, %client, %spawnLoc, %respawn)
 	}
 
 	// clients and cameras can exist in team 0, but players should not
-	if(%client.team == 0)
+	if (%client.team == 0)
 		error("Players should not be added to team0!");
 
 	// defaultplayerarmor is in 'players.cs'
-	if(%spawnLoc == -1)
+	if (%spawnLoc == -1)
 		%spawnLoc = "0 0 300 1 0 0 0";
-	//else
-	//  echo("Spawning player at " @ %spawnLoc);
 
 	%armorType = $TR2::roleArmor[%client.currentRole];
 	if (%armorType $= "")
@@ -1823,26 +1717,27 @@ function TR2Game::createPlayer(%game, %client, %spawnLoc, %respawn)
 		%armor = "TR2" @ %armorType @ %client.sex @ %client.race @ Armor;
 
 	%client.armor = %armor;
-	
+
 	// TR2
 	%client.enableZones = false;
 
-	%player = new Player() {
+	%player = new Player()
+    {
 		//dataBlock = $DefaultPlayerArmor;
 		//scale = "2 2 2";
 		// TR2
 		dataBlock = %armor;
 	};
-	
+
 	if (%player == 0)
 	{
 		error("Unable to create new player in createPlayer()");
 		return;
 	}
-	
+
 	%client.enableZones = true;
 
-	if(%respawn)
+	if (%respawn)
 	{
 		%player.setInvincible(true);
 		//%player.setCloaked(true);
@@ -1851,7 +1746,7 @@ function TR2Game::createPlayer(%game, %client, %spawnLoc, %respawn)
 		%player.schedule($InvincibleTime * 1000, "setInvincible", false);
 	}
 
-	%player.setTransform( %spawnLoc );
+	%player.setTransform(%spawnLoc);
 	MissionCleanup.add(%player);
 
 	// setup some info
@@ -1861,19 +1756,17 @@ function TR2Game::createPlayer(%game, %client, %spawnLoc, %respawn)
 	%player.setEnergyLevel(60);
 	%client.player = %player;
 	%client.plyrDiedHoldingFlag = false;
-	
+
 	// TR2
 	if (%client.knockedDown)
 		%client.restockAmmo = false;
 	else
 		%client.restockAmmo = true;
-		
+
 	%client.knockedDown = false;
 	%client.playerToDelete = "";
 	%client.forceRespawn = false;
 	%player.inCannon = false;
-
-
 
 	// updates client's target info for this player
 	%player.setTarget(%client.target);
@@ -1895,24 +1788,24 @@ function TR2Game::enableZones(%this, %client)
 
 function TR2Game::forceRespawn(%this, %client)
 {
-	 %player = %client.getControlObject();
-	  %client.suicideRespawnTime = 0;
-	  %client.knockedDown = false;
-	  %client.inSpawnBuilding = true;
-	  %client.forceRespawn = true;
-	  if (%player.mode $= "playerDeath")
-		 %this.ObserverOnTrigger(%player, %player, 1, 1);
-	  else
-		  %player.scriptKill($DamageType::RespawnAfterScoring);
+    %player = %client.getControlObject();
+    %client.suicideRespawnTime = 0;
+    %client.knockedDown = false;
+    %client.inSpawnBuilding = true;
+    %client.forceRespawn = true;
+    if (%player.mode $= "playerDeath")
+        %this.ObserverOnTrigger(%player, %player, 1, 1);
+    else
+        %player.scriptKill($DamageType::RespawnAfterScoring);
 }
 
 function TR2Game::forceTeamRespawn(%this, %team)
 {
 	// If DisableDeath is active, temporarily ignore it
 	//%disableDeath = $TR2::DisableDeath;
-	
+
 	//$TR2::DisableDeath = false;
-	for(%i = 0; %i < ClientGroup.getCount(); %i ++)
+	for (%i = 0; %i < ClientGroup.getCount(); %i++)
 	{
 		%client = ClientGroup.getObject(%i);
 		if (%client.team == %team)
@@ -1931,7 +1824,7 @@ function TR2Game::pickPlayerSpawn(%game, %client, %respawn)
 datablock AudioProfile(GridjumpSound)
 {
 	volume = 1.0;
-	filename	 = "fx/misc/gridjump.wav";
+    filename = "fx/misc/gridjump.wav";
 	description = AudioClose3d;
 	preload = true;
 };
@@ -1943,64 +1836,62 @@ function TR2Game::leaveMissionArea(%game, %playerData, %player)
 		%player.client.forceRespawn = true;
 		return;
 	}
-	
+
 	if (%player.client.inSpawnBuilding)
 		return;
 	  //%player.client.inSpawnBuilding = false;
-		
+
 	// Cancel the delayed oob check in case this is a second gridjump
 	//cancel(%player.checkOOBthread);
 	//%player.checkOOBthread = "";
-	
+
 	if (%player.client.forceRespawn)
 		return;
-		
+
 	%alreadyDead = (%player.getState() $= "Dead");
 
 	%oldVel = %player.getVelocity();
 	%player.client.outOfBounds = true;
 
-//	//messageClient(%player.client, 'LeaveMissionArea', '\c1You left the mission area.~wfx/misc/warning_beep.wav');
-
 	%player.bounceOffGrid(85);
-	
+
 	// Gridjump effect
-	%newEmitter = new ParticleEmissionDummy(GridjumpEffect) {
-			position = %player.getTransform();
-			rotation = "1 0 0 0";
-			scale = "1 1 1";
-			dataBlock = "defaultEmissionDummy";
-			emitter = "GridjumpEmitter";
-			velocity = "1";
+	%newEmitter = new ParticleEmissionDummy(GridjumpEffect)
+    {
+        position = %player.getTransform();
+        rotation = "1 0 0 0";
+        scale = "1 1 1";
+        dataBlock = "defaultEmissionDummy";
+        emitter = "GridjumpEmitter";
+        velocity = "1";
 	};
-	//echo("EMITTER = " @ %newEmitter);
 	%newEmitter.schedule(%newEmitter.emitter.lifetimeMS, "delete");
-	
+
 	%player.playAudio(0, GridjumpSound);
- 
+
 	if (!%alreadyDead)
 	{
 		%player.setDamageFlash(0.75);
 		%player.applyDamage(0.12);
-		if(%player.getState() $= "Dead")
+		if (%player.getState() $= "Dead")
 			Game.onClientKilled(%player.client, 0, $DamageType::Grid);
 	}
-	
+
 	// If the player is going too fast, blow him up
 	//if (%player.getSpeed() > $TR2_MaximumGridSpeed)
 	//{
 	//	%player.client.forceRespawn = true;
-	//	if(!%alreadyDead)
+	//	if (!%alreadyDead)
 	//	{
 	//		cancel(%player.checkOOBthread);
 	//		%player.applyDamage(1);
 	//		//%player.blowup();
 	//		Game.onClientKilled(%player.client, 0, $DamageType::Grid);
 	//	}
-		
+
 	//	return;
 	//}
-	
+
 	// Double-check that the player didn't squeeze out
 	if (!%player.client.forceRespawn)
 		%player.checkOOBthread = %game.schedule(1000, "doubleCheckOOB", %player);
@@ -2023,17 +1914,16 @@ function TR2Game::doubleCheckOOB(%this, %player)
 
 function TR2Game::enterMissionArea(%game, %playerData, %player)
 {
-//	if(%player.getState() $= "Dead")
+//	if (%player.getState() $= "Dead")
 //		return;
 
 	%player.client.outOfBounds = false;
-	
+
 	// TR2:  Should probably find a better place for this
 	if (!%player.client.forceRespawn)
 		%player.client.inSpawnBuilding = false;
 	//messageClient(%player.client, 'EnterMissionArea', '\c1You are back in the mission area.');
 }
-
 
 //----------------------------------------------------------------------------
 // TR2Flag:
@@ -2065,7 +1955,7 @@ datablock ItemData(TR2Flag1)
 	cameraMinFov = 5;
 	canControl = false;
 	canObserve = true;
- 
+
 	className = TR2Flag;
 
 	shapefile = $TR2::ThrownObject;
@@ -2094,7 +1984,7 @@ datablock ItemData(TR2Flag1)
 	cmdIcon = CMDFlagIcon;
 	cmdMiniIconName = "commander/MiniIcons/com_flag_grey";
 	targetTypeTag = 'Flag';
-	
+
 	hudImageNameFriendly[1] = "commander/MiniIcons/TR2com_flag_grey";
 	hudIMageNameEnemy[1] = "commander/MiniIcons/TR2com_flag_grey";
 	hudRenderModulated[1] = true;
@@ -2102,26 +1992,6 @@ datablock ItemData(TR2Flag1)
 	hudRenderCenter[1] = true;
 	hudRenderDistance[1] = true;
 	hudRenderName[1] = false;
-
-//	catagory = "Objectives";
-//	shapefile = "flag.dts";
-//	mass = 55;
-//	elasticity = 0.2;
-//	friction = 0.6;
-//	pickupRadius = 3;
-//	pickUpName = "a flag";
-//	computeCRC = true;
-//
-//	lightType = "PulsingLight";
-//	lightColor = "0.5 0.5 0.5 1.0";
-//	lightTime = "1000";
-//	lightRadius = "3";
-//
-//	isInvincible = true;
-//	cmdCategory = "Objectives";
-//	cmdIcon = CMDFlagIcon;
-//	cmdMiniIconName = "commander/MiniIcons/com_flag_grey";
-//	targetTypeTag = 'Flag';
 };
 
 datablock ItemData(TR2Flag2) : TR2Flag1
@@ -2166,19 +2036,20 @@ function AddTR2FlagSmoke(%obj)
 
 	%scale = VectorLen(%obj.getVelocity());
 
-	if( %scale >= $TR2::MinSpeedForFlagSmoke || (%obj.getHeight() > 7 && !%obj.isHome && !%obj.onGoal) )
+	if (%scale >= $TR2::MinSpeedForFlagSmoke ||
+            (%obj.getHeight() > 7 && !%obj.isHome && !%obj.onGoal))
 	{
 		%delay = 100 - %scale;
 		%x = getWord(%obj.position, 0);
 		%y = getWord(%obj.position, 1);
 		%z = getWord(%obj.position, 2) + 1.4;
 
-		if( Game.TR2FlagSmoke < 20 )
+		if (Game.TR2FlagSmoke < 20)
 			Game.TR2FlagSmoke++;
 		else
 			Game.TR2FlagSmoke = 0;
 
-		if( isObject(Game.dropSmoke[Game.TR2FlagSmoke]) )
+		if (isObject(Game.dropSmoke[Game.TR2FlagSmoke]))
 		{
 			Game.dropSmoke[Game.TR2FlagSmoke].delete();
 			Game.dropSmoke[Game.TR2FlagSmoke] = "";
@@ -2206,26 +2077,26 @@ function AddTR2FlagSmoke(%obj)
 
 function aodebug()
 {
-	for( %i = 0; %i <= 20; %i++ )
+	for (%i = 0; %i <= 20; %i++)
 	{
 		%status = isObject(Game.dropSmoke[%i]) ? "exists" : "does NOT exist";
-		echo( "*** Flag smoke " @ %i @ " " @ %status );
+		echo("*** Flag smoke " @ %i @ " " @ %status);
 	}
 }
 
-function TR2Flag::onThrow(%data,%obj,%src)
+function TR2Flag::onThrow(%data, %obj, %src)
 {
 	Game.playerDroppedFlag(%src);
 	AddTR2FlagSmoke(%obj);
 }
 
-function TR2Flag::onCollision(%data,%obj,%col)
+function TR2Flag::onCollision(%data, %obj, %col)
 {
 	if (%col.getDataBlock().className $= Armor)
 	{
 		if (%col.isMounted())
 			return;
-			
+
 		cancel(Game.addFlagTrail);
 
 		// a player hit the flag
@@ -2233,7 +2104,7 @@ function TR2Flag::onCollision(%data,%obj,%col)
 	}
 	else if (%obj.onGoal || %obj.getSpeed() <= 0.1)
 		return;
-	
+
 	else if (%col.getDataBlock().className $= Goal)
 	{
 		Game.goalCollision(%obj, %col);
@@ -2244,7 +2115,7 @@ function TR2Flag::onCollision(%data,%obj,%col)
 		// Play some noise.  =)
 		serverPlay2D(CrowdDisappointment1Sound);
 	}
-				
+
 }
 
 function TR2Flag::objectiveInit(%this, %flag)
@@ -2260,10 +2131,10 @@ function TR2Flag::objectiveInit(%this, %flag)
 	%flag.carrier = "";
 	%flag.grabber = "";
 	//setTargetSkin(%flag.getTarget(), TR2Game::getTeamSkin(TR2Game, %flag.team));
-	
+
 	// TR2:  Make it red to everyone
     setTargetSensorGroup(%flag.getTarget(), 3);
-	
+
 	setTargetAlwaysVisMask(%flag.getTarget(), 0x7);
 	setTargetRenderMask(%flag.getTarget(), getTargetRenderMask(%flag.getTarget()) | 0x2);
 	%flag.scopeWhenSensorVisible(true);
@@ -2273,14 +2144,15 @@ function TR2Flag::objectiveInit(%this, %flag)
 	//setTargetName(%flag.getTarget(), TR2Game::getTeamName(TR2Game, %flag.team));
 
 	// create a marker on this guy
-	%flag.waypoint = new MissionMarker() {
+	%flag.waypoint = new MissionMarker()
+    {
 		position = %flag.getTransform();
 		dataBlock = "FlagMarker";
 	};
 	MissionCleanup.add(%flag.waypoint);
 
 	// create a target for this (there is no MissionMarker::onAdd script call)
-	//%target = createTarget(%flag.waypoint, TR2Game::getTeamName( TR2Game, %flag.team), "", "", 'Base', %flag.team, 0);
+	//%target = createTarget(%flag.waypoint, TR2Game::getTeamName(TR2Game, %flag.team), "", "", 'Base', %flag.team, 0);
 	//setTargetAlwaysVisMask(%target, 0xffffffff);
 
 	//store the flag in an array
@@ -2292,7 +2164,7 @@ function TR2Flag::objectiveInit(%this, %flag)
 	//setTargetRenderMask($TheFlag, getTargetRenderMask($TheFlag) | 0x4);
 
 	$AIRabbitFlag = %flag;
-	
+
 	// TR2
 	%flag.lastKTS = 0;
 	%flag.dropper = "";
@@ -2309,15 +2181,13 @@ function TR2Flag::resetOneTimerCount(%flag)
 
 function TR2Flag1::onEnterLiquid(%data, %obj, %coverage, %type)
 {
-	 if(%type > 3)  // 1-3 are water, 4+ is lava and quicksand(?)
+	 if (%type > 3)  // 1-3 are water, 4+ is lava and quicksand(?)
 	 {
-	 //	 //error("flag("@%obj@") is in liquid type" SPC %type);
 		  game.schedule(3000, flagReturn, %obj);
 	 }
 	 %obj.inLiquid = true;
 	 //$FlagReturnTimer[%obj] = Game.schedule(Game.FLAG_RETURN_DELAY - Game.fadeTimeMS + 2000, "flagReturnFade", %obj);
 
-	 
 	 // Reset the drop time (for hangtime calculations)
 	 %obj.dropTime = getSimTime();
 }
@@ -2331,12 +2201,13 @@ function TR2Flag1::onLeaveLiquid(%data, %obj, %type)
 function TR2Game::emitFlags(%game, %position, %count, %player, %ttl)	// %obj = whatever object is being used as a focus for the flag spew
 																	// %count = number of flags to spew
 {
-	if( %position $= "" )
+	if (%position $= "")
 	{
 		error("No position passed!");
 		return 0;
 	}
-	if( %count <= 0 )
+
+	if (%count <= 0)
 	{
 		error("Number of flags to spew must be greater than 0!");
 		return 0;
@@ -2346,7 +2217,7 @@ function TR2Game::emitFlags(%game, %position, %count, %player, %ttl)	// %obj = w
 	%flagArr[1] = TR2Flag2;
 	%flagArr[2] = TR2Flag4;
 
-	while( %count > 0 )
+	while (%count > 0)
 	{
 		%index = mFloor(getRandom() * 3);
 		// throwDummyFlag(location, Datablock);
@@ -2360,7 +2231,8 @@ function throwDummyFlag(%position, %datablock, %player, %ttl)
 	%client = %player.client;
 
 	// create a flag and throw it
-	%droppedflag = new Item() {
+	%droppedflag = new Item()
+    {
 		position = %position;
 		rotation = "0 0 1 " @ (getRandom() * 360);
 		scale = "1 1 1";
@@ -2395,141 +2267,149 @@ function removeFlag(%flag)
 	%flag.schedule(601, "delete");
 }
 
-function TR2FlagFake::onCollision(%data,%obj,%col)
+function TR2FlagFake::onCollision(%data, %obj, %col)
 {
 	if (%obj.dying)
 		return;
 
-	cancel(%obj.die);
-	%obj.startFade(400, 0, true);
-	 %obj.dying = true;
-	%obj.schedule(401, "delete");
- 
-	 // Message player and award bonus point here
-	 messageClient(%col.client, 'MsgTR2CrazyFlag', '\c2Crazy flag!  (+3)');
-	 serverPlay3D(CoinSound, %col.getPosition());
-	 Game.giveInstantBonus(%col.client.team, 3);
+    cancel(%obj.die);
+    %obj.startFade(400, 0, true);
+    %obj.dying = true;
+    %obj.schedule(401, "delete");
+
+    // Message player and award bonus point here
+    messageClient(%col.client, 'MsgTR2CrazyFlag', '\c2Crazy flag!  (+3)');
+    serverPlay3D(CoinSound, %col.getPosition());
+    Game.giveInstantBonus(%col.client.team, 3);
 }
 
 function TR2Game::goalCollision(%this, %obj, %colObj)
 {
-	if (%obj != $TheFlag)
-		return;
-		
-	 if (Game.currentBonus < $TR2::MinimumJackpot && !$TR2::PracticeMode)
-	 {
-		 messageAll('MsgTR2JackpotMinimum', "\c3NO GOAL:  Jackpot must be at least "
-							 @ $TR2::MinimumJackpot @".~wfx/misc/red_alert_short.wav");
-		 return;
-	 }
-	 
-	 // Check goalie crease
-	 %throwDist = VectorLen(VectorSub(%obj.dropperPosition, %colobj.getPosition()));
-	 if (%throwDist < $TR2::roleDistanceFromGoal[Goalie] - 14)
-	 {
-		 messageAll('MsgTR2GoalieCrease', "\c3NO GOAL:  Throw was inside the goalie crease."
-							 @".~wfx/misc/red_alert_short.wav");
-		 return;
-	 }
-	 
-	 if (!$TheFlag.onGoal)
-	 {
-			 // Award points
-			%scoringTeam = (%colObj.team == 1) ? 2 : 1;
+    if (%obj != $TheFlag)
+        return;
 
-			$teamScore[%scoringTeam] += Game.currentBonus;
-			$teamScoreJackpot[%scoringTeam] += Game.currentBonus;
-			Game.currentBonus = 0;
-			Game.updateCurrentBonusAmount(0, -1);
-			messageAll('MsgTR2SetScore', "", %scoringTeam, $teamScore[%scoringTeam]);
+    if (Game.currentBonus < $TR2::MinimumJackpot && !$TR2::PracticeMode)
+    {
+        messageAll('MsgTR2JackpotMinimum',
+            "\c3NO GOAL:  Jackpot must be at least "
+            @ $TR2::MinimumJackpot @".~wfx/misc/red_alert_short.wav");
+        return;
+    }
+
+    // Check goalie crease
+    %throwDist = VectorLen(VectorSub(%obj.dropperPosition, %colobj.getPosition()));
+    if (%throwDist < $TR2::roleDistanceFromGoal[Goalie] - 14)
+    {
+        messageAll('MsgTR2GoalieCrease',
+            "\c3NO GOAL:  Throw was inside the goalie crease."
+            @".~wfx/misc/red_alert_short.wav");
+        return;
+    }
+
+    if (!$TheFlag.onGoal)
+    {
+        // Award points
+        %scoringTeam = (%colObj.team == 1) ? 2 : 1;
+
+        $teamScore[%scoringTeam] += Game.currentBonus;
+        $teamScoreJackpot[%scoringTeam] += Game.currentBonus;
+        Game.currentBonus = 0;
+        Game.updateCurrentBonusAmount(0, -1);
+        messageAll('MsgTR2SetScore', "", %scoringTeam, $teamScore[%scoringTeam]);
 
 
-			// Respawn the flag on top of the goal
-			%newFlagPosition = %colobj.position;
-			%newz = getWord(%newFlagPosition, 2) + 80;
-			%newFlagPosition = setWord(%newFlagPosition, 2, %newz);
-			%obj.setVelocity("0 0 0");
-			%obj.setTransform(%newFlagPosition @ "0 0 0");
-			%obj.onGoal = true;
-			cancel($FlagReturnTimer[%obj]);
+        // Respawn the flag on top of the goal
+        %newFlagPosition = %colobj.position;
+        %newz = getWord(%newFlagPosition, 2) + 80;
+        %newFlagPosition = setWord(%newFlagPosition, 2, %newz);
+        %obj.setVelocity("0 0 0");
+        %obj.setTransform(%newFlagPosition @ "0 0 0");
+        %obj.onGoal = true;
+        cancel($FlagReturnTimer[%obj]);
 
-			// Allow some time for taunting
-			if (!$TR2::PracticeMode)
-			{
-				//%obj.hide(true);
-				Game.goalJustScored = true;
-				%this.schedule($TR2::goalRespawnDelay*1000, "resetTheField", %scoringTeam);
-			}
+        // Allow some time for taunting
+        if (!$TR2::PracticeMode)
+        {
+            Game.goalJustScored = true;
+            %this.schedule($TR2::goalRespawnDelay*1000, "resetTheField", %scoringTeam);
+        }
 
-			// Inform players
-			%this.schedule(750, "afterGoal", %scoringTeam);
-			
-			%scoreMessage = $TR2::PracticeMode ?
-				'\c3Goal!  (Practice Mode enabled)~wfx/misc/goal.wav' :
-				'\c3Your team scored!~wfx/misc/goal.wav';
+        // Inform players
+        %this.schedule(750, "afterGoal", %scoringTeam);
 
-			%otherMessage = $TR2::PracticeMode ?
-				'\c3Goal!  (Practice Mode enabled)~wfx/misc/goal.wav' :
-				'\c3You allowed the other team to score.~wfx/misc/goal.wav';
+        %scoreMessage = $TR2::PracticeMode ?
+            '\c3Goal!  (Practice Mode enabled)~wfx/misc/goal.wav' :
+            '\c3Your team scored!~wfx/misc/goal.wav';
 
-			%obsMessage = '\c3Goal!~wfx/misc/goal.wav';
-				
-			messageTeam(%colObj.team, 'msgTR2TeamScored', %otherMessage);
-			messageTeam(%scoringTeam, 'msgTR2TeamScored', %scoreMessage);
-			messageTeam(0, 'msgTR2TeamScore', %obsMessage);
-			
-			messageTeam(%colObj.team, 'MsgTR2FlagStatus', "", "On your goal");
-			messageTeam(%scoringTeam, 'MsgTR2FlagStatus', "", "On their goal");
-			messageTeam(0, 'MsgTR2FlagStatus', "", "On goal");
-			
-			// Schedule some delayed messages (only if they didn't score on themselves)
-			if (%obj.dropper.team == %scoringTeam)
-			{
-				%goalScorer = %obj.dropper;
-				if ($TheFlag.oneTimer)
-				{
-					$teamScore[%scoringTeam] += $TR2::OneTimerGoalBonus;
-					messageAll('MsgTR2SetScore', "", %scoringTeam, $teamScore[%scoringTeam]);
-					%message ="\c1  One-timer goal (+"
-								  @ $TR2::OneTimerGoalBonus @ ") scored by \c3"
-								  @ getTaggedString(%goalScorer.client.name) @ "~wfx/misc/target_waypoint.wav";
-				}
-				else
-					%message ="\c1  Goal scored by \c3"
-								  @ getTaggedString(%goalScorer.client.name) @ "~wfx/misc/target_waypoint.wav";
+        %otherMessage = $TR2::PracticeMode ?
+            '\c3Goal!  (Practice Mode enabled)~wfx/misc/goal.wav' :
+            '\c3You allowed the other team to score.~wfx/misc/goal.wav';
 
-							  
-				schedule(4000, 0, "messageAll", 'MsgTR2GoalScorer', %message);
-				%goalScorer.client.goals++;
+        %obsMessage = '\c3Goal!~wfx/misc/goal.wav';
 
-				%firstAssist = FlagBonusHistory.getRecentRecipient(1);
-				%secondAssist = FlagBonusHistory.getRecentRecipient(2);
-				
-				if (%firstAssist !$= "" && %firstAssist.client.name !$= "" && %firstAssist != %goalScorer && %firstAssist.team == %goalScorer.team)
-				{
-					schedule(5000, 0, "messageAll", 'MsgTR2GoalAssist', "\c1  Assisted by \c3"
-							  @ getTaggedString(%firstAssist.client.name) @ "~wfx/misc/target_waypoint.wav");
-					%firstAssist.client.assists++;
-				}
-				
-				if (%secondAssist !$= "" && %secondAssist.client.name !$= "" && %secondAssist != %firstAssist && %secondAssist != %goalScorer && %secondAssist.team == %goalScorer.team)
-				{
-					schedule(6000, 0, "messageAll", 'MsgTR2GoalScorer', "\c1  Assisted by \c3"
-							  @ getTaggedString(%secondAssist.client.name) @ "~wfx/misc/target_waypoint.wav");
-					%secondAssist.client.assists++;
-				}
-			}
-			Game.flagReset(%obj);
-	 }
+        messageTeam(%colObj.team, 'msgTR2TeamScored', %otherMessage);
+        messageTeam(%scoringTeam, 'msgTR2TeamScored', %scoreMessage);
+        messageTeam(0, 'msgTR2TeamScore', %obsMessage);
+
+        messageTeam(%colObj.team, 'MsgTR2FlagStatus', "", "On your goal");
+        messageTeam(%scoringTeam, 'MsgTR2FlagStatus', "", "On their goal");
+        messageTeam(0, 'MsgTR2FlagStatus', "", "On goal");
+
+        // Schedule some delayed messages (only if they didn't score on themselves)
+        if (%obj.dropper.team == %scoringTeam)
+        {
+            %goalScorer = %obj.dropper;
+            if ($TheFlag.oneTimer)
+            {
+                $teamScore[%scoringTeam] += $TR2::OneTimerGoalBonus;
+                messageAll('MsgTR2SetScore', "", %scoringTeam, $teamScore[%scoringTeam]);
+                %message = "\c1  One-timer goal (+"
+                    @ $TR2::OneTimerGoalBonus @ ") scored by \c3"
+                    @ getTaggedString(%goalScorer.client.name) @ "~wfx/misc/target_waypoint.wav";
+            }
+            else
+                %message = "\c1  Goal scored by \c3"
+                    @ getTaggedString(%goalScorer.client.name) @ "~wfx/misc/target_waypoint.wav";
+
+
+            schedule(4000, 0, "messageAll", 'MsgTR2GoalScorer', %message);
+            %goalScorer.client.goals++;
+
+            %firstAssist = FlagBonusHistory.getRecentRecipient(1);
+            %secondAssist = FlagBonusHistory.getRecentRecipient(2);
+
+            if (%firstAssist !$= "" && %firstAssist.client.name !$= "" &&
+                    %firstAssist != %goalScorer && %firstAssist.team == %goalScorer.team)
+            {
+                schedule(5000, 0, "messageAll", 'MsgTR2GoalAssist',
+                    "\c1  Assisted by \c3"
+                    @ getTaggedString(%firstAssist.client.name)
+                    @ "~wfx/misc/target_waypoint.wav");
+                %firstAssist.client.assists++;
+            }
+
+            if (%secondAssist !$= "" && %secondAssist.client.name !$= "" &&
+                    %secondAssist != %firstAssist &&
+                    %secondAssist != %goalScorer &&
+                    %secondAssist.team == %goalScorer.team)
+            {
+                schedule(6000, 0, "messageAll", 'MsgTR2GoalScorer', "\c1  Assisted by \c3"
+                    @ getTaggedString(%secondAssist.client.name) @ "~wfx/misc/target_waypoint.wav");
+                %secondAssist.client.assists++;
+            }
+        }
+
+        Game.flagReset(%obj);
+    }
 }
 
 function TR2Game::afterGoal(%this, %scoringTeam)
 {
 	serverPlay2d(CrowdCheer1Sound);
-	
+
 	if (!$TR2::PracticeMode)
-	messageAll('MsgTR2RespawnWarning', "Forcing respawn in "
-				  @ $TR2::goalRespawnDelay @ " seconds.");
+        messageAll('MsgTR2RespawnWarning', "Forcing respawn in "
+            @ $TR2::goalRespawnDelay @ " seconds.");
 
 	%this.schedule(1000, "afterGoal1", %scoringTeam);
 }
@@ -2549,62 +2429,76 @@ function TR2Game::resetTheField(%this, %team)
 	//$TheFlag.hide(false);
 }
 
-function TR2Game::sendGameVoteMenu( %game, %client, %key )
+function TR2Game::sendGameVoteMenu(%game, %client, %key)
 {
-	if( (($Host::TournamentMode && !$MatchStarted) || !$Host::TournamentMode) && !$TR2::SpecLock && %client.queueSlot !$= "" && %client.queueSlot <= ((6 * 2) - getActiveCount()) )
+	if ((($Host::TournamentMode && !$MatchStarted) || !$Host::TournamentMode) &&
+            !$TR2::SpecLock && %client.queueSlot !$= "" &&
+            %client.queueSlot <= ((6 * 2) - getActiveCount()))
 	{
-		messageClient( %client, 'MsgVoteItem', "", %key, 'tr2JoinGame', 'Join the game', 'Join the game' );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'tr2JoinGame',
+            'Join the game', 'Join the game');
 	}
 
-	if( %client.isAdmin && $TheFlag.carrier $= "" && (getSimTime() - $TheFlag.dropTime) >= 30000 )
+	if (%client.isAdmin && $TheFlag.carrier $= "" &&
+            (getSimTime() - $TheFlag.dropTime) >= 30000)
 	{
-		messageClient( %client, 'MsgVoteItem', "", %key, 'tr2ForceFlagReturn', 'Force the flag to return', 'Force the flag to return' );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'tr2ForceFlagReturn',
+            'Force the flag to return', 'Force the flag to return');
 	}
-	
-	DefaultGame::sendGameVoteMenu( %game, %client, %key );
 
-	if( %client.isAdmin )
+	DefaultGame::sendGameVoteMenu(%game, %client, %key);
+
+	if (%client.isAdmin)
 	{
-		//if ( $TR2::DisableDeath  )
-		//	messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleDisableDeath', 'Enable Death', 'Enable Death' );
-		//else
-		//	messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleDisableDeath', 'Disable Death', 'Disable Death' );
-
-		if ( $TR2::PracticeMode  )
-			messageClient( %client, 'MsgVoteItem', "", %key, 'TogglePracticeMode', 'Disable Practice Mode', 'Disable Practice Mode' );
+        if ($TR2::PracticeMode)
+			messageClient(%client, 'MsgVoteItem', "", %key, 'TogglePracticeMode',
+                'Disable Practice Mode', 'Disable Practice Mode');
 		else
-			messageClient( %client, 'MsgVoteItem', "", %key, 'TogglePracticeMode', 'Enable Practice Mode', 'Enable Practice Mode' );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'TogglePracticeMode',
+                'Enable Practice Mode', 'Enable Practice Mode');
 
-		if ( $TR2::EnableRoles  )
-			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleRoles', 'Disable Player Roles', 'Disable Player Roles' );
+		if ($TR2::EnableRoles)
+			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleRoles',
+                'Disable Player Roles', 'Disable Player Roles');
 		else
-			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleRoles', 'Enable Player Roles', 'Enable Player Roles' );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleRoles',
+                'Enable Player Roles', 'Enable Player Roles');
 
-		if ( $TR2::EnableCrowd  )
-			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleCrowd', 'Disable Crowd', 'Disable Crowd' );
+		if ($TR2::EnableCrowd)
+			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleCrowd',
+                'Disable Crowd', 'Disable Crowd');
 		else
-			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleCrowd', 'Enable Crowd', 'Enable Crowd' );
-		if( $TR2::SpecLock )
-			messageClient( %client, 'MsgVoteItem', "", %key, 'toggleSpecLock', 'Unlock Spectators', 'Unlock Spectators' );
-		else
-			messageClient( %client, 'MsgVoteItem', "", %key, 'toggleSpecLock', 'Lock Spectators', 'Lock Spectators' );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleCrowd',
+                'Enable Crowd', 'Enable Crowd');
 
+		if ($TR2::SpecLock)
+			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecLock',
+                'Unlock Spectators', 'Unlock Spectators');
+		else
+			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecLock',
+                'Lock Spectators', 'Lock Spectators');
 	}
- 	if( %client.team == 0 )
+
+ 	if (%client.team == 0)
  	{
- 		if( %client.queueSlot !$= "" )
-			messageClient( %client, 'MsgVoteItem', "", %key, 'getQueuePos', 'Get your queue status', 'Get your queue status' );
+ 		if (%client.queueSlot !$= "")
+			messageClient(%client, 'MsgVoteItem', "", %key, 'getQueuePos',
+                'Get your queue status', 'Get your queue status');
 
-		if( !%client.specOnly)
-			messageClient( %client, 'MsgVoteItem', "", %key, 'toggleSpecOnly', 'Lock myself as a spectator', 'Lock myself as a spectator' );
+		if (!%client.specOnly)
+			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecOnly',
+                'Lock myself as a spectator', 'Lock myself as a spectator');
 		else
-			messageClient( %client, 'MsgVoteItem', "", %key, 'toggleSpecOnly', 'Enter the queue to join the game.', 'Enter the queue to join the game.' );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecOnly',
+                'Enter the queue to join the game.', 'Enter the queue to join the game.');
 
-		if( !%client.tr2SpecMode )
-			messageClient( %client, 'MsgVoteItem', "", %key, 'toggleSpecMode', 'Lock onto Flag/Carrier', 'Lock onto Flag/Carrier' );
+		if (!%client.tr2SpecMode)
+			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecMode',
+                'Lock onto Flag/Carrier', 'Lock onto Flag/Carrier');
 		else
-			messageClient( %client, 'MsgVoteItem', "", %key, 'toggleSpecMode', 'Free-flight Observer Mode', 'Free-flight Observer Mode' );
-	}	
+			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecMode',
+                'Free-flight Observer Mode', 'Free-flight Observer Mode');
+	}
 }
 
 function TR2Game::clientChangeTeam(%game, %client, %team, %fromObs)
@@ -2614,65 +2508,68 @@ function TR2Game::clientChangeTeam(%game, %client, %team, %fromObs)
 		return;
 
 	%client.lastTeamChangeTime = %time;
-	
+
 	// Get rid of the corpse after changing teams
 	%client.forceRespawn = true;
 	%client.inSpawnBuilding = true;
-	
+
 	// First set to outer role (just to be safe)
 	%game.assignOuterMostRole(%client);
-	
+
 	// Then release client's role
 	%game.releaseRole(%client);
-	
 
-	if( %fromObs )
+	if (%fromObs)
 		removeFromQueue(%client);
-	
+
 	return Parent::clientChangeTeam(%game, %client, %team, %fromObs);
 }
 
-function TR2Game::sendDebriefing( %game, %client )
+function TR2Game::sendDebriefing(%game, %client)
 {
-	if ( %game.numTeams == 1 )
+	if (%game.numTeams == 1)
 	{
 		// Mission result:
 		%winner = $TeamRank[0, 0];
-		if ( %winner.score > 0 )
-			messageClient( %client, 'MsgDebriefResult', "", '<just:center>%1 wins!', $TeamRank[0, 0].name );
+		if (%winner.score > 0)
+			messageClient(%client, 'MsgDebriefResult', "",
+                '<just:center>%1 wins!', $TeamRank[0, 0].name);
 		else
-			messageClient( %client, 'MsgDebriefResult', "", '<just:center>Nobody wins.' );
+			messageClient(%client, 'MsgDebriefResult', "",
+                '<just:center>Nobody wins.');
 
 		// Player scores:
 		%count = $TeamRank[0, count];
-		messageClient( %client, 'MsgDebriefAddLine', "", '<spush><color:00dc00><font:univers condensed:18>PLAYER<lmargin%%:60>SCORE<lmargin%%:80>KILLS<spop>' );
-		for ( %i = 0; %i < %count; %i++ )
+		messageClient(%client, 'MsgDebriefAddLine', "",
+            '<spush><color:00dc00><font:univers condensed:18>PLAYER<lmargin%%:60>SCORE<lmargin%%:80>KILLS<spop>');
+		for (%i = 0; %i < %count; %i++)
 		{
 			%cl = $TeamRank[0, %i];
-			if ( %cl.score $= "" )
+			if (%cl.score $= "")
 				%score = 0;
 			else
 				%score = %cl.score;
-			if ( %cl.kills $= "" )
+			if (%cl.kills $= "")
 				%kills = 0;
 			else
 				%kills = %cl.kills;
-			messageClient( %client, 'MsgDebriefAddLine', "", '<lmargin:0><clip%%:60> %1</clip><lmargin%%:60><clip%%:20> %2</clip><lmargin%%:80><clip%%:20> %3', %cl.name, %score, %kills );
+			messageClient(%client, 'MsgDebriefAddLine', "",
+                '<lmargin:0><clip%%:60> %1</clip><lmargin%%:60><clip%%:20> %2</clip><lmargin%%:80><clip%%:20> %3', %cl.name, %score, %kills);
 		}
 	}
 	else
 	{
 		%topScore = "";
 		%topCount = 0;
-		for ( %team = 1; %team <= %game.numTeams; %team++ )
+		for (%team = 1; %team <= %game.numTeams; %team++)
 		{
-			if ( %topScore $= "" || $TeamScore[%team] > %topScore )
+			if (%topScore $= "" || $TeamScore[%team] > %topScore)
 			{
 				%topScore = $TeamScore[%team];
 				%firstTeam = %team;
 				%topCount = 1;
 			}
-			else if ( $TeamScore[%team] == %topScore )
+			else if ($TeamScore[%team] == %topScore)
 			{
 				%secondTeam = %team;
 				%topCount++;
@@ -2680,18 +2577,23 @@ function TR2Game::sendDebriefing( %game, %client )
 		}
 
 		// Mission result:
-		if ( %topCount == 1 )
-			messageClient( %client, 'MsgDebriefResult', "", '<just:center>Team %1 wins!', %game.getTeamName(%firstTeam) );
-		else if ( %topCount == 2 )
-			messageClient( %client, 'MsgDebriefResult', "", '<just:center>Team %1 and Team %2 tie!', %game.getTeamName(%firstTeam), %game.getTeamName(%secondTeam) );
+		if (%topCount == 1)
+			messageClient(%client, 'MsgDebriefResult', "",
+                '<just:center>Team %1 wins!', %game.getTeamName(%firstTeam));
+		else if (%topCount == 2)
+			messageClient(%client, 'MsgDebriefResult', "",
+                '<just:center>Team %1 and Team %2 tie!',
+                %game.getTeamName(%firstTeam), %game.getTeamName(%secondTeam));
 		else
-			messageClient( %client, 'MsgDebriefResult', "", '<just:center>The mission ended in a tie.' );
+			messageClient(%client, 'MsgDebriefResult', "",
+                '<just:center>The mission ended in a tie.');
 
 		// Team scores:
-		messageClient( %client, 'MsgDebriefAddLine', "", '<spush><color:00dc00><font:univers condensed:18>TEAM<lmargin%%:40>SCORE<lmargin%%:50>Jackpot<lmargin%%:60>Creativity<lmargin%%:70>Possession<spop>' );
-		for ( %team = 1; %team - 1 < %game.numTeams; %team++ )
+		messageClient(%client, 'MsgDebriefAddLine', "",
+            '<spush><color:00dc00><font:univers condensed:18>TEAM<lmargin%%:40>SCORE<lmargin%%:50>Jackpot<lmargin%%:60>Creativity<lmargin%%:70>Possession<spop>');
+		for (%team = 1; %team - 1 < %game.numTeams; %team++)
 		{
-			if ( $TeamScore[%team] $= "" )
+			if ($TeamScore[%team] $= "")
 			{
 				%score = 0;
 				%jscore = 0;
@@ -2705,22 +2607,26 @@ function TR2Game::sendDebriefing( %game, %client )
 				%cscore = $TeamScoreCreativity[%team];
 				%pscore = $TeamScorePossession[%team];
 			}
-			messageClient( %client, 'MsgDebriefAddLine', "", '<lmargin:0><clip%%:40> %1</clip><lmargin%%:40><clip%%:35> %2</clip><lmargin%%:50> %3<lmargin%%:60> %4<lmargin%%:70> %5', %game.getTeamName(%team), %score, %jscore, %cscore, %pscore );
+			messageClient(%client, 'MsgDebriefAddLine', "",
+                '<lmargin:0><clip%%:40> %1</clip><lmargin%%:40><clip%%:35> %2</clip><lmargin%%:50> %3<lmargin%%:60> %4<lmargin%%:70> %5',
+                %game.getTeamName(%team), %score, %jscore, %cscore, %pscore);
 		}
 
 		// Player scores:
-		messageClient( %client, 'MsgDebriefAddLine', "", '\n<lmargin:0><spush><color:00dc00><font:univers condensed:18>PLAYER<lmargin%%:20>TEAM<lmargin%%:40>GOALS<lmargin%%:48>ASSISTS<lmargin%%:56>SAVES<lmargin%%:64>PASS<lmargin%%:72>RECV<lmargin%%:80>INTC<lmargin%%:88>FC-HITS<spop>' );
-		for ( %team = 1; %team - 1 < %game.numTeams; %team++ )
+		messageClient(%client, 'MsgDebriefAddLine', "",
+            '\n<lmargin:0><spush><color:00dc00><font:univers condensed:18>PLAYER<lmargin%%:20>TEAM<lmargin%%:40>GOALS<lmargin%%:48>ASSISTS<lmargin%%:56>SAVES<lmargin%%:64>PASS<lmargin%%:72>RECV<lmargin%%:80>INTC<lmargin%%:88>FC-HITS<spop>');
+		for (%team = 1; %team - 1 < %game.numTeams; %team++)
 			%count[%team] = 0;
 
 		%notDone = true;
-		while ( %notDone )
+		while (%notDone)
 		{
 			// Get the highest remaining score:
 			%highScore = "";
-			for ( %team = 1; %team <= %game.numTeams; %team++ )
+			for (%team = 1; %team <= %game.numTeams; %team++)
 			{
-				if ( %count[%team] < $TeamRank[%team, count] && ( %highScore $= "" || $TeamRank[%team, %count[%team]].score > %highScore ) )
+				if (%count[%team] < $TeamRank[%team, count] &&
+                        (%highScore $= "" || $TeamRank[%team, %count[%team]].score > %highScore))
 				{
 					%highScore = $TeamRank[%team, %count[%team]].score;
 					%highTeam = %team;
@@ -2731,13 +2637,17 @@ function TR2Game::sendDebriefing( %game, %client )
 			%cl = $TeamRank[%highTeam, %count[%highTeam]];
 			%score = %cl.score $= "" ? 0 : %cl.passingScore + %cl.receivingScore + %cl.interceptingScore;
 			%kills = %cl.kills $= "" ? 0 : %cl.kills;
-			messageClient( %client, 'MsgDebriefAddLine', "", '<lmargin:0><clip%%:17> %1</clip><lmargin%%:20><clip%%:40> %2</clip><lmargin%%:40> %3<lmargin%%:48> %4<lmargin%%:56> %5<lmargin%%:64> %6<lmargin%%:72> %7<lmargin%%:80> %8<lmargin%%:88> %9', %cl.name, %game.getTeamName(%cl.team), %cl.goals, %cl.assists, %cl.saves, %cl.passingScore, %cl.receivingScore, %cl.interceptingScore, %cl.fcHits );
+			messageClient(%client, 'MsgDebriefAddLine', "",
+                '<lmargin:0><clip%%:17> %1</clip><lmargin%%:20><clip%%:40> %2</clip><lmargin%%:40> %3<lmargin%%:48> %4<lmargin%%:56> %5<lmargin%%:64> %6<lmargin%%:72> %7<lmargin%%:80> %8<lmargin%%:88> %9',
+                %cl.name, %game.getTeamName(%cl.team), %cl.goals, %cl.assists,
+                %cl.saves, %cl.passingScore, %cl.receivingScore,
+                %cl.interceptingScore, %cl.fcHits);
 
 			%count[%highTeam]++;
 			%notDone = false;
-			for ( %team = 1; %team - 1 < %game.numTeams; %team++ )
+			for (%team = 1; %team - 1 < %game.numTeams; %team++)
 			{
-				if ( %count[%team] < $TeamRank[%team, count] )
+				if (%count[%team] < $TeamRank[%team, count])
 				{
 					%notDone = true;
 					break;
@@ -2758,12 +2668,15 @@ function TR2Game::sendDebriefing( %game, %client )
 			if (!%printedHeader)
 			{
 				%printedHeader = true;
-				messageClient(%client, 'MsgDebriefAddLine', "", '\n<lmargin:0><spush><color:00dc00><font:univers condensed:18>OBSERVERS<lmargin%%:60>SCORE<spop>');
+				messageClient(%client, 'MsgDebriefAddLine', "",
+                    '\n<lmargin:0><spush><color:00dc00><font:univers condensed:18>OBSERVERS<lmargin%%:60>SCORE<spop>');
 			}
 
 			//print out the client
 			%score = %cl.score $= "" ? 0 : %cl.score;
-			messageClient( %client, 'MsgDebriefAddLine', "", '<lmargin:0><clip%%:60> %1</clip><lmargin%%:60><clip%%:40> %2</clip>', %cl.name, %score);
+			messageClient(%client, 'MsgDebriefAddLine', "",
+                '<lmargin:0><clip%%:60> %1</clip><lmargin%%:60><clip%%:40> %2</clip>',
+                %cl.name, %score);
 		}
 	}
 }
@@ -2773,35 +2686,39 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 	if (Game.numTeams > 1)
 	{
 		// Send header:
-		messageClient( %client, 'SetScoreHudHeader', "", '<tab:15,315>\t%1<rmargin:260><just:right>%2<rmargin:560><just:left>\t%3<just:right>%4',
-				%game.getTeamName(1), $TeamScore[1], %game.getTeamName(2), $TeamScore[2] );
+		messageClient(%client, 'SetScoreHudHeader', "",
+            '<tab:15,315>\t%1<rmargin:260><just:right>%2<rmargin:560><just:left>\t%3<just:right>%4',
+            %game.getTeamName(1), $TeamScore[1], %game.getTeamName(2), $TeamScore[2]);
 
 		// Send subheader:
-		messageClient( %client, 'SetScoreHudSubheader', "", '<tab:15,315>\tPLAYERS (%1)<rmargin:260><just:right>SCORE<rmargin:560><just:left>\tPLAYERS (%2)<just:right>SCORE',
-				$TeamRank[1, count], $TeamRank[2, count] );
+		messageClient(%client, 'SetScoreHudSubheader', "",
+            '<tab:15,315>\tPLAYERS (%1)<rmargin:260><just:right>SCORE<rmargin:560><just:left>\tPLAYERS (%2)<just:right>SCORE',
+            $TeamRank[1, count], $TeamRank[2, count]);
 
 		%index = 0;
-		while ( true )
+		while (true)
 		{
-			if ( %index >= $TeamRank[1, count]+2 && %index >= $TeamRank[2, count]+2 )
+			if (%index >= $TeamRank[1, count]+2 && %index >= $TeamRank[2, count]+2)
 				break;
 
 			//get the team1 client info
 			%team1Client = "";
 			%team1ClientScore = "";
 			%col1Style = "";
-			if ( %index < $TeamRank[1, count] )
+			if (%index < $TeamRank[1, count])
 			{
 				%team1Client = $TeamRank[1, %index];
 				%team1ClientScore = %team1Client.score $= "" ? 0 : %team1Client.score;
 				%col1Style = %team1Client == %client ? "<color:dcdcdc>" : "";
 				%team1playersTotalScore += %team1Client.score;
 			}
-			else if( %index == $teamRank[1, count] && $teamRank[1, count] != 0 && %game.class $= "CTFGame")
+			else if (%index == $teamRank[1, count] &&
+                    $teamRank[1, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team1ClientScore = "--------------";
 			}
-			else if( %index == $teamRank[1, count]+1 && $teamRank[1, count] != 0 && %game.class $= "CTFGame")
+			else if (%index == $teamRank[1, count]+1 &&
+                    $teamRank[1, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team1ClientScore = %team1playersTotalScore != 0 ? %team1playersTotalScore : 0;
 			}
@@ -2809,18 +2726,20 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 			%team2Client = "";
 			%team2ClientScore = "";
 			%col2Style = "";
-			if ( %index < $TeamRank[2, count] )
+			if (%index < $TeamRank[2, count])
 			{
 				%team2Client = $TeamRank[2, %index];
 				%team2ClientScore = %team2Client.score $= "" ? 0 : %team2Client.score;
 				%col2Style = %team2Client == %client ? "<color:dcdcdc>" : "";
 				%team2playersTotalScore += %team2Client.score;
 			}
-			else if( %index == $teamRank[2, count] && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
+			else if (%index == $teamRank[2, count]
+                    && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team2ClientScore = "--------------";
 			}
-			else if( %index == $teamRank[2, count]+1 && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
+			else if (%index == $teamRank[2, count]+1
+                    && $teamRank[2, count] != 0 && %game.class $= "CTFGame")
 			{
 				%team2ClientScore = %team2playersTotalScore != 0 ? %team2playersTotalScore : 0;
 			}
@@ -2828,14 +2747,20 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 			//if the client is not an observer, send the message
 			if (%client.team != 0)
 			{
-				messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:20,320>\t<spush>%5<clip:200>%1</clip><rmargin:260><just:right>%2<spop><rmargin:560><just:left>\t%6<clip:200>%3</clip><just:right>%4',
-						%team1Client.name, %team1ClientScore, %team2Client.name, %team2ClientScore, %col1Style, %col2Style );
+				messageClient(%client, 'SetLineHud', "", %tag, %index,
+                '<tab:20,320>\t<spush>%5<clip:200>%1</clip><rmargin:260><just:right>%2<spop><rmargin:560><just:left>\t%6<clip:200>%3</clip><just:right>%4',
+
+                    %team1Client.name, %team1ClientScore, %team2Client.name,
+                    %team2ClientScore, %col1Style, %col2Style);
 			}
 			//else for observers, create an anchor around the player name so they can be observed
 			else
 			{
-				messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:20,320>\t<spush>%5<clip:200><a:gamelink\t%7>%1</a></clip><rmargin:260><just:right>%2<spop><rmargin:560><just:left>\t%6<clip:200><a:gamelink\t%8>%3</a></clip><just:right>%4',
-						%team1Client.name, %team1ClientScore, %team2Client.name, %team2ClientScore, %col1Style, %col2Style, %team1Client, %team2Client );
+				messageClient(%client, 'SetLineHud', "", %tag, %index,
+                    '<tab:20,320>\t<spush>%5<clip:200><a:gamelink\t%7>%1</a></clip><rmargin:260><just:right>%2<spop><rmargin:560><just:left>\t%6<clip:200><a:gamelink\t%8>%3</a></clip><just:right>%4',
+                    %team1Client.name, %team1ClientScore, %team2Client.name,
+                    %team2ClientScore, %col1Style, %col2Style,
+                    %team1Client, %team2Client);
 			}
 
 			%index++;
@@ -2845,11 +2770,11 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 	{
 		//tricky stuff here...  use two columns if we have more than 15 clients...
 		%numClients = $TeamRank[0, count];
-		if ( %numClients > $ScoreHudMaxVisible )
+		if (%numClients > $ScoreHudMaxVisible)
 			%numColumns = 2;
 
 		// Clear header:
-		messageClient( %client, 'SetScoreHudHeader', "", "" );
+		messageClient(%client, 'SetScoreHudHeader', "", "");
 
 		// Send header:
 		if (%numColumns == 2)
@@ -2858,16 +2783,16 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 			messageClient(%client, 'SetScoreHudSubheader', "", '<tab:15>\tPLAYER<rmargin:270><just:right>SCORE');
 
 		%countMax = %numClients;
-		if ( %countMax > ( 2 * $ScoreHudMaxVisible ) )
+		if (%countMax > (2 * $ScoreHudMaxVisible))
 		{
-			if ( %countMax & 1 )
+			if (%countMax & 1)
 				%countMax++;
 			%countMax = %countMax / 2;
 		}
-		else if ( %countMax > $ScoreHudMaxVisible )
+		else if (%countMax > $ScoreHudMaxVisible)
 			%countMax = $ScoreHudMaxVisible;
 
-		for ( %index = 0; %index < %countMax; %index++ )
+		for (%index = 0; %index < %countMax; %index++)
 		{
 			//get the client info
 			%col1Client = $TeamRank[0, %index];
@@ -2875,7 +2800,7 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 			%col1Style = %col1Client == %client ? "<color:dcdcdc>" : "";
 
 			//see if we have two columns
-			if ( %numColumns == 2 )
+			if (%numColumns == 2)
 			{
 				%col2Client = "";
 				%col2ClientScore = "";
@@ -2883,7 +2808,7 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 
 				//get the column 2 client info
 				%col2Index = %index + %countMax;
-				if ( %col2Index < %numClients )
+				if (%col2Index < %numClients)
 				{
 					%col2Client = $TeamRank[0, %col2Index];
 					%col2ClientScore = %col2Client.score $= "" ? 0 : %col2Client.score;
@@ -2894,22 +2819,22 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 			//if the client is not an observer, send the message
 			if (%client.team != 0)
 			{
-				if ( %numColumns == 2 )
+				if (%numColumns == 2)
 					messageClient(%client, 'SetLineHud', "", %tag, %index, '<tab:25,325>\t<spush>%5<clip:195>%1</clip><rmargin:260><just:right>%2<spop><rmargin:560><just:left>\t%6<clip:195>%3</clip><just:right>%4',
-							%col1Client.name, %col1ClientScore, %col2Client.name, %col2ClientScore, %col1Style, %col2Style );
+							%col1Client.name, %col1ClientScore, %col2Client.name, %col2ClientScore, %col1Style, %col2Style);
 				else
-					messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:25>\t%3<clip:195>%1</clip><rmargin:260><just:right>%2',
-							%col1Client.name, %col1ClientScore, %col1Style );
+					messageClient(%client, 'SetLineHud', "", %tag, %index, '<tab:25>\t%3<clip:195>%1</clip><rmargin:260><just:right>%2',
+							%col1Client.name, %col1ClientScore, %col1Style);
 			}
 			//else for observers, create an anchor around the player name so they can be observed
 			else
 			{
-				if ( %numColumns == 2 )
+				if (%numColumns == 2)
 					messageClient(%client, 'SetLineHud', "", %tag, %index, '<tab:25,325>\t<spush>%5<clip:195><a:gamelink\t%7>%1</a></clip><rmargin:260><just:right>%2<spop><rmargin:560><just:left>\t%6<clip:195><a:gamelink\t%8>%3</a></clip><just:right>%4',
-							%col1Client.name, %col1ClientScore, %col2Client.name, %col2ClientScore, %col1Style, %col2Style, %col1Client, %col2Client );
+							%col1Client.name, %col1ClientScore, %col2Client.name, %col2ClientScore, %col1Style, %col2Style, %col1Client, %col2Client);
 				else
-					messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:25>\t%3<clip:195><a:gamelink\t%4>%1</a></clip><rmargin:260><just:right>%2',
-							%col1Client.name, %col1ClientScore, %col1Style, %col1Client );
+					messageClient(%client, 'SetLineHud', "", %tag, %index, '<tab:25>\t%3<clip:195><a:gamelink\t%4>%1</a></clip><rmargin:260><just:right>%2',
+							%col1Client.name, %col1ClientScore, %col1Style, %col1Client);
 			}
 		}
 
@@ -2926,9 +2851,10 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 
 	if (%observerCount > 0)
 	{
-		messageClient( %client, 'SetLineHud', "", %tag, %index, "");
+		messageClient(%client, 'SetLineHud', "", %tag, %index, "");
 		%index++;
-		messageClient(%client, 'SetLineHud', "", %tag, %index, '<tab:10, 310><spush><font:Univers Condensed:22>\tOBSERVERS (%1)<rmargin:260><just:right>TIME<spop>', %observerCount);
+		messageClient(%client, 'SetLineHud', "", %tag, %index,
+            '<tab:10, 310><spush><font:Univers Condensed:22>\tOBSERVERS (%1)<rmargin:260><just:right>TIME<spop>', %observerCount);
 		%index++;
 		for (%i = 0; %i < ClientGroup.getCount(); %i++)
 		{
@@ -2938,22 +2864,23 @@ function TR2Game::updateScoreHud(%game, %client, %tag)
 			{
 				%obsTime = getSimTime() - %cl.observerStartTime;
 				%obsTimeStr = %game.formatTime(%obsTime, false);
-				messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:20, 310>\t<clip:150>%1</clip><rmargin:260><just:right>%2',
-									%cl.name, %obsTimeStr );
+				messageClient(%client, 'SetLineHud', "", %tag, %index,
+                    '<tab:20, 310>\t<clip:150>%1</clip><rmargin:260><just:right>%2',
+                    %cl.name, %obsTimeStr);
 				%index++;
 			}
 		}
 	}
 
 	//clear the rest of Hud so we don't get old lines hanging around...
-	messageClient( %client, 'ClearHud', "", %tag, %index );
+	messageClient(%client, 'ClearHud', "", %tag, %index);
 }
 
 function TR2Game::selectSpawnMarker(%game, %team)
 {
 	if (%team <= 0)
 		return;
-		
+
 	%teamDropsGroup = "MissionCleanup/TeamDrops" @ %team;
 
 	%group = nameToID(%teamDropsGroup);
@@ -2984,7 +2911,7 @@ function TR2Game::selectSpawnMarker(%game, %team)
 					  // Handle circular increment
 					  if (%markerIndex >= %count)
 						  %markerIndex = 0;
-        
+
                       %markerAttempts++;
 				 }
 			}
@@ -3002,7 +2929,7 @@ function TR2Game::selectSpawnMarker(%game, %team)
 function TR2Game::teammateNear(%game, %team, %position)
 {
 	%count = ClientGroup.getCount();
-	
+
 	// Only check x,y (this means we can't have one spawn directly over another,
 	// but oh well...quick and dirty)
 	%position = setWord(%position, 2, 0);
@@ -3012,7 +2939,7 @@ function TR2Game::teammateNear(%game, %team, %position)
 		%cl = ClientGroup.getObject(%i);
 		if (%cl $= "" || %cl.player == 0 || %cl.player $= "")
 			continue;
-			
+
 		if (%cl.team == %team)
 		{
 			%plyrPos = %cl.player.getPosition();
@@ -3022,7 +2949,7 @@ function TR2Game::teammateNear(%game, %team, %position)
 				return true;
 		 }
 	}
-	
+
 	return false;
 }
 
@@ -3032,7 +2959,7 @@ function TR2Game::pickTeamSpawn(%game, %team)
 	return %game.selectSpawnMarker(%team);
 }
 
-function TR2Game::onClientEnterObserverMode( %game, %client )
+function TR2Game::onClientEnterObserverMode(%game, %client)
 {
 	clearBottomPrint(%client);
 }
@@ -3051,7 +2978,7 @@ function TR2Game::increaseCrowdLevel(%game)
 {
 	if (%game.crowdLevel+1 == $TR2::numCrowdLevels)
 		return;
-		
+
 	%game.crowdTransition(%game.crowdLevel+1);
 }
 
@@ -3059,7 +2986,7 @@ function TR2Game::decreaseCrowdLevel(%game)
 {
 	if (%game.crowdLevel == -1)
 		return;
-		
+
 	if (%game.crowdLevel == 0)
 		%game.stopCrowd();
 	else
@@ -3070,10 +2997,10 @@ function TR2Game::stopCrowd(%game)
 {
 	//if (%game.crowdLevel == -1)
 	//  return;
-	  
+
 	ServerPlay2d($TR2::crowdLoopTransitionDown[%game.crowdLevel]);
 	//schedule(50, 0, "ServerStopAudio", %game.crowdLevel);
-	
+
 	// Stop all levels immediately
 	ServerStopAudio(0);
 	ServerStopAudio(1);
@@ -3085,9 +3012,9 @@ function TR2Game::crowdTransition(%game, %level)
 {
 	if (%level == %game.crowdLevel)
 		return;
-		
+
 	//%newSlot = (%game.crowdLevelSlot == 2) ? 3 : 2;
-	
+
 	ServerPlay2d($TR2::crowdLoopTransitionUp[%level]);
 	schedule(4000, 0, "ServerPlay2d", $TR2::crowdLoopTransitionDown[%game.crowdLevel]);
 
@@ -3096,7 +3023,7 @@ function TR2Game::crowdTransition(%game, %level)
 
 	schedule(4100, 0, "ServerStopAudio", %game.crowdLevel);
 	schedule(2850, 0, "ServerPlayAudio", %level, $TR2::CrowdLoop[%level]);
-	
+
 	%game.crowdLevel = %level;
 	//%game.crowdLevelSlot = %newSlot;
 }
@@ -3108,7 +3035,7 @@ function TR2Game::evaluateCrowdLevel(%game)
 		%game.stopCrowd();
 		return;
 	}
-	
+
 	if ($TheFlag.carrier $= "")
 	{
 		%obj = $TheFlag;
@@ -3118,9 +3045,9 @@ function TR2Game::evaluateCrowdLevel(%game)
 	}
 	else
 	{
-	  %obj = $TheFlag.carrier;
-	  %otherTeam = ($TheFlag.carrier.team == 1) ? 2 : 1;
-	  %dist = VectorLen(VectorSub(%obj.getPosition(), $teamgoal[%otherTeam].getPosition()));
+        %obj = $TheFlag.carrier;
+        %otherTeam = ($TheFlag.carrier.team == 1) ? 2 : 1;
+        %dist = VectorLen(VectorSub(%obj.getPosition(), $teamgoal[%otherTeam].getPosition()));
 	}
 
 	for (%i=0; %i<$TR2::NumCrowdLevels; %i++)
@@ -3152,24 +3079,23 @@ function TR2Game::startSphere(%game)
 
 	%position = $TR2::TheSphere.getPosition();
 	%radius = 75;
-	
+
 	// Prevent all damage
 	%game.goalJustScored = true;
-	
+
 	if ($TheFlag.carrier !$= "")
 		$TheFlag.carrier.throwObject($TheFlag);
-	
+
 	for (%i = 0; %i < %count; %i++)
 	{
 		%cl = ClientGroup.getObject(%i);
 		if (%cl $= "" || %cl.player == 0 || %cl.player $= "")
 			continue;
-			
 
 		%addx = mFloor(getRandom() * %radius);
 		%addy = mFloor(getRandom() * %radius);
 		%addy = mFloor(getRandom() * %radius);
-		
+
 		%newx = getWord(%position, 0) + %addx;
 		%newy = getWord(%position, 1) + %addy;
 		%newz = getWord(%position, 2) + %addz;
@@ -3179,7 +3105,7 @@ function TR2Game::startSphere(%game)
 		%cl.plyrTransformAtDeath = %newPosition;
 		%cl.player.setTransform(%newPosition);
 	}
-	
+
 	%game.emitFlags(%position, 40, "", 60000);
 }
 
@@ -3190,6 +3116,3 @@ function TR2Game::endSphere(%game)
 	%game.forceTeamRespawn(1);
 	%game.forceTeamRespawn(2);
 }
-
-
-

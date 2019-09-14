@@ -27,7 +27,7 @@ function NexusBase::objectiveInit(%data, %object)
 {
 	Game.NexusBase = %object;
 	Game.NexusBase.playthread(0, "ambient");
-	Game.NexusBase.setThreadDir(0, true);
+    Game.NexusBase.setThreadDir(0, true);
 }
 
 function NexusCap::objectiveInit(%data, %object)
@@ -56,37 +56,37 @@ $InvBanList[TeamHunters, "Mine"] = 1;
 
 function TeamHuntersGame::missionLoadDone(%game)
 {
-   //default version sets up teams - must be called first...
-   DefaultGame::missionLoadDone(%game);
+    //default version sets up teams - must be called first...
+    DefaultGame::missionLoadDone(%game);
 
-   $numRanked = 0;
-   
-   //initialize the score and flag count for all the players
-   %count = ClientGroup.getCount();
-   for(%i = 0; %i < %count; %i++)
-   {
-		%client = ClientGroup.getObject(%i);
-		%game.resetScore(%client);
-      %client.flagCount = 1;
-   }
-   $TopClient = "";
-   $TopClientScore = 0;
+    $numRanked = 0;
 
-	for(%j = 1; %j < (%game.numTeams + 1); %j++)
-		$teamScore[%j] = 0;
+    //initialize the score and flag count for all the players
+    %count = ClientGroup.getCount();
+    for (%i = 0; %i < %count; %i++)
+    {
+        %client = ClientGroup.getObject(%i);
+        %game.resetScore(%client);
+        %client.flagCount = 1;
+    }
+    $TopClient = "";
+    $TopClientScore = 0;
+
+	for (%j = 1; %j < (%game.numTeams + 1); %j++)
+        $teamScore[%j] = 0;
 
 	//create the Flag group
-	$FlagGroup = nameToID("MissionCleanup/FlagGroup");
+    $FlagGroup = nameToID("MissionCleanup/FlagGroup");
 	if ($FlagGroup <= 0)
 	{
-		$FlagGroup = new SimGroup("FlagGroup");
-      MissionCleanup.add($FlagGroup);
+        $FlagGroup = new SimGroup("FlagGroup");
+        MissionCleanup.add($FlagGroup);
 	}
 
-	if(nameToId("HuntersYardSaleSet") <= 0)
+	if (nameToId("HuntersYardSaleSet") <= 0)
 	{
-		$HuntersYardSaleSet = new SimSet("HuntersYardSaleSet");
-      MissionCleanup.add($HuntersYardSaleSet);
+        $HuntersYardSaleSet = new SimSet("HuntersYardSaleSet");
+        MissionCleanup.add($HuntersYardSaleSet);
 	}
 
 	// make a game object for the Nexus (functions defined in HuntersGame.cs)
@@ -95,11 +95,11 @@ function TeamHuntersGame::missionLoadDone(%game)
 
 function TeamHuntersGame::initGameVars(%game)
 {
-	%game.SCORE_PER_SUICIDE = -1; 
+	%game.SCORE_PER_SUICIDE = -1;
 	%game.SCORE_PER_TEAMKILL = -1;
-	%game.SCORE_PER_DEATH = -1;  
-	%game.SCORE_PER_KILL = 1; 
-	%game.SCORE_PER_TURRET_KILL = 1; 
+	%game.SCORE_PER_DEATH = -1;
+	%game.SCORE_PER_KILL = 1;
+	%game.SCORE_PER_TURRET_KILL = 1;
 
 	%game.TeamMode = true;
 
@@ -127,17 +127,17 @@ function TeamHuntersGame::initGameVars(%game)
 	%game.flagMsgDelayMS = 3000;
 	%game.oobThrowFlagsDelayMS = 3000;
 
-   // targets for each of the flag types (except for base which is properly skinned already)
-   HuntersFlag1.target = -1;  // red
-   HuntersFlag2.target = allocTarget("", 'Blue', "", "", 0, "", "");
-   HuntersFlag4.target = allocTarget("", 'Yellow', "", "", 0, "", "");
-   HuntersFlag8.target = allocTarget("", 'Green', "", "", 0, "", "");
+    // targets for each of the flag types (except for base which is properly skinned already)
+    HuntersFlag1.target = -1;  // red
+    HuntersFlag2.target = allocTarget("", 'Blue', "", "", 0, "", "");
+    HuntersFlag4.target = allocTarget("", 'Yellow', "", "", 0, "", "");
+    HuntersFlag8.target = allocTarget("", 'Green', "", "", 0, "", "");
 }
 
 function TeamHuntersGame::allowsProtectedStatics(%game)
 {
-   // prevent appropriate equipment from being damaged - invulnerable
-   return true;
+    // prevent appropriate equipment from being damaged - invulnerable
+    return true;
 }
 
 function TeamHuntersGame::setNexusDisabled(%game)
@@ -178,20 +178,20 @@ function TeamHuntersGame::recalcScore(%game, %cl)
 	%killValue = %cl.kills * %game.SCORE_PER_KILL;
 	%deathValue = %cl.deaths * %game.SCORE_PER_DEATH;
 
-	if (%killValue - %deathValue == 0)
+    if (%killValue - %deathValue == 0)
 		%killPoints = 0;
 	else
 		%killPoints = (%killValue * %killValue) / (%killValue - %deathValue);
 
-	%cl.score = %killPoints;
-   %cl.score += %cl.suicides * %game.SCORE_PER_SUICIDE;
-	%cl.score = mFloor(%cl.score);
+    %cl.score = %killPoints;
+    %cl.score += %cl.suicides * %game.SCORE_PER_SUICIDE;
+    %cl.score = mFloor(%cl.score);
 
 	//must send the message to update the HUD
 	messageClient(%cl, 'MsgYourScoreIs', "", %cl.score);
-	
+
 	%game.recalcTeamRanks(%cl);
-}	
+}
 
 function TeamHuntersGame::startMatch(%game)
 {
@@ -223,22 +223,22 @@ function TeamHuntersGame::updateHoardStatusHUD(%game)
 
 function TeamHuntersGame::assignClientTeam(%game, %client)
 {
-   DefaultGame::assignClientTeam(%game, %client);
+    DefaultGame::assignClientTeam(%game, %client);
 }
 
 function TeamHuntersGame::createPlayer(%game, %client, %spawnLoc)
 {
-   HuntersGame::createPlayer(%game, %client, %spawnLoc);
+    HuntersGame::createPlayer(%game, %client, %spawnLoc);
 }
 
 function TeamHuntersGame::pickPlayerSpawn(%game, %client, %respawn)
 {
-	return %game.pickTeamSpawn(%client.team);
+    return %game.pickTeamSpawn(%client.team);
 }
 
 function TeamHuntersGame::playerSpawned(%game, %player, %armor)
 {
-   HuntersGame::playerSpawned(%game, %player, %armor);
+    HuntersGame::playerSpawned(%game, %player, %armor);
 
 	//reset the enemy damaged time
 	%player.client.lastEnemyDamagedTime = 0;
@@ -256,42 +256,45 @@ function TeamHuntersGame::onClientDamaged(%game, %clVictim, %clAttacker, %damage
 
 function TeamHuntersGame::onClientKilled(%game, %clVictim, %clKiller, %damageType, %implement)
 {
-   //set the flag
-   %clVictim.isDead = true;
+    //set the flag
+    %clVictim.isDead = true;
 
-	//to prevent suiciders from dropping flags for their teammates - see if the player
-	//has taken enemy damage within the last 20 seconds
-   if ((%game.testSuicide(%clVictim, %clKiller, %damageType) ||
-						   		(isObject(%clKiller) && %clKiller.team == %clVictim.team)) &&
-							   	(getSimTime() - %clVictim.lastEnemyDamagedTime > 20000))
-	{
-		%clVictim.flagCount--;
-	}
+    //to prevent suiciders from dropping flags for their teammates - see if the player
+    //has taken enemy damage within the last 20 seconds
+    if ((%game.testSuicide(%clVictim, %clKiller, %damageType) ||
+            (isObject(%clKiller) && %clKiller.team == %clVictim.team)) &&
+            (getSimTime() - %clVictim.lastEnemyDamagedTime > 20000))
+    {
+        %clVictim.flagCount--;
+    }
 
-   //first, drop all the flags
-   HuntersGame::dropFlag(%game, %clVictim.player);
-   
-   //now call the default game stuff
-   DefaultGame::onClientKilled(%game, %clVictim, %clKiller, %damageType, %implement); 
+    //first, drop all the flags
+    HuntersGame::dropFlag(%game, %clVictim.player);
 
-   messageClient(%clVictim, 'MsgHuntYouHaveFlags', "", 0);
+    //now call the default game stuff
+    DefaultGame::onClientKilled(%game, %clVictim, %clKiller, %damageType,
+        %implement);
+
+    messageClient(%clVictim, 'MsgHuntYouHaveFlags', "", 0);
 }
 
-function TeamHuntersGame::updateKillScores(%game, %clVictim, %clKiller, %damageType, %implement)
+function TeamHuntersGame::updateKillScores(%game, %clVictim, %clKiller,
+        %damageType, %implement)
 {
 	if (%game.testKill(%clVictim, %clKiller)) //verify victim was an enemy
 	{
 		%game.awardScoreKill(%clKiller);
 		%game.awardScoreDeath(%clVictim);
-	}       
-	else if (%game.testSuicide(%clVictim, %clKiller, %damageType))  //otherwise test for suicide
-		%game.awardScoreSuicide(%clVictim);		 
+	}
+    //otherwise test for suicide
+	else if (%game.testSuicide(%clVictim, %clKiller, %damageType))
+		%game.awardScoreSuicide(%clVictim);
 }
 
 function TeamHuntersGame::equip(%game, %player)
 {
-   HuntersGame::equip(%game, %player);
-}                  
+    HuntersGame::equip(%game, %player);
+}
 
 function TeamHuntersGame::checkTimeLimit(%game)
 {
@@ -300,7 +303,7 @@ function TeamHuntersGame::checkTimeLimit(%game)
 
 function TeamHuntersGame::timeLimitReached(%game)
 {
-   HuntersGame::timeLimitReached(%game);
+    HuntersGame::timeLimitReached(%game);
 }
 
 function TeamHuntersGame::checkScoreLimit(%game, %team)
@@ -315,22 +318,24 @@ function TeamHuntersGame::scoreLimitReached(%game)
 
 function TeamHuntersGame::clientMissionDropReady(%game, %client)
 {
-   //%client.rank = ClientGroup.getCount();
-   messageClient(%client, 'MsgClientReady',"", %game.class);
-	//messageClient(%client, 'MsgHuntModesSet', "", %game.GreedMode, %game.HoardMode);
-	messageClient(%client, 'MsgHuntYouHaveFlags', "", 0);
-	//%game.populateTeamRankArray(%client);
-	//messageClient(%client, 'MsgHuntTeamRankIs', "", -1);
-   for(%i = 1; %i <= %game.numTeams; %i++)
-      messageClient(%client, 'MsgHuntAddTeam', "", %i, $TeamName[%i], $TeamScore[%i]);
+    //%client.rank = ClientGroup.getCount();
+    messageClient(%client, 'MsgClientReady', "", %game.class);
+    //messageClient(%client, 'MsgHuntModesSet', "", %game.GreedMode, %game.HoardMode);
+    messageClient(%client, 'MsgHuntYouHaveFlags', "", 0);
+    //%game.populateTeamRankArray(%client);
+    //messageClient(%client, 'MsgHuntTeamRankIs', "", -1);
+    for (%i = 1; %i <= %game.numTeams; %i++)
+        messageClient(%client, 'MsgHuntAddTeam', "", %i, $TeamName[%i], $TeamScore[%i]);
 
-	//messageClient(%client, 'MsgHuntGreedStatus', "", %game.GreedMode, %game.GreedMinFlags);
-	//%curTimeLeftMS = ($Host::TimeLimit * 60 * 1000) + $missionStartTime - getSimTime();
-	//messageClient(%client, 'MsgHuntHoardStatus', "", %game.HoardMode, $Host::TimeLimit, %curTimeLeftMS, %game.HoardStartTime, %game.HoardDuration);
+    //messageClient(%client, 'MsgHuntGreedStatus', "", %game.GreedMode, %game.GreedMinFlags);
+    //%curTimeLeftMS = ($Host::TimeLimit * 60 * 1000) + $missionStartTime - getSimTime();
+    //messageClient(%client, 'MsgHuntHoardStatus', "", %game.HoardMode, $Host::TimeLimit, %curTimeLeftMS, %game.HoardStartTime, %game.HoardDuration);
 
-   messageClient(%client, 'MsgMissionDropInfo', '\c0You are in mission %1 (%2).', $MissionDisplayName, $MissionTypeDisplayName, $ServerName ); 
-	
-	DefaultGame::clientMissionDropReady(%game, %client);
+    messageClient(%client, 'MsgMissionDropInfo',
+        '\c0You are in mission %1 (%2).',
+        $MissionDisplayName, $MissionTypeDisplayName, $ServerName);
+
+    DefaultGame::clientMissionDropReady(%game, %client);
 }
 
 function TeamHuntersGame::assignClientTeam(%game, %client, %respawn)
@@ -353,14 +358,14 @@ function TeamHuntersGame::gameOver(%game)
 		%winner = $teamName[2];
 
 	if (%winner $= 'Storm')
-	   messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.stowins.wav" );
+        messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.stowins.wav");
 	else if (%winner $= 'Inferno')
-	   messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.infwins.wav" );
+        messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.infwins.wav");
 	else
-	   messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.gameover.wav" );
+        messageAll('MsgGameOver', "Match has ended.~wvoice/announcer/ann.gameover.wav");
 
 	messageAll('MsgClearObjHud', "");
-	for(%i = 0; %i < ClientGroup.getCount(); %i ++)
+	for (%i = 0; %i < ClientGroup.getCount(); %i++)
 	{
 		%client = ClientGroup.getObject(%i);
 		Game.resetScore(%client);
@@ -375,7 +380,7 @@ function TeamHuntersGame::sendFlagCountMessage(%game, %client)
 
 function TeamHuntersGame::playerTouchFlag(%game, %player, %flag)
 {
-   HuntersGame::playerTouchFlag(%game, %player, %flag);
+    HuntersGame::playerTouchFlag(%game, %player, %flag);
 }
 
 function TeamHuntersGame::updateFlagHoarder(%game)
@@ -385,7 +390,7 @@ function TeamHuntersGame::updateFlagHoarder(%game)
 
 function TeamHuntersGame::hoardModeActive(%game, %wouldBeActive)
 {
-   HuntersGame::hoardModeActive(%game, %wouldBeActive);
+    HuntersGame::hoardModeActive(%game, %wouldBeActive);
 }
 
 function TeamHuntersGame::playerDroppedFlag(%game, %player)
@@ -395,35 +400,39 @@ function TeamHuntersGame::playerDroppedFlag(%game, %player)
 
 //-----------------------------------------------------------------------------
 //VOTING functions
-function TeamHuntersGame::sendGameVoteMenu( %game, %client, %key )
+function TeamHuntersGame::sendGameVoteMenu(%game, %client, %key)
 {
-   // Don't send any options if a vote is already running:
-   if ( %game.scheduleVote $= "" )
-   {
-      // First send the common options:
-      DefaultGame::sendGameVoteMenu( %game, %client, %key );
+    // Don't send any options if a vote is already running:
+    if (%game.scheduleVote $= "")
+    {
+        // First send the common options:
+        DefaultGame::sendGameVoteMenu(%game, %client, %key);
 
-      // Now send the Hunters-specific options:
-      if ( %game.GreedMode )
-         messageClient( %client, 'MsgVoteItem', "", %key, 'VoteGreedMode', 'disable greed mode', 'Disable GREED Mode' );
-      else
-         messageClient( %client, 'MsgVoteItem', "", %key, 'VoteGreedMode', 'enable greed mode', 'Enable GREED Mode' );
+        // Now send the Hunters-specific options:
+        if (%game.GreedMode)
+            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
+                'disable greed mode', 'Disable GREED Mode');
+        else
+            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
+                'enable greed mode', 'Enable GREED Mode');
 
-      if ( %game.HoardMode )
-         messageClient( %client, 'MsgVoteItem', "", %key, 'VoteHoardMode', 'disable hoard mode', 'Disable HOARD Mode' );
-      else
-         messageClient( %client, 'MsgVoteItem', "", %key, 'VoteHoardMode', 'enable hoard mode', 'Enable HOARD Mode' );
-   }
+        if (%game.HoardMode)
+            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
+                'disable hoard mode', 'Disable HOARD Mode');
+        else
+            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
+                'enable hoard mode', 'Enable HOARD Mode');
+    }
 }
 
-function TeamHuntersGame::voteGreedMode( %game, %admin, %player )
+function TeamHuntersGame::voteGreedMode(%game, %admin, %player)
 {
-	HuntersGame::voteGreedMode( %game, %admin, %player );
+	HuntersGame::voteGreedMode(%game, %admin, %player);
 }
 
-function TeamHuntersGame::voteHoardMode( %game, %admin, %player )
+function TeamHuntersGame::voteHoardMode(%game, %admin, %player)
 {
-	HuntersGame::voteHoardMode( %game, %admin, %player );
+	HuntersGame::voteHoardMode(%game, %admin, %player);
 }
 
 function TeamHuntersGame::throwFlags(%game, %player)
@@ -438,7 +447,7 @@ function TeamHuntersGame::outOfBoundsThrowFlags(%game, %client)
 
 function TeamHuntersGame::dropFlag(%game, %player)
 {
-	HuntersGame::dropFlag(%game, %player);
+    HuntersGame::dropFlag(%game, %player);
 }
 
 function TeamHuntersGame::enterMissionArea(%game, %playerData, %player)
@@ -468,147 +477,162 @@ function TeamHuntersGame::CampingDamage(%game, %client, %firstWarning)
 
 function TeamHuntersGame::updateScoreHud(%game, %client, %tag)
 {
-	messageClient( %client, 'ClearHud', "", %tag, 0 );
-   // Send header:
-   messageClient( %client, 'SetScoreHudHeader', "", '<tab:15,315>\t%1<rmargin:260><just:right>%2<rmargin:560><just:left>\t%3<just:right>%4',
-         $teamName[1], $teamScore[1], $teamName[2], $teamScore[2] );
+    messageClient(%client, 'ClearHud', "", %tag, 0);
+    // Send header:
+    messageClient(%client, 'SetScoreHudHeader', "",
+        '<tab:15,315>\t%1<rmargin:260><just:right>%2<rmargin:560><just:left>\t%3<just:right>%4',
+        $teamName[1], $teamScore[1], $teamName[2], $teamScore[2]);
 
-   // Send subheader:
-   messageClient( %client, 'SetScoreHudSubheader', "", '<tab:5,305>\tPLAYER (%1)<rmargin:210><just:right>SCORE<rmargin:270><just:right>FLAGS<rmargin:510><just:left>\tPLAYER (%2)<just:right>SCORE<rmargin:570><just:right>FLAGS',
-         $TeamRank[1, count], $TeamRank[2, count] );
+    // Send subheader:
+    messageClient(%client, 'SetScoreHudSubheader', "",
+        '<tab:5,305>\tPLAYER (%1)<rmargin:210><just:right>SCORE<rmargin:270><just:right>FLAGS<rmargin:510><just:left>\tPLAYER (%2)<just:right>SCORE<rmargin:570><just:right>FLAGS',
+        $TeamRank[1, count], $TeamRank[2, count]);
 
-	//find out who on each team has the most flags
-	%team1ClientMostFlags = -1;
-	%team1ClientMostFlagsCount = -1;
-	for (%i = 0; %i < $TeamRank[1, count]; %i++)
-	{
-		%cl = $TeamRank[1, %i];
-		if (%cl.flagCount > %team1ClientMostFlagsCount)
-		{
-			%team1ClientMostFlagsCount = %cl.flagCount;
-			%team1ClientMostFlags = %cl;
-		}
-	}
-	if (%team1ClientMostFlagsCount <= 1)
-		%team1ClientMostFlags = -1;
+    //find out who on each team has the most flags
+    %team1ClientMostFlags = -1;
+    %team1ClientMostFlagsCount = -1;
+    for (%i = 0; %i < $TeamRank[1, count]; %i++)
+    {
+        %cl = $TeamRank[1, %i];
+        if (%cl.flagCount > %team1ClientMostFlagsCount)
+        {
+            %team1ClientMostFlagsCount = %cl.flagCount;
+            %team1ClientMostFlags = %cl;
+        }
+    }
+    if (%team1ClientMostFlagsCount <= 1)
+        %team1ClientMostFlags = -1;
 
-	%team2ClientMostFlags = -1;
-	%team2ClientMostFlagsCount = -1;
-	for (%i = 0; %i < $TeamRank[2, count]; %i++)
-	{
-		%cl = $TeamRank[2, %i];
-		if (%cl.flagCount > %team2ClientMostFlagsCount)
-		{
-			%team2ClientMostFlagsCount = %cl.flagCount;
-			%team2ClientMostFlags = %cl;
-		}
-	}
-	if (%team2ClientMostFlagsCount <= 1)
-		%team2ClientMostFlags = -1;
+    %team2ClientMostFlags = -1;
+    %team2ClientMostFlagsCount = -1;
+    for (%i = 0; %i < $TeamRank[2, count]; %i++)
+    {
+        %cl = $TeamRank[2, %i];
+        if (%cl.flagCount > %team2ClientMostFlagsCount)
+        {
+            %team2ClientMostFlagsCount = %cl.flagCount;
+            %team2ClientMostFlags = %cl;
+        }
+    }
+    if (%team2ClientMostFlagsCount <= 1)
+        %team2ClientMostFlags = -1;
 
-	%index = 0;
-	while (true)
-	{
-		if (%index >= $TeamRank[1, count] && %index >= $TeamRank[2, count])
-			break;
+    %index = 0;
+    while (true)
+    {
+        if (%index >= $TeamRank[1, count] && %index >= $TeamRank[2, count])
+            break;
 
-		//get the team1 client info
-		%team1Client = "";
-		%team1ClientScore = "";
-		%team1ClientFlags = "";
-      %col1Style = "";
-		if (%index < $TeamRank[1, count])
-		{
-			%team1Client = $TeamRank[1, %index];
-			%team1ClientScore = %team1Client.score $= "" ? 0 : %team1Client.score;
-			%team1ClientFlags = %team1Client.flagCount - 1;
-			if (%team1ClientFlags <= 0)
-				%team1ClientFlags = "";
-         if ( %team1Client == %team1ClientMostFlags )
-            %col1Style = "<color:00dc00>";
-         else if ( %team1Client == %client )
-            %col1Style = "<color:dcdcdc>";
-		}
+        //get the team1 client info
+        %team1Client = "";
+        %team1ClientScore = "";
+        %team1ClientFlags = "";
+        %col1Style = "";
+        if (%index < $TeamRank[1, count])
+        {
+            %team1Client = $TeamRank[1, %index];
+            %team1ClientScore = %team1Client.score $= "" ? 0 : %team1Client.score;
+            %team1ClientFlags = %team1Client.flagCount - 1;
+            if (%team1ClientFlags <= 0)
+                %team1ClientFlags = "";
+            if (%team1Client == %team1ClientMostFlags)
+                %col1Style = "<color:00dc00>";
+            else if (%team1Client == %client)
+                %col1Style = "<color:dcdcdc>";
+        }
 
-		//get the team2 client info
-		%team2Client = "";
-		%team2ClientScore = "";
-		%team2ClientFlags = "";
-      %col2Style = "";
-		if (%index < $TeamRank[2, count])
-		{
-			%team2Client = $TeamRank[2, %index];
-			%team2ClientScore = %team2Client.score $= "" ? 0 : %team2Client.score;
-			%team2ClientFlags = %team2Client.flagCount - 1;
-			if (%team2ClientFlags <= 0)
-				%team2ClientFlags = "";
-         if ( %team2Client == %team2ClientMostFlags )
-            %col2Style = "<color:00dc00>";
-         else if ( %team2Client == %client )
-            %col2Style = "<color:dcdcdc>";
-		}
+        //get the team2 client info
+        %team2Client = "";
+        %team2ClientScore = "";
+        %team2ClientFlags = "";
+        %col2Style = "";
+        if (%index < $TeamRank[2, count])
+        {
+            %team2Client = $TeamRank[2, %index];
+            %team2ClientScore = %team2Client.score $= "" ? 0 : %team2Client.score;
+            %team2ClientFlags = %team2Client.flagCount - 1;
+            if (%team2ClientFlags <= 0)
+                %team2ClientFlags = "";
+            if (%team2Client == %team2ClientMostFlags)
+                %col2Style = "<color:00dc00>";
+            else if (%team2Client == %client)
+                %col2Style = "<color:dcdcdc>";
+        }
 
+        //if the client is not an observer, send the message
+        if (%client.team != 0)
+        {
+            messageClient(%client, 'SetLineHud', "", %tag, %index,
+                '<tab:10, 310><spush>%7\t<clip:150>%1</clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t%8<clip:150>%4</clip><just:right>%5<rmargin:560><just:right>%6',
+                %team1Client.name, %team1ClientScore, %team1ClientFlags,
+                %team2Client.name, %team2ClientScore, %team2ClientFlags,
+                %col1Style, %col2Style);
+        }
+        //else for observers, create an anchor around the player name so they can be observed
+        else
+        {
+            //this is lame, but we can only have up to %9 args
+            if (%team2Client == %team2ClientMostFlags)
+            {
+                messageClient(%client, 'SetLineHud', "", %tag, %index,
+                    '<tab:10, 310><spush>%7\t<clip:150><a:gamelink\t%8>%1</a></clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t<color:00dc00><clip:150><a:gamelink\t%9>%4</a></clip><just:right>%5<rmargin:560><just:right>%6',
+                    %team1Client.name, %team1ClientScore, %team1ClientFlags,
+                    %team2Client.name, %team2ClientScore, %team2ClientFlags,
+                    %col1Style, %team1Client, %team2Client);
+            }
+            else if (%team2Client == %client)
+            {
+                messageClient(%client, 'SetLineHud', "", %tag, %index,
+                    '<tab:10, 310><spush>%7\t<clip:150><a:gamelink\t%8>%1</a></clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t<color:dcdcdc><clip:150><a:gamelink\t%9>%4</a></clip><just:right>%5<rmargin:560><just:right>%6',
+                    %team1Client.name, %team1ClientScore, %team1ClientFlags,
+                    %team2Client.name, %team2ClientScore, %team2ClientFlags,
+                    %col1Style, %team1Client, %team2Client);
+            }
+            else
+            {
+                messageClient(%client, 'SetLineHud', "", %tag, %index,
+                    '<tab:10, 310><spush>%7\t<clip:150><a:gamelink\t%8>%1</a></clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t<clip:150><a:gamelink\t%9>%4</a></clip><just:right>%5<rmargin:560><just:right>%6',
+                    %team1Client.name, %team1ClientScore, %team1ClientFlags,
+                    %team2Client.name, %team2ClientScore, %team2ClientFlags,
+                    %col1Style, %team1Client, %team2Client);
+            }
+        }
 
-      //if the client is not an observer, send the message
-      if (%client.team != 0)
-      {
-		   messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:10, 310><spush>%7\t<clip:150>%1</clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t%8<clip:150>%4</clip><just:right>%5<rmargin:560><just:right>%6', 
-		         %team1Client.name, %team1ClientScore, %team1ClientFlags, %team2Client.name, %team2ClientScore, %team2ClientFlags, %col1Style, %col2Style );
-      }
-      //else for observers, create an anchor around the player name so they can be observed
-      else
-      {
-         //this is lame, but we can only have up to %9 args
-         if (%team2Client == %team2ClientMostFlags)
-         {
-		      messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:10, 310><spush>%7\t<clip:150><a:gamelink\t%8>%1</a></clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t<color:00dc00><clip:150><a:gamelink\t%9>%4</a></clip><just:right>%5<rmargin:560><just:right>%6', 
-		            %team1Client.name, %team1ClientScore, %team1ClientFlags, %team2Client.name, %team2ClientScore, %team2ClientFlags, %col1Style, %team1Client, %team2Client );
-         }
-         else if (%team2Client == %client)
-         {
-		      messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:10, 310><spush>%7\t<clip:150><a:gamelink\t%8>%1</a></clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t<color:dcdcdc><clip:150><a:gamelink\t%9>%4</a></clip><just:right>%5<rmargin:560><just:right>%6', 
-		            %team1Client.name, %team1ClientScore, %team1ClientFlags, %team2Client.name, %team2ClientScore, %team2ClientFlags, %col1Style, %team1Client, %team2Client );
-         }
-         else
-         {
-		      messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:10, 310><spush>%7\t<clip:150><a:gamelink\t%8>%1</a></clip><rmargin:200><just:right>%2<rmargin:260><just:right>%3<spop><rmargin:500><just:left>\t<clip:150><a:gamelink\t%9>%4</a></clip><just:right>%5<rmargin:560><just:right>%6', 
-		            %team1Client.name, %team1ClientScore, %team1ClientFlags, %team2Client.name, %team2ClientScore, %team2ClientFlags, %col1Style, %team1Client, %team2Client );
-         }
-      }
+        %index++;
+    }
 
-		%index++;
-	}
+    // Tack on the list of observers:
+    %observerCount = 0;
+    for (%i = 0; %i < ClientGroup.getCount(); %i++)
+    {
+        %cl = ClientGroup.getObject(%i);
+        if (%cl.team == 0)
+            %observerCount++;
+    }
 
-   // Tack on the list of observers:
-   %observerCount = 0;
-   for (%i = 0; %i < ClientGroup.getCount(); %i++)
-   {
-      %cl = ClientGroup.getObject(%i);
-      if (%cl.team == 0)
-         %observerCount++;
-   }
+    if (%observerCount > 0)
+    {
+        messageClient(%client, 'SetLineHud', "", %tag, %index, "");
+        %index++;
+        messageClient(%client, 'SetLineHud', "", %tag, %index,
+            '<tab:10, 310><spush><font:Univers Condensed:22>\tOBSERVERS (%1)<rmargin:260><just:right>TIME<spop>', %observerCount);
+        %index++;
+        for (%i = 0; %i < ClientGroup.getCount(); %i++)
+        {
+            %cl = ClientGroup.getObject(%i);
+            //if this is an observer
+            if (%cl.team == 0)
+            {
+                %obsTime = getSimTime() - %cl.observerStartTime;
+                %obsTimeStr = %game.formatTime(%obsTime, false);
+                messageClient(%client, 'SetLineHud', "", %tag, %index,
+                    '<tab:20, 310>\t<clip:150>%1</clip><rmargin:260><just:right>%2',
+                    %cl.name, %obsTimeStr);
+                %index++;
+            }
+        }
+    }
 
-   if (%observerCount > 0)
-   {
-	   messageClient( %client, 'SetLineHud', "", %tag, %index, "");
-      %index++;
-		messageClient(%client, 'SetLineHud', "", %tag, %index, '<tab:10, 310><spush><font:Univers Condensed:22>\tOBSERVERS (%1)<rmargin:260><just:right>TIME<spop>', %observerCount);
-      %index++;
-      for (%i = 0; %i < ClientGroup.getCount(); %i++)
-      {
-         %cl = ClientGroup.getObject(%i);
-         //if this is an observer
-         if (%cl.team == 0)
-         {
-            %obsTime = getSimTime() - %cl.observerStartTime;
-            %obsTimeStr = %game.formatTime(%obsTime, false);
-		      messageClient( %client, 'SetLineHud', "", %tag, %index, '<tab:20, 310>\t<clip:150>%1</clip><rmargin:260><just:right>%2',
-		                     %cl.name, %obsTimeStr );
-            %index++;
-         }
-      }
-   }
-
-	//clear the rest of Hud so we don't get old lines hanging around...
-	messageClient( %client, 'ClearHud', "", %tag, %index );
+    //clear the rest of Hud so we don't get old lines hanging around...
+    messageClient(%client, 'ClearHud', "", %tag, %index);
 }

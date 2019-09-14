@@ -295,754 +295,797 @@ $ObjectiveTable['NeedPassenger', maxAssigned]        = "2";      // not added if
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 new SimSet("PendingAIObjectives");
-$MAX_OBJECTIVE_ASSIGN_TIMEOUT    = 30000;
+$MAX_OBJECTIVE_ASSIGN_TIMEOUT = 30000;
 
 //---------------------------------------------------------------------------
 function isAIActive(%team)
 {
-   %count = ClientGroup.getCount();
-   for(%i = 0; %i < %count; %i++)
-   {
-      %client = ClientGroup.getObject(%i);
-      if(%client.isAIControlled() && (%client.getSensorGroup() == %team))
-         return(true);
-   }
-   return(false);
+    %count = ClientGroup.getCount();
+    for (%i = 0; %i < %count; %i++)
+    {
+        %client = ClientGroup.getObject(%i);
+        if (%client.isAIControlled() && (%client.getSensorGroup() == %team))
+            return true;
+    }
+
+    return false;
 }
 
 function humanTeammatesExist(%client)
 {
-   %team = %client.getSensorGroup();
-   %count = ClientGroup.getCount();
-   for(%i = 0; %i < %count; %i++)
-   {
-      %cl = ClientGroup.getObject(%i);
-      if(%cl != %client && !%cl.isAIControlled() && (%cl.getSensorGroup() == %team))
-         return(true);
-   }
-   return(false);
+    %team = %client.getSensorGroup();
+    %count = ClientGroup.getCount();
+    for (%i = 0; %i < %count; %i++)
+    {
+        %cl = ClientGroup.getObject(%i);
+        if (%cl != %client && !%cl.isAIControlled() && (%cl.getSensorGroup() == %team))
+            return true;
+    }
+
+    return false;
 }
 
 function AIObjective::assignObjective(%this)
 {
-   PendingAIObjectives.remove(%this);
-   %this.issuedByClientId.currentAIObjective = -1;
-   aiAddHumanObjective(%this.issuedByClientId, %this, -1, false);
+    PendingAIObjectives.remove(%this);
+    %this.issuedByClientId.currentAIObjective = -1;
+    aiAddHumanObjective(%this.issuedByClientId, %this, -1, false);
 }
 
 //---------------------------------------------------------------------------
 function serverCmdBuildClientTask(%client, %task, %team)
 {
-   %description = $TaskDescription[getWord(%task, 0)];
-   if(%description $= "")
-   {
-      %client.currentTaskDescription = "";
-      return;
-   }
+    %description = $TaskDescription[getWord(%task, 0)];
+    if (%description $= "")
+    {
+        %client.currentTaskDescription = "";
+        return;
+    }
 
-   // build an ai objective from this task
-   %client.currentAIObjective = -1;
-   if(isAIActive(%client.getSensorGroup()))
-   {
-      %objective = buildAIObjective(%client, %task);
-      if(%objective > 0)
-      {
-         if((%objective.assignTimeout) < 0 || (%objective.assignTimeout > $MAX_OBJECTIVE_ASSIGN_TIMEOUT))
-            %objective.assignTimeout = $MAX_OBJECTIVE_ASSIGN_TIMEOUT;
+    // build an ai objective from this task
+    %client.currentAIObjective = -1;
+    if (isAIActive(%client.getSensorGroup()))
+    {
+        %objective = buildAIObjective(%client, %task);
+        if (%objective > 0)
+        {
+            if ((%objective.assignTimeout) < 0 ||
+                    (%objective.assignTimeout > $MAX_OBJECTIVE_ASSIGN_TIMEOUT))
+                %objective.assignTimeout = $MAX_OBJECTIVE_ASSIGN_TIMEOUT;
 
-         //add the acknowledge description on to the objective
-         %targetId = %client.getTargetId();
-         if(%targetId < 0)
-            %targetName = "";
-         else
-         {
-            %targetName = getTargetGameName(%targetId);
-            if(%targetName $= "")
-               return;
-         }  
-         %objective.ackDescription = buildTaggedString(%description, %targetName);
+            //add the acknowledge description on to the objective
+            %targetId = %client.getTargetId();
+            if (%targetId < 0)
+                %targetName = "";
+            else
+            {
+                %targetName = getTargetGameName(%targetId);
+                if (%targetName $= "")
+                    return;
+            }
+            %objective.ackDescription = buildTaggedString(%description, %targetName);
 
-         //override the assignTimeout if there are no human teammates
-         if (!humanTeammatesExist(%client))
-            %objective.assignTimeout = 1;
-         
-			//only send the command to the AI if maxAssigned is > 0
-			if (%objective.maxAssigned > 0)
-			{
-	         PendingAIObjectives.add(%objective);
-	         %client.currentAIObjective = %objective;
-	         %objective.assignThread = %objective.schedule(%objective.assignTimeout, assignObjective);
-			}
-      }
-   }
+            //override the assignTimeout if there are no human teammates
+            if (!humanTeammatesExist(%client))
+                %objective.assignTimeout = 1;
 
-   %client.currentTaskIsTeam = %team;
-   %client.currentTaskDescription = %description;
+            //only send the command to the AI if maxAssigned is > 0
+            if (%objective.maxAssigned > 0)
+            {
+                PendingAIObjectives.add(%objective);
+                %client.currentAIObjective = %objective;
+                %objective.assignThread = %objective.schedule(%objective.assignTimeout, assignObjective);
+            }
+        }
+    }
+
+    %client.currentTaskIsTeam = %team;
+    %client.currentTaskDescription = %description;
 }
 
 function serverCmdSendTaskToClientTarget(%client, %clientTargetID)
 {
-   %targetClient = $TargetToClient[%clientTargetID];
-	serverCmdSendTaskToClient(%client, %targetClient, true);
+    %targetClient = $TargetToClient[%clientTargetID];
+    serverCmdSendTaskToClient(%client, %targetClient, true);
 }
 
 function serverCmdSendTaskToClient(%client, %targetClient, %fromCmdMap)
 {
-   if(!isObject(%targetClient))
-      return;
+    if (!isObject(%targetClient))
+        return;
 
-   if(%client.getSensorGroup() != %targetClient.getSensorGroup())
-      return;
+    if (%client.getSensorGroup() != %targetClient.getSensorGroup())
+        return;
 
-   if(%client.currentTaskDescription $= "")
-      return;
+    if (%client.currentTaskDescription $= "")
+        return;
 
-   if(%client.currentTaskIsTeam)
-      return;
+    if (%client.currentTaskIsTeam)
+        return;
 
-   if(%targetClient.isAIControlled())
-   {
-      if(%client.currentAIObjective != -1)
-      {
-         %objective = aiAddHumanObjective(%client, %client.currentAIObjective, %targetClient, %fromCmdMap);
+    if (%targetClient.isAIControlled())
+    {
+        if (%client.currentAIObjective != -1)
+        {
+            %objective = aiAddHumanObjective(%client,
+                %client.currentAIObjective, %targetClient, %fromCmdMap);
 
-         if(%objective == %client.currentAIObjective)
-         {
-            PendingAIObjectives.remove(%client.currentAIObjective);
-            cancel(%client.currentAIObjective.assignThread);
-         }
+            if (%objective == %client.currentAIObjective)
+            {
+                PendingAIObjectives.remove(%client.currentAIObjective);
+                cancel(%client.currentAIObjective.assignThread);
+            }
 
-         if(%objective > 0)
-            %client.currentAIObjective = -1;
-      }
-   }
-   else
-   {
-      %targetId = %client.getTargetId();
-      if(%targetId < 0)
-         %targetName = "";
-      else
-      {
-         %targetName = getTargetGameName(%targetId);
-         if(%targetName $= "")
-            return;
-      }  
+            if (%objective > 0)
+                %client.currentAIObjective = -1;
+        }
+    }
+    else
+    {
+        %targetId = %client.getTargetId();
+        if (%targetId < 0)
+            %targetName = "";
+        else
+        {
+            %targetName = getTargetGameName(%targetId);
+            if (%targetName $= "")
+                return;
+        }
 
-      commandToClient(%targetClient, 'TaskInfo', %client, -1, false, %client.currentTaskDescription, %targetName);
-      commandToClient(%targetClient, 'PotentialTask', %client.name, %client.currentTaskDescription, %targetName);
-      %client.sendTargetTo(%targetClient, false);
-   }
+        commandToClient(%targetClient, 'TaskInfo', %client, -1, false,
+            %client.currentTaskDescription, %targetName);
+        commandToClient(%targetClient, 'PotentialTask', %client.name,
+            %client.currentTaskDescription, %targetName);
+        %client.sendTargetTo(%targetClient, false);
+    }
 }
 
 //---------------------------------------------------------------------------
 function serverCmdSendTaskToTeam(%client)
 {
-   if(%client.currentTaskDescription $= "")
-      return;
+    if (%client.currentTaskDescription $= "")
+        return;
 
-   if(!%client.currentTaskIsTeam)
-      return;
+    if (!%client.currentTaskIsTeam)
+        return;
 
-   %targetId = %client.getTargetId();
+    %targetId = %client.getTargetId();
 
-   if(%targetId < 0)
-      %targetName = "";
-   else
-   {
-      %targetName = getTargetGameName(%targetId);
-      if(%targetName $= "")
-         return;
-   }  
+    if (%targetId < 0)
+        %targetName = "";
+    else
+    {
+        %targetName = getTargetGameName(%targetId);
+        if (%targetName $= "")
+            return;
+    }
 
-   %count = ClientGroup.getCount();
-   for(%i = 0; %i < %count; %i++)
-   {
-      %recipient = ClientGroup.getObject(%i);
-      if(%recipient.getSensorGroup() == %client.getSensorGroup())
-      {
-         if(!%recipient.isAIControlled())
-         {
-            commandToClient(%recipient, 'TaskInfo', %client, %client.currentAIObjective, true, %client.currentTaskDescription, %targetName);
-            commandToClient(%recipient, 'PotentialTeamTask', %client.currentTaskDescription, %targetName);
+    %count = ClientGroup.getCount();
+    for (%i = 0; %i < %count; %i++)
+    {
+        %recipient = ClientGroup.getObject(%i);
+        if (%recipient.getSensorGroup() == %client.getSensorGroup())
+        {
+            if (!%recipient.isAIControlled())
+            {
+                commandToClient(%recipient, 'TaskInfo', %client,
+                    %client.currentAIObjective, true,
+                    %client.currentTaskDescription, %targetName);
+                commandToClient(%recipient, 'PotentialTeamTask',
+                    %client.currentTaskDescription, %targetName);
 
-            %client.sendTargetTo(%recipient, false);
-         }
-      }
-   }   
+                %client.sendTargetTo(%recipient, false);
+            }
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
 function serverCmdAcceptTask(%client, %issueClient, %AIObjective, %description)
 {
-   if(%client.getSensorGroup() != %issueClient.getSensorGroup())
-      return;
+    if (%client.getSensorGroup() != %issueClient.getSensorGroup())
+        return;
 
-   if(%description $= "")
-      return;
+    if (%description $= "")
+        return;
 
-   // handle an aiobjective:
-   if(%AIObjective != -1)
-   {
-      %count = PendingAIObjectives.getCount();
-      for(%i = 0; %i < %count; %i++)
-      {
-         %obj = PendingAIObjectives.getObject(%i);
-         if((%obj == %AIObjective) && (%obj.sensorGroup == %client.getSensorGroup))
-         {
-            // inc the ack count and remove if past max
-            %obj.ackCount++;
-            if(%obj.ackCount >= %obj.maxAssigned)
+    // handle an aiobjective:
+    if (%AIObjective != -1)
+    {
+        %count = PendingAIObjectives.getCount();
+        for (%i = 0; %i < %count; %i++)
+        {
+            %obj = PendingAIObjectives.getObject(%i);
+            if ((%obj == %AIObjective) &&
+                    (%obj.sensorGroup == %client.getSensorGroup))
             {
-               if(%issueClient.currentAIObjective == %obj)
-                  %issueClient.currentAIObjective = -1;
-               %obj.delete();
+                // inc the ack count and remove if past max
+                %obj.ackCount++;
+                if (%obj.ackCount >= %obj.maxAssigned)
+                {
+                    if (%issueClient.currentAIObjective == %obj)
+                        %issueClient.currentAIObjective = -1;
+                    %obj.delete();
+                }
             }
-         }
-      }
-   }
+        }
+    }
 
-   commandToClient(%issueClient, 'TaskAccepted', %client.name, %description);
-   commandToClient(%client, 'TaskInfo', %issueClient, -1, %issueClient.name, %description);
-   commandToClient(%client, 'AcceptedTask', %description);
-   %client.sendTargetTo(%client, true);
+    commandToClient(%issueClient, 'TaskAccepted', %client.name, %description);
+    commandToClient(%client, 'TaskInfo', %issueClient, -1, %issueClient.name, %description);
+    commandToClient(%client, 'AcceptedTask', %description);
+    %client.sendTargetTo(%client, true);
 
-	//audio feedback - if the client is not the issuer...
-   if (%client != %issueClient)
-   {
-	   %wavFile = "~wvoice/" @ %client.voice @ "/cmd.acknowledge.wav";
-	   MessageClient(%issueClient, 'MsgTaskCompleted', addTaggedString(%wavFile));
-   }
+    //audio feedback - if the client is not the issuer...
+    if (%client != %issueClient)
+    {
+        %wavFile = "~wvoice/" @ %client.voice @ "/cmd.acknowledge.wav";
+        messageClient(%issueClient, 'MsgTaskCompleted', addTaggedString(%wavFile));
+    }
 }
 
 function serverCmdDeclineTask(%client, %issueClient, %description, %teamCmd)
 {
-   if(%client.getSensorGroup() != %issueClient.getSensorGroup())
-      return;
+    if (%client.getSensorGroup() != %issueClient.getSensorGroup())
+        return;
 
-   if(%description $= "")
-      return;
+    if (%description $= "")
+        return;
 
-	//no need to be spammed by the entire team declining your team command
-	if (%teamCmd)
-		return;
+    //no need to be spammed by the entire team declining your team command
+    if (%teamCmd)
+        return;
 
-   commandToClient(%issueClient, 'TaskDeclined', %client.name, %description);
+    commandToClient(%issueClient, 'TaskDeclined', %client.name, %description);
 
-	//audio feedback
-	%wavFile = "~wvoice/" @ %client.voice @ "/cmd.decline.wav";
-	MessageClient(%issueClient, 'MsgTaskCompleted', addTaggedString(%wavFile));
+    //audio feedback
+    %wavFile = "~wvoice/" @ %client.voice @ "/cmd.decline.wav";
+    messageClient(%issueClient, 'MsgTaskCompleted', addTaggedString(%wavFile));
 }
 
 function serverCmdCompletedTask(%client, %issueClient, %description)
 {
-   if(%client.getSensorGroup() != %issueClient.getSensorGroup())
-      return;
+    if (%client.getSensorGroup() != %issueClient.getSensorGroup())
+        return;
 
-   if(%description $= "")
-      return;
+    if (%description $= "")
+        return;
 
-   commandToClient(%issueClient, 'TaskCompleted', %client.name, %description);
+    commandToClient(%issueClient, 'TaskCompleted', %client.name, %description);
 
-	//audio feedback
-	%wavFile = "~wvoice/" @ %client.voice @ "/cmd.completed.wav";
-	MessageClient(%issueClient, 'MsgTaskCompleted', addTaggedString(%wavFile));
+    //audio feedback
+    %wavFile = "~wvoice/" @ %client.voice @ "/cmd.completed.wav";
+    messageClient(%issueClient, 'MsgTaskCompleted', addTaggedString(%wavFile));
 }
-   
+
 //---------------------------------------------------------------------------
 function buildAIObjective(%client, %command)
 {
-   %targetId = %client.getTargetId();
-   %targetPos = %client.getTargetPos();
+    %targetId = %client.getTargetId();
+    %targetPos = %client.getTargetPos();
 
-   %targetObj = -1;
-   if(%targetId != -1)
-      %targetObj = getTargetObject(%targetId);
+    %targetObj = -1;
+    if (%targetId != -1)
+        %targetObj = getTargetObject(%targetId);
 
-   // create a new objective
-   %tableIndex = getWord(%command, 0);
-   %objective = new AIObjective($ObjectiveTable[%tableIndex, type])
-   {
-      dataBlock            = "AIObjectiveMarker";
-      weightLevel1         = $ObjectiveTable[%tableIndex, weightLevel1];
-      weightLevel2         = $ObjectiveTable[%tableIndex, weightLevel2];
-      weightLevel3         = $ObjectiveTable[%tableIndex, weightLevel3];
-      weightLevel4         = $ObjectiveTable[%tableIndex, weightLevel4];
-      equipment            = $ObjectiveTable[%tableIndex, equipment];
-      desiredEquipment     = $ObjectiveTable[%tableIndex, desiredEquipment];
-      buyEquipmentSet      = $ObjectiveTable[%tableIndex, buyEquipmentSet];
-      offense              = $ObjectiveTable[%tableIndex, offense];
-      defense              = $ObjectiveTable[%tableIndex, defense];
-      issuedByHuman        = true;
-      issuedByClientId     = %client;
-      targetObjectId       = %targetObj;
-      targetClientId       = %targetObj.client;
-      location             = %targetPos;
-		position					= %targetPos;
-   };
+    // create a new objective
+    %tableIndex = getWord(%command, 0);
+    %objective = new AIObjective($ObjectiveTable[%tableIndex, type])
+    {
+        dataBlock            = "AIObjectiveMarker";
+        weightLevel1         = $ObjectiveTable[%tableIndex, weightLevel1];
+        weightLevel2         = $ObjectiveTable[%tableIndex, weightLevel2];
+        weightLevel3         = $ObjectiveTable[%tableIndex, weightLevel3];
+        weightLevel4         = $ObjectiveTable[%tableIndex, weightLevel4];
+        equipment            = $ObjectiveTable[%tableIndex, equipment];
+        desiredEquipment     = $ObjectiveTable[%tableIndex, desiredEquipment];
+        buyEquipmentSet      = $ObjectiveTable[%tableIndex, buyEquipmentSet];
+        offense              = $ObjectiveTable[%tableIndex, offense];
+        defense              = $ObjectiveTable[%tableIndex, defense];
+        issuedByHuman        = true;
+        issuedByClientId     = %client;
+        targetObjectId       = %targetObj;
+        targetClientId       = %targetObj.client;
+        location             = %targetPos;
+        position             = %targetPos;
+    };
 
-   %objective.assignTimeout = $ObjectiveTable[%tableIndex, assignTimeout];
-   %objective.maxAssigned = $ObjectiveTable[%tableIndex, maxAssigned];
-   %objective.ackCount = 0;
-   %objective.sensorGroup = %client.getSensorGroup();
+    %objective.assignTimeout = $ObjectiveTable[%tableIndex, assignTimeout];
+    %objective.maxAssigned = $ObjectiveTable[%tableIndex, maxAssigned];
+    %objective.ackCount = 0;
+    %objective.sensorGroup = %client.getSensorGroup();
 
-   MissionCleanup.add(%objective);
-   return(%objective);
+    MissionCleanup.add(%objective);
+    return(%objective);
 }
 
 //-----------------------------------------------------------------------------
 //VOICE command hooks here...
 function findClientInView(%client, %maxDist)
 {
-	//make sure the player is alive
-	if (!AIClientIsAlive(%client))
-		return -1;
+    //make sure the player is alive
+    if (!AIClientIsAlive(%client))
+    return -1;
 
-	//get various info about the player's eye
-	%srcEyeTransform = %client.player.getEyeTransform();
-	%srcEyePoint = firstWord(%srcEyeTransform) @ " " @ getWord(%srcEyeTransform, 1) @ " " @ getWord(%srcEyeTransform, 2);
-	%srcEyeVector = VectorNormalize(%client.player.getEyeVector());
+    //get various info about the player's eye
+    %srcEyeTransform = %client.player.getEyeTransform();
+    %srcEyePoint = firstWord(%srcEyeTransform) @ " " @ getWord(%srcEyeTransform, 1) @ " " @ getWord(%srcEyeTransform, 2);
+    %srcEyeVector = VectorNormalize(%client.player.getEyeVector());
 
-   //see if there's an enemy near our defense location...
-   %clientCount = 0;
-   %count = ClientGroup.getCount();
-   %viewedClient = -1;
-   %clientDot = -1;
-   for(%i = 0; %i < %count; %i++)
-   {
-		%cl = ClientGroup.getObject(%i);
+    //see if there's an enemy near our defense location...
+    %clientCount = 0;
+    %count = ClientGroup.getCount();
+    %viewedClient = -1;
+    %clientDot = -1;
+    for (%i = 0; %i < %count; %i++)
+    {
+        %cl = ClientGroup.getObject(%i);
 
-		//make sure we find an AI who's alive and not the client
-		if (%cl != %client && isObject(%cl.player) && %cl.team == %client.team)
-		{
-			//make sure the player is within range
-		   %clPos = %cl.player.getWorldBoxCenter();
-		   %distance = VectorDist(%clPos, %srcEyePoint);
-			if (%distance <= %maxDist)
-			{
-				//create the vector from the client to the client
-				%clVector = VectorNormalize(VectorSub(%clPos, %srcEyePoint));
+        //make sure we find an AI who's alive and not the client
+        if (%cl != %client && isObject(%cl.player) && %cl.team == %client.team)
+        {
+            //make sure the player is within range
+            %clPos = %cl.player.getWorldBoxCenter();
+            %distance = VectorDist(%clPos, %srcEyePoint);
+            if (%distance <= %maxDist)
+            {
+                //create the vector from the client to the client
+                %clVector = VectorNormalize(VectorSub(%clPos, %srcEyePoint));
 
-				//see if the dot product is greater than our current, and greater than 0.6
-				%dot = VectorDot(%clVector, %srcEyeVector);
+                //see if the dot product is greater than our current, and greater than 0.6
+                %dot = VectorDot(%clVector, %srcEyeVector);
 
-				if (%dot > 0.6 && %dot > %clientDot)
-				{
-					//make sure we're not looking through walls...
-					%mask = $TypeMasks::TerrainObjectType | $TypeMasks::InteriorObjectType | $TypeMasks::StaticShapeObjectType;
-					%losResult = containerRayCast(%srcEyePoint, %clPos, %mask);
-					%losObject = GetWord(%losResult, 0);
-					if (!isObject(%losObject))
-					{
-						%viewedClient = %cl;
-						%clientDot = %dot;
-					}
-				}
-			}
-		}
-   }
-   
-   return %viewedClient;
+                if (%dot > 0.6 && %dot > %clientDot)
+                {
+                    //make sure we're not looking through walls...
+                    %mask = $TypeMasks::TerrainObjectType |
+                            $TypeMasks::InteriorObjectType |
+                            $TypeMasks::StaticShapeObjectType;
+                    %losResult = containerRayCast(%srcEyePoint, %clPos, %mask);
+                    %losObject = GetWord(%losResult, 0);
+                    if (!isObject(%losObject))
+                    {
+                        %viewedClient = %cl;
+                        %clientDot = %dot;
+                    }
+                }
+            }
+        }
+    }
+
+    return %viewedClient;
 }
 
 function findTargetInView(%client, %maxDist)
 {
-   if (!AIClientIsAlive(%client))
-      return -1;
+    if (!AIClientIsAlive(%client))
+        return -1;
 
-   // look from player's eye position for objects
-   %mask = $TypeMasks::TerrainObjectType | $TypeMasks::InteriorObjectType | $TypeMasks::StaticShapeObjectType | $TypeMasks::GameBaseObjectType;
-   %eyeVec = %client.player.getEyeVector();
-   %eyeTrans = %client.player.getEyeTransform();
-   %eyePos = posFromTransform(%eyeTrans);
-   %nEyeVec = VectorNormalize(%eyeVec);
-   %scEyeVec = VectorScale(%nEyeVec, %maxDist);
-   %eyeStart = VectorAdd(%eyePos, VectorScale(%nEyeVec, 1));
-   %eyeEnd = VectorAdd(%eyePos, %scEyeVec);
-   %losResult = containerRayCast(%eyeStart, %eyeEnd, %mask);
-   %losObject = GetWord(%losResult, 0);
-   if (!isObject(%losObject) || !(%losObject.getType() & $TypeMasks::GameBaseObjectType) || %losObject.getTarget() == -1)
-      return -1;
-   else
-      return %losObject;
+    // look from player's eye position for objects
+    %mask = $TypeMasks::TerrainObjectType | $TypeMasks::InteriorObjectType | $TypeMasks::StaticShapeObjectType | $TypeMasks::GameBaseObjectType;
+    %eyeVec = %client.player.getEyeVector();
+    %eyeTrans = %client.player.getEyeTransform();
+    %eyePos = posFromTransform(%eyeTrans);
+    %nEyeVec = VectorNormalize(%eyeVec);
+    %scEyeVec = VectorScale(%nEyeVec, %maxDist);
+    %eyeStart = VectorAdd(%eyePos, VectorScale(%nEyeVec, 1));
+    %eyeEnd = VectorAdd(%eyePos, %scEyeVec);
+    %losResult = containerRayCast(%eyeStart, %eyeEnd, %mask);
+    %losObject = GetWord(%losResult, 0);
+    if (!isObject(%losObject) ||
+            !(%losObject.getType() & $TypeMasks::GameBaseObjectType) ||
+            %losObject.getTarget() == -1)
+        return -1;
+    else
+        return %losObject;
 }
 
 $LookAtClientDistance = 35;
 $LookAtObjectDistance = 400;
 function CreateVoiceServerTask(%client, %cmdCode)
 {
-   //switch on the different voice binds we can create a task for:
-   %losObj = findTargetInView(%client, $LookAtObjectDistance);
-   %targetClient = findClientInView(%client, $LookAtClientDistance);
-   %cmdSent = false;
-   switch$ (%cmdCode)
-   {
-		//these have an object as the target of the command
-      case 'ChatRepairBase':
-         if (isObject(%losObj) && %losObj.getDamagePercent() > 0 && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    //switch on the different voice binds we can create a task for:
+    %losObj = findTargetInView(%client, $LookAtObjectDistance);
+    %targetClient = findClientInView(%client, $LookAtClientDistance);
+    %cmdSent = false;
+    switch$ (%cmdCode)
+    {
+    //these have an object as the target of the command
+    case 'ChatRepairBase':
+        if (isObject(%losObj) && %losObj.getDamagePercent() > 0 &&
+                isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             %client.setTargetId(%losObj.getTarget());
             %client.setTargetPos(%losObj.position);
             serverCmdBuildClientTask(%client, 'RepairObject', true);
             serverCmdSendTaskToTeam(%client);
             %cmdSent = true;
-         }
+        }
 
-      case 'ChatRepairGenerator':
-         if (isObject(%losObj) && %losObj.getDamagePercent() > 0 && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatRepairGenerator':
+        if (isObject(%losObj) && %losObj.getDamagePercent() > 0 &&
+                isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a generator
-            if (%losObj.getDataBlock().getName() $= "GeneratorLarge" || %losObj.getDataBlock().getName() $= "SolarPanel")
+            if (%losObj.getDataBlock().getName() $= "GeneratorLarge" ||
+                    %losObj.getDataBlock().getName() $= "SolarPanel")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'RepairObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'RepairObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatRepairSensors':
-         if (isObject(%losObj) && %losObj.getDamagePercent() > 0 && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatRepairSensors':
+        if (isObject(%losObj) && %losObj.getDamagePercent() > 0 &&
+                isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a sensor
-            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" || %losObj.getDataBlock().getName() $= "SensorMediumPulse")
+            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" ||
+                    %losObj.getDataBlock().getName() $= "SensorMediumPulse")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'RepairObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'RepairObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatRepairTurrets':
-         if (isObject(%losObj) && %losObj.getDamagePercent() > 0 && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatRepairTurrets':
+        if (isObject(%losObj) && %losObj.getDamagePercent() > 0 &&
+                isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a turret
-            if (%losObj.getDataBlock().getName() $= "TurretBaseLarge" || %losObj.getDataBlock().getName() $= "TurretDeployedFloorIndoor" ||
-                  %losObj.getDataBlock().getName() $= "TurretDeployedWallIndoor" || %losObj.getDataBlock().getName() $= "TurretDeployedCeilingIndoor" ||
-                  %losObj.getDataBlock().getName() $= "TurretDeployedOutdoor" || %losObj.getDataBlock().getName() $= "SentryTurret")
+            if (%losObj.getDataBlock().getName() $= "TurretBaseLarge" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedFloorIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedWallIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedCeilingIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedOutdoor" ||
+                    %losObj.getDataBlock().getName() $= "SentryTurret")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'RepairObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'RepairObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatRepairVehicle':
-         if (isObject(%losObj) && %losObj.getDamagePercent() > 0 && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatRepairVehicle':
+        if (isObject(%losObj) && %losObj.getDamagePercent() > 0 &&
+                isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a vehicle station
             if (%losObj.getDataBlock().getName() $= "StationVehicle")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'RepairObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'RepairObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdTargetBase' or 'ChatTargetNeed':
-         if (isObject(%losObj) && %losObj.getDamagePercent() < 1 && !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdTargetBase' or 'ChatTargetNeed':
+        if (isObject(%losObj) && %losObj.getDamagePercent() < 1 &&
+                !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             %client.setTargetId(%losObj.getTarget());
             %client.setTargetPos(%losObj.position);
             serverCmdBuildClientTask(%client, 'LazeObject', true);
             serverCmdSendTaskToTeam(%client);
             %cmdSent = true;
-         }
+        }
 
-      case 'ChatCmdTargetTurret':
-         if (isObject(%losObj) && %losObj.getDamagePercent() < 1 && !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdTargetTurret':
+        if (isObject(%losObj) && %losObj.getDamagePercent() < 1 &&
+                !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a turret
-            if (%losObj.getDataBlock().getName() $= "TurretBaseLarge" || %losObj.getDataBlock().getName() $= "TurretDeployedFloorIndoor" ||
-                  %losObj.getDataBlock().getName() $= "TurretDeployedWallIndoor" || %losObj.getDataBlock().getName() $= "TurretDeployedCeilingIndoor" ||
-                  %losObj.getDataBlock().getName() $= "TurretDeployedOutdoor" || %losObj.getDataBlock().getName() $= "SentryTurret")
+            if (%losObj.getDataBlock().getName() $= "TurretBaseLarge" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedFloorIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedWallIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedCeilingIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedOutdoor" ||
+                    %losObj.getDataBlock().getName() $= "SentryTurret")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'LazeObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'LazeObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdTargetSensors':
-         if (isObject(%losObj) && %losObj.getDamagePercent() < 1 && !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdTargetSensors':
+        if (isObject(%losObj) && %losObj.getDamagePercent() < 1 &&
+                !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a sensor
-            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" || %losObj.getDataBlock().getName() $= "SensorMediumPulse")
+            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" ||
+                    %losObj.getDataBlock().getName() $= "SensorMediumPulse")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'LazeObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'LazeObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatTargetFire':
-         if (isObject(%losObj) && %losObj.getDamagePercent() < 1 && !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatTargetFire':
+        if (isObject(%losObj) && %losObj.getDamagePercent() < 1 &&
+                !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             %client.setTargetId(%losObj.getTarget());
             %client.setTargetPos(%losObj.position);
             serverCmdBuildClientTask(%client, 'mortarObject', true);
             serverCmdSendTaskToTeam(%client);
             %cmdSent = true;
-         }
+        }
 
-      case 'ChatCmdAttackSensors':
-         if (isObject(%losObj) && %losObj.getDamagePercent() < 1 && !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdAttackSensors':
+        if (isObject(%losObj) && %losObj.getDamagePercent() < 1 &&
+                !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a sensor
-            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" || %losObj.getDataBlock().getName() $= "SensorMediumPulse")
+            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" ||
+                    %losObj.getDataBlock().getName() $= "SensorMediumPulse")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'mortarObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'mortarObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdAttackTurrets':
-         if (isObject(%losObj) && %losObj.getDamagePercent() < 1 && !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdAttackTurrets':
+        if (isObject(%losObj) && %losObj.getDamagePercent() < 1 &&
+                !isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a turret
             if (%losObj.getDataBlock().getName() $= "TurretBaseLarge")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'mortarObject', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'mortarObject', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdDefendBase':
-         if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdDefendBase':
+        if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             %client.setTargetId(%losObj.getTarget());
             %client.setTargetPos(%losObj.position);
             serverCmdBuildClientTask(%client, 'DefendLocation', true);
             serverCmdSendTaskToTeam(%client);
             %cmdSent = true;
-         }
+        }
 
-      case 'ChatCmdDefendGenerator':
-         if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdDefendGenerator':
+        if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a generator
-            if (%losObj.getDataBlock().getName() $= "GeneratorLarge" || %losObj.getDataBlock().getName() $= "SolarPanel")
+            if (%losObj.getDataBlock().getName() $= "GeneratorLarge" ||
+                    %losObj.getDataBlock().getName() $= "SolarPanel")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'DefendLocation', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'DefendLocation', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdDefendSensors':
-         if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdDefendSensors':
+        if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a sensor
-            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" || %losObj.getDataBlock().getName() $= "SensorMediumPulse")
+            if (%losObj.getDataBlock().getName() $= "SensorLargePulse" ||
+                    %losObj.getDataBlock().getName() $= "SensorMediumPulse")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'DefendLocation', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'DefendLocation', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdDefendTurrets':
-         if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdDefendTurrets':
+        if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a turret
-            if (%losObj.getDataBlock().getName() $= "TurretBaseLarge" || %losObj.getDataBlock().getName() $= "TurretDeployedFloorIndoor" ||
-                  %losObj.getDataBlock().getName() $= "TurretDeployedWallIndoor" || %losObj.getDataBlock().getName() $= "TurretDeployedCeilingIndoor" ||
-                  %losObj.getDataBlock().getName() $= "TurretDeployedOutdoor" || %losObj.getDataBlock().getName() $= "SentryTurret")
-            {              
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'DefendLocation', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+            if (%losObj.getDataBlock().getName() $= "TurretBaseLarge" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedFloorIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedWallIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedCeilingIndoor" ||
+                    %losObj.getDataBlock().getName() $= "TurretDeployedOutdoor" ||
+                    %losObj.getDataBlock().getName() $= "SentryTurret")
+            {
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'DefendLocation', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      case 'ChatCmdDefendVehicle':
-         if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
-         {
+    case 'ChatCmdDefendVehicle':
+        if (isObject(%losObj) && isTargetFriendly(%losObj.getTarget(), %client.getSensorGroup()))
+        {
             //make sure the target actually is a vehicle station
             if (%losObj.getDataBlock().getName() $= "StationVehicle")
             {
-               %client.setTargetId(%losObj.getTarget());
-               %client.setTargetPos(%losObj.position);
-               serverCmdBuildClientTask(%client, 'DefendLocation', true);
-               serverCmdSendTaskToTeam(%client);
-               %cmdSent = true;
+                %client.setTargetId(%losObj.getTarget());
+                %client.setTargetPos(%losObj.position);
+                serverCmdBuildClientTask(%client, 'DefendLocation', true);
+                serverCmdSendTaskToTeam(%client);
+                %cmdSent = true;
             }
-         }
+        }
 
-      //this one is special, it will create a task for the issuer instead of the person you're looking at...
-      case 'ChatTaskCover':
-         %cmdSent = true;
-         if (AIClientIsAlive(%targetClient) && %targetClient.team == %client.team)
-         {
+    //this one is special, it will create a task for the issuer instead of the person you're looking at...
+    case 'ChatTaskCover':
+        %cmdSent = true;
+        if (AIClientIsAlive(%targetClient) && %targetClient.team == %client.team)
+        {
             %client.setTargetId(%targetClient.player.getTarget());
             %client.setTargetPos(%targetClient.player.position);
 
             //build and send the command to the target player
             serverCmdBuildClientTask(%client, 'EscortPlayer', false);
             serverCmdSendTaskToClient(%client, %client, false);
-				serverCmdAcceptTask(%client, %client, -1, "Escort player" SPC getTaggedString(%targetClient.name));
-         }
+            serverCmdAcceptTask(%client, %client, -1,
+                "Escort player" SPC getTaggedString(%targetClient.name));
+        }
 
-		//These all have the speaker as the target of the command
-      case 'ChatCmdDefendMe' or 'ChatHelp' or 'ChatNeedCover':
-         %client.setTargetId(%client.player.getTarget());
-         %client.setTargetPos(%client.player.position);
-         %cmdSent = true;
-         if (AIClientIsAlive(%targetClient))
-         {
+    //These all have the speaker as the target of the command
+    case 'ChatCmdDefendMe' or 'ChatHelp' or 'ChatNeedCover':
+        %client.setTargetId(%client.player.getTarget());
+        %client.setTargetPos(%client.player.position);
+        %cmdSent = true;
+        if (AIClientIsAlive(%targetClient))
+        {
             //build and send the command to the target player
             serverCmdBuildClientTask(%client, 'EscortPlayer', false);
             serverCmdSendTaskToClient(%client, %targetClient, false);
-         }
-         else
-         {
+        }
+        else
+        {
             serverCmdBuildClientTask(%client, 'EscortPlayer', true);
             serverCmdSendTaskToTeam(%client);
-         }
+        }
 
-      case 'ChatRepairMe':
-         if (%client.player.getDamagePercent() > 0)
-         {
-	         %client.setTargetId(%client.player.getTarget());
-	         %client.setTargetPos(%client.player.position);
+    case 'ChatRepairMe':
+        if (%client.player.getDamagePercent() > 0)
+        {
+            %client.setTargetId(%client.player.getTarget());
+            %client.setTargetPos(%client.player.position);
             %cmdSent = true;
-	         if (AIClientIsAlive(%targetClient))
-	         {
-	            //build and send the command to the target player
-	            serverCmdBuildClientTask(%client, 'RepairPlayer', false);
-	            serverCmdSendTaskToClient(%client, %targetClient, false);
-	         }
-	         else
-	         {
-	            serverCmdBuildClientTask(%client, 'RepairPlayer', true);
-	            serverCmdSendTaskToTeam(%client);
-	         }
-			}
+            if (AIClientIsAlive(%targetClient))
+            {
+                //build and send the command to the target player
+                serverCmdBuildClientTask(%client, 'RepairPlayer', false);
+                serverCmdSendTaskToClient(%client, %targetClient, false);
+            }
+            else
+            {
+                serverCmdBuildClientTask(%client, 'RepairPlayer', true);
+                serverCmdSendTaskToTeam(%client);
+            }
+        }
 
-      case 'ChatFlagGotIt':
-         //send this only to the AI we're controlling...
-         %cmdSent = true;
-         if (aiHumanHasControl(%client, %client.controlAI))
-         {
+    case 'ChatFlagGotIt':
+        //send this only to the AI we're controlling...
+        %cmdSent = true;
+        if (aiHumanHasControl(%client, %client.controlAI))
+        {
             %client.setTargetId(%client.player.getTarget());
             %client.setTargetPos(%client.player.position);
             serverCmdBuildClientTask(%client, 'EscortPlayer', false);
             serverCmdSendTaskToClient(%client, %client.controlAI, false);
-         }
+        }
 
-      case 'ChatCmdTakeFlag' or 'ChatCmdHunterTakeFlags':
-         %client.setTargetId(%client.player.getTarget());
-         %client.setTargetPos(%client.player.position);
-         %cmdSent = true;
-         if (AIClientIsAlive(%targetClient))
-         {
+    case 'ChatCmdTakeFlag' or 'ChatCmdHunterTakeFlags':
+        %client.setTargetId(%client.player.getTarget());
+        %client.setTargetPos(%client.player.position);
+        %cmdSent = true;
+        if (AIClientIsAlive(%targetClient))
+        {
             //build and send the command to the target player
             serverCmdBuildClientTask(%client, 'TakeFlag', false);
             serverCmdSendTaskToClient(%client, %targetClient, false);
-         }
-         else
-         {
+        }
+        else
+        {
             serverCmdBuildClientTask(%client, 'TakeFlag', true);
             serverCmdSendTaskToTeam(%client);
-         }
+        }
 
-      case 'ChatCmdGiveMeFlag' or 'ChatCmdHunterGiveFlags':
-         %client.setTargetId(%client.player.getTarget());
-         %client.setTargetPos(%client.player.position);
-         %cmdSent = true;
-         if (AIClientIsAlive(%targetClient))
-         {
-         	if (!%targetClient.isAIControlled())
-	         {
-	            //build and send the command to the target player
-	            serverCmdBuildClientTask(%client, 'GiveFlag', false);
-	            serverCmdSendTaskToClient(%client, %targetClient, false);
-	         }
-				else
-				{
-	            //send the response to the ai...
-	            AIRespondToEvent(%client, %cmdCode, %targetClient);
-				}
-			}
-         else
-         {
+    case 'ChatCmdGiveMeFlag' or 'ChatCmdHunterGiveFlags':
+        %client.setTargetId(%client.player.getTarget());
+        %client.setTargetPos(%client.player.position);
+        %cmdSent = true;
+        if (AIClientIsAlive(%targetClient))
+        {
+            if (!%targetClient.isAIControlled())
+            {
+                //build and send the command to the target player
+                serverCmdBuildClientTask(%client, 'GiveFlag', false);
+                serverCmdSendTaskToClient(%client, %targetClient, false);
+            }
+            else
+            {
+                //send the response to the ai...
+                AIRespondToEvent(%client, %cmdCode, %targetClient);
+            }
+        }
+        else
+        {
             serverCmdBuildClientTask(%client, 'GiveFlag', true);
             serverCmdSendTaskToTeam(%client);
-         }
+        }
 
-		case 'ChatNeedDriver' or 'ChatNeedPilot' or 'ChatNeedRide' or 'ChatNeedHold':
-         %client.setTargetId(%client.player.getTarget());
-         %client.setTargetPos(%client.player.position);
-         %cmdSent = true;
-         if (AIClientIsAlive(%targetClient) && !%targetClient.isAIControlled())
-         {
+    case 'ChatNeedDriver' or 'ChatNeedPilot' or 'ChatNeedRide' or 'ChatNeedHold':
+        %client.setTargetId(%client.player.getTarget());
+        %client.setTargetPos(%client.player.position);
+        %cmdSent = true;
+        if (AIClientIsAlive(%targetClient) && !%targetClient.isAIControlled())
+        {
             //build and send the command to the target player
             serverCmdBuildClientTask(%client, 'NeedRide', false);
             serverCmdSendTaskToClient(%client, %targetClient, false);
-         }
-         else
-         {
+        }
+        else
+        {
             serverCmdBuildClientTask(%client, 'NeedRide', true);
             serverCmdSendTaskToTeam(%client);
-         }
+        }
 
-		//vehicle passengers - these commands are for either air or ground
-		case 'ChatNeedEscort' or 'ChatNeedPassengers' or 'ChatNeedBombardier' or 'ChatNeedSupport' or 'ChatNeedTailgunner':
-         %client.setTargetId(%client.player.getTarget());
-         %client.setTargetPos(%client.player.position);
-         %cmdSent = true;
-			//find out if the client is in a ground vehicle or not...
-         if (AIClientIsAlive(%targetClient) && !%targetClient.isAIControlled())
-         {
+    //vehicle passengers - these commands are for either air or ground
+    case 'ChatNeedEscort' or 'ChatNeedPassengers' or 'ChatNeedBombardier' or
+      'ChatNeedSupport' or 'ChatNeedTailgunner':
+        %client.setTargetId(%client.player.getTarget());
+        %client.setTargetPos(%client.player.position);
+        %cmdSent = true;
+        //find out if the client is in a ground vehicle or not...
+        if (AIClientIsAlive(%targetClient) && !%targetClient.isAIControlled())
+        {
             //build and send the command to the target player
             serverCmdBuildClientTask(%client, 'NeedPassenger', false);
             serverCmdSendTaskToClient(%client, %targetClient, false);
-         }
-         else
-         {
+        }
+        else
+        {
             serverCmdBuildClientTask(%client, 'NeedPassenger', true);
             serverCmdSendTaskToTeam(%client);
-         }
+        }
 
-      default:
-         %cmdSent = true;
-         if (AIClientIsAlive(%targetClient) && %targetClient.isAIControlled())
-         {
+    default:
+        %cmdSent = true;
+        if (AIClientIsAlive(%targetClient) && %targetClient.isAIControlled())
+        {
             //the bot should detect the client
             %targetClient.clientDetected(%client);
 
             //only respond if the client is on the same team
             AIRespondToEvent(%client, %cmdCode, %targetClient);
-         }
-   }
+        }
+    }
 
-   //handle any rejected commands by the bots
-   if (!%cmdSent && isObject(%targetClient) && %targetClient.isAIControlled())
-   {
-		schedule(250, %client.player, "AIPlayAnimSound", %targetClient, %client.player.getWorldBoxCenter(), "cmd.decline", -1, -1, 0);
-      schedule(2000, %client.player, "AIRespondToEvent", %client, 'ChatCmdWhat', %targetClient);
-   }
+    //handle any rejected commands by the bots
+    if (!%cmdSent && isObject(%targetClient) && %targetClient.isAIControlled())
+    {
+        schedule(250, %client.player, "AIPlayAnimSound", %targetClient,
+            %client.player.getWorldBoxCenter(), "cmd.decline", -1, -1, 0);
+        schedule(2000, %client.player, "AIRespondToEvent", %client,
+            'ChatCmdWhat', %targetClient);
+    }
 }
-

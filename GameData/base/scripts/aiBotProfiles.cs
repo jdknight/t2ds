@@ -1,21 +1,23 @@
 function aiConnectByIndex(%index, %team)
 {
-	if (%index < 0 || $BotProfile[%index, name] $= "")
-		return;
+    if (%index < 0 || $BotProfile[%index, name] $= "")
+        return;
 
-	if (%team $= "")
-		%team = -1;
+    if (%team $= "")
+        %team = -1;
 
-	//initialize the profile, if required
-	if ($BotProfile[%index, skill] $= "")
-		$BotProfile[%index, skill] = 0.5;
+    //initialize the profile, if required
+    if ($BotProfile[%index, skill] $= "")
+        $BotProfile[%index, skill] = 0.5;
 
-	return aiConnect($BotProfile[%index, name], %team, $BotProfile[%index, skill], $BotProfile[%index, offense], $BotProfile[%index, voice], $BotProfile[%index, voicePitch]);
+    return aiConnect($BotProfile[%index, name], %team,
+        $BotProfile[%index, skill], $BotProfile[%index, offense],
+        $BotProfile[%index, voice], $BotProfile[%index, voicePitch]);
 }
 
 function aiConnectByName(%name, %team)
 {
-	if (%name $= "")
+    if (%name $= "")
 		return;
 
 	if (%team $= "")
@@ -113,7 +115,7 @@ function aiConnectMultiple(%numToConnect, %minSkill, %maxSkill, %team)
 			%tableCount++;
 			$BotProfile[%index, canSelect] = false;
 		}
-		
+
 		//check the next bot
 		%index++;
 	}
@@ -134,7 +136,7 @@ function aiConnectMultiple(%numToConnect, %minSkill, %maxSkill, %team)
 				%tableCount++;
 				$BotProfile[%index, canSelect] = false;
 			}
-			
+
 			//check the next bot
 			%index++;
 		}
@@ -158,7 +160,7 @@ function aiConnectMultiple(%numToConnect, %minSkill, %maxSkill, %team)
 				%tableCount++;
 				$BotProfile[%index, canSelect] = false;
 			}
-			
+
 			//check the next bot
 			%index++;
 		}
@@ -228,27 +230,27 @@ function aiConnectMultiple(%numToConnect, %minSkill, %maxSkill, %team)
 	}
 }
 
-$BotProfile[0, name] = "Kidney BOT"; 
+$BotProfile[0, name] = "Kidney BOT";
 $BotProfile[0, skill] = 0.99;
 $BotProfile[0, offense] = true;
 $BotProfile[0, voicePitch] = 0.875;
-$BotProfile[1, name] = "BOT Milk?"; 
+$BotProfile[1, name] = "BOT Milk?";
 $BotProfile[1, skill] = 0.99;
 $BotProfile[1, offense] = true;
 $BotProfile[1, voicePitch] = 0.89;
-$BotProfile[2, name] = "UberBOT"; 
+$BotProfile[2, name] = "UberBOT";
 $BotProfile[2, skill] = 0.99;
 $BotProfile[2, offense] = true;
 $BotProfile[2, voicePitch] = 0.95;
-$BotProfile[3, name] = "SymBOT"; 
+$BotProfile[3, name] = "SymBOT";
 $BotProfile[3, skill] = 0.99;
 $BotProfile[3, offense] = true;
 $BotProfile[3, voicePitch] = 1.1;
-$BotProfile[4, name] = "QIX BOT"; 
+$BotProfile[4, name] = "QIX BOT";
 $BotProfile[4, skill] = 0.99;
 $BotProfile[4, offense] = false;
 $BotProfile[4, voicePitch] = 1.12;
-$BotProfile[5, name] = "Rated BOT"; 
+$BotProfile[5, name] = "Rated BOT";
 $BotProfile[5, skill] = 0.99;
 $BotProfile[5, offense] = true;
 $BotProfile[5, voicePitch] = 0.92;
@@ -280,7 +282,7 @@ $BotProfile[12, name] = "DiamondBOT";
 $BotProfile[12, skill] = 0.99;
 $BotProfile[12, offense] = true;
 $BotProfile[12, voicePitch] = 1.05;
-$BotProfile[13, name] = "Jimmy BOT"; 
+$BotProfile[13, name] = "Jimmy BOT";
 $BotProfile[13, skill] = 0.99;
 $BotProfile[13, offense] = true;
 $BotProfile[13, voicePitch] = 1.09;

@@ -1,6 +1,8 @@
-//All tasks for deathmatch, hunters, and tasks that coincide with the current objective task live here...
+//All tasks for deathmatch, hunters, and tasks that coincide with the current
+//objective task live here...
 
-//Weights for tasks that override the objective task: must be between 4300 and 4700
+//Weights for tasks that override the objective task: must be between 4300 and
+//4700
 $AIWeightVehicleMountedEscort	= 4700;
 $AIWeightReturnTurretFire		= 4675;
 $AIWeightNeedItemBadly    		= 4650;
@@ -37,7 +39,7 @@ $AIBountyWeightShouldEngage	= 4325;
 function AIEngageWhoWillWin(%client1, %client2)
 {
 	//assume both clients are alive - gather some info
-	if (%client1.isAIControlled())
+    if (%client1.isAIControlled())
 		%skill1 = %client1.getSkillLevel();
 	else
 		%skill1 = 0.5;
@@ -90,15 +92,15 @@ function AIEngageTask::retire(%task, %client)
 
 function AIEngageTask::weight(%task, %client)
 {
-   %player = %client.player;
+    %player = %client.player;
 	if (!isObject(%player))
 		return;
 
-   %clientPos = %player.getWorldBoxCenter();
-   %currentTarget = %client.shouldEngage;
+    %clientPos = %player.getWorldBoxCenter();
+    %currentTarget = %client.shouldEngage;
 	if (!AIClientIsAlive(%currentTarget))
 		%currentTarget = %client.getEngageTarget();
-   %client.shouldEngage = -1;
+    %client.shouldEngage = -1;
 	%mustEngage = false;
 	%tougherEnemy = false;
 
@@ -111,93 +113,93 @@ function AIEngageTask::weight(%task, %client)
 	}
 
 	//see if anyone has fired on us recently...
-   %losTimeout = $AIClientMinLOSTime + ($AIClientLOSTimeout * %client.getSkillLevel());
-   if (AIClientIsAlive(%client.lastDamageClient, %losTimeout) && getSimTime() - %client.lastDamageTime < %losTimeout)
-   {
-      //see if we should turn on the new attacker
-      if (AIClientIsAlive(%currentTarget))
-      {
-         %targPos = %currentTarget.player.getWorldBoxCenter();
-         %curTargDist = %client.getPathDistance(%targPos);
-      
-         %newTargPos = %client.lastDamageClient.player.getWorldBoxCenter();
-         %newTargDist = %client.getPathDistance(%newTargPos);
-      
-         //see if the new targ is no more than 30 m further
-         if (%newTargDist > 0 && %newTargDist < %curTargDist + 30)
-         {
+    %losTimeout = $AIClientMinLOSTime + ($AIClientLOSTimeout * %client.getSkillLevel());
+    if (AIClientIsAlive(%client.lastDamageClient, %losTimeout) &&
+            getSimTime() - %client.lastDamageTime < %losTimeout)
+    {
+        //see if we should turn on the new attacker
+        if (AIClientIsAlive(%currentTarget))
+        {
+            %targPos = %currentTarget.player.getWorldBoxCenter();
+            %curTargDist = %client.getPathDistance(%targPos);
+
+            %newTargPos = %client.lastDamageClient.player.getWorldBoxCenter();
+            %newTargDist = %client.getPathDistance(%newTargPos);
+
+            //see if the new targ is no more than 30 m further
+            if (%newTargDist > 0 && %newTargDist < %curTargDist + 30)
+            {
+                %client.shouldEngage = %client.lastDamageClient;
+                %mustEngage = true;
+            }
+        }
+        else
+        {
             %client.shouldEngage = %client.lastDamageClient;
-				%mustEngage = true;
-         }
-      }
-      else
-      {
-         %client.shouldEngage = %client.lastDamageClient;
-			%mustEngage = true;
-      }
-   }
+            %mustEngage = true;
+        }
+    }
+    //no one has fired at us recently, see if we're near an enemy
+    else
+    {
+        %result = AIFindClosestEnemy(%client, 100, %losTimeout);
+        %closestEnemy = getWord(%result, 0);
+        %closestdist = getWord(%result, 1);
+        if (%closestEnemy > 0)
+        {
+            //see if we're right on top of them
+            %targPos = %closestEnemy.player.getWorldBoxCenter();
+            %dist = %client.getPathDistance(%targPos);
 
-   //no one has fired at us recently, see if we're near an enemy
-   else
-   {
-		%result = AIFindClosestEnemy(%client, 100, %losTimeout);
-      %closestEnemy = getWord(%result, 0);
-      %closestdist = getWord(%result, 1);
-      if (%closestEnemy > 0)
-      {
-         //see if we're right on top of them
-         %targPos = %closestEnemy.player.getWorldBoxCenter();
-         %dist = %client.getPathDistance(%targPos);
-         
-         if (%dist > 0 && %dist < 20)
-         {
-            %client.shouldEngage = %closestEnemy;
-				%mustEngage = true;
-         }
-         
-         //else choose them only if we're not already attacking someone
-         else if (%currentTarget <= 0)
-         {
-            %client.shouldEngage = %closestEnemy;
-				%mustEngage = false;
+            if (%dist > 0 && %dist < 20)
+            {
+                %client.shouldEngage = %closestEnemy;
+                %mustEngage = true;
+            }
+            //else choose them only if we're not already attacking someone
+            else if (%currentTarget <= 0)
+            {
+                %client.shouldEngage = %closestEnemy;
+                %mustEngage = false;
 
-				//Make sure the odds are not overwhelmingly in favor of the enemy...
-				if (AIEngageWhoWillWin(%client, %closestEnemy) == %closestEnemy)
-					%tougherEnemy = true;
-         }
-      }
-   }
-   
-   //if we still haven't found a new target, keep fighting the old one
-   if (%client.shouldEngage <= 0)
-   {
-      if (AIClientIsAlive(%currentTarget))
-		{
-			//see if we still have sight of the current target
-			%hasLOS = %client.hasLOSToClient(%currentTarget);
-			%losTime = %client.getClientLOSTime(%currentTarget);
-			if (%hasLOS || %losTime < %losTimeout)
-		      %client.shouldEngage = %currentTarget;
-			else
-				%client.shouldEngage = -1;
-		}
-      else
-			%client.shouldEngage = -1;
-		%mustEngage = false;
-   }
+                //Make sure the odds are not overwhelmingly in favor of the
+                //enemy...
+                if (AIEngageWhoWillWin(%client, %closestEnemy) == %closestEnemy)
+                    %tougherEnemy = true;
+            }
+        }
+    }
 
-   //finally, set the weight
-	if (%client.shouldEngage > 0)
-	{
-		if (%mustEngage)
-		   %task.setWeight($AIWeightReturnFire);
-		else if (%tougherEnemy)
-		   %task.setWeight($AIWeightFoundToughEnemy);
-		else
-		   %task.setWeight($AIWeightFoundEnemy);
-	}
-	else
-	   %task.setWeight(0);
+    //if we still haven't found a new target, keep fighting the old one
+    if (%client.shouldEngage <= 0)
+    {
+        if (AIClientIsAlive(%currentTarget))
+        {
+            //see if we still have sight of the current target
+            %hasLOS = %client.hasLOSToClient(%currentTarget);
+            %losTime = %client.getClientLOSTime(%currentTarget);
+            if (%hasLOS || %losTime < %losTimeout)
+                %client.shouldEngage = %currentTarget;
+            else
+                %client.shouldEngage = -1;
+        }
+        else
+            %client.shouldEngage = -1;
+        %mustEngage = false;
+    }
+
+    //finally, set the weight
+    if (%client.shouldEngage > 0)
+    {
+        if (%mustEngage)
+            %task.setWeight($AIWeightReturnFire);
+        else if (%tougherEnemy)
+            %task.setWeight($AIWeightFoundToughEnemy);
+        else
+            %task.setWeight($AIWeightFoundEnemy);
+    }
+    else
+        %task.setWeight(0);
 }
 
 function AIEngageTask::monitor(%task, %client)
@@ -216,20 +218,19 @@ function AIEngageTask::monitor(%task, %client)
 	%detectPeriod = %client.getDetectPeriod();
 
 	//if we can see the target, engage...
-	if (%hasLOS || %losTime < %detectPeriod)
+    if (%hasLOS || %losTime < %detectPeriod)
 	{
 		%client.stepEngage(%client.shouldEngage);
 		%task.searching = false;
 		%task.searchLocation = %client.shouldEngage.player.getWorldBoxCenter();
 	}
-
 	//else if we haven't for approx 5 sec...  move to the last known location
 	else
 	{
 		//clear the engage target
 		%client.setEngageTarget(-1);
 
-		if (! %task.searching)
+		if (!%task.searching)
 		{
 			%dist = VectorDist(%client.player.getWorldBoxCenter(), %task.searchLocation);
 			if (%dist < 4)
@@ -267,7 +268,8 @@ function AIPickupItemTask::weight(%task, %client)
 	//if we're already picking up an item, make sure it's still valid, then keep the weight the same...
 	if (%task.pickupItem > 0)
 	{
-		if (isObject(%task.pickupItem) && !%task.pickupItem.isHidden() && AICouldUseItem(%client, %task.pickupItem))
+		if (isObject(%task.pickupItem) && !%task.pickupItem.isHidden() &&
+                AICouldUseItem(%client, %task.pickupItem))
 			return;
 		else
 			%task.pickupItem = -1;
@@ -286,7 +288,7 @@ function AIPickupItemTask::weight(%task, %client)
 	%closestHealthLOS = false;
 	%closestItem = -1;
 	%closestItemDist = 32767;
-	%closestItemLOS = false;
+    %closestItemLOS = false;
 
 	//loop through the item list, looking for things to pick up
 	%itemCount = $AIItemSet.getCount();
@@ -295,39 +297,46 @@ function AIPickupItemTask::weight(%task, %client)
 		%item = $AIItemSet.getObject(%i);
 		if (!%item.isHidden())
 		{
-         %dist = %client.getPathDistance(%item.getWorldBoxCenter());
-			if (((%item.getDataBlock().getName() $= "RepairKit" || %item.getDataBlock().getName() $= "RepairPatch") ||
-                                                            (%item.isCorpse && %item.getInventory("RepairKit") > 0)) &&
-                                                            %player.getInventory("RepairKit") <= 0 && %damage > 0.3)
-			{
-				if (%dist > 0 && %dist < %closestHealthDist)
-				{
-					%closestHealth = %item;
-					%closestHealthDist = %dist;
+            %dist = %client.getPathDistance(%item.getWorldBoxCenter());
+            if (((%item.getDataBlock().getName() $= "RepairKit" ||
+                    %item.getDataBlock().getName() $= "RepairPatch") ||
+                    (%item.isCorpse && %item.getInventory("RepairKit") > 0)) &&
+                    %player.getInventory("RepairKit") <= 0 && %damage > 0.3)
+            {
+                if (%dist > 0 && %dist < %closestHealthDist)
+                {
+                    %closestHealth = %item;
+                    %closestHealthDist = %dist;
 
-					//check for LOS
-				   %mask = $TypeMasks::TerrainObjectType | $TypeMasks::InteriorObjectType;
-				   %closestHealthLOS = !containerRayCast(%client.player.getWorldBoxCenter(), %item.getWorldBoxCenter(), %mask, 0);
-				}
-			}
-			else
-			{
-				//only pick up stuff within 35m
-				if (%dist < 35)
-				{
-					if (AICouldUseItem(%client, %item))
-					{
-						if (%dist < %closestItemDist)
-						{
-							%closestItem = %item;
-							%closestItemDist = %dist;
+                    //check for LOS
+                    %mask = $TypeMasks::TerrainObjectType |
+                        $TypeMasks::InteriorObjectType;
+                    %closestHealthLOS = !containerRayCast(
+                        %client.player.getWorldBoxCenter(),
+                        %item.getWorldBoxCenter(), %mask, 0);
+                }
+            }
+            else
+            {
+                //only pick up stuff within 35m
+                if (%dist < 35)
+                {
+                    if (AICouldUseItem(%client, %item))
+                    {
+                        if (%dist < %closestItemDist)
+                        {
+                            %closestItem = %item;
+                            %closestItemDist = %dist;
 
-							//check for LOS
-						   %mask = $TypeMasks::TerrainObjectType | $TypeMasks::InteriorObjectType;
-						   %closestItemLOS = !containerRayCast(%client.player.getWorldBoxCenter(), %item.getWorldBoxCenter(), %mask, 0);
-						}
-					}
-				}
+                            //check for LOS
+                            %mask = $TypeMasks::TerrainObjectType |
+                                $TypeMasks::InteriorObjectType;
+                            %closestItemLOS = !containerRayCast(
+                                %client.player.getWorldBoxCenter(),
+                                %item.getWorldBoxCenter(), %mask, 0);
+                        }
+                    }
+                }
 			}
 		}
 	}
@@ -336,19 +345,20 @@ function AIPickupItemTask::weight(%task, %client)
 	if (%closestHealth > 0)
 	{
 		//only choose an item if it's at least 25 m closer than health...
-		//and we're not engageing someone or not that badly in need
-	   %currentTarget = %client.getEngageTarget();
-		if (%closestItem > 0 && %closetItemDist < %closestHealthDist - 25 && (%damage < 0.6 || %currentTarget <= 0) && %closestItemLOS)
+		//and we're not engaging someone or not that badly in need
+        %currentTarget = %client.getEngageTarget();
+		if (%closestItem > 0 && %closetItemDist < %closestHealthDist - 25 &&
+                (%damage < 0.6 || %currentTarget <= 0) && %closestItemLOS)
 		{
 			%task.pickupItem = %closestItem;
-         if (AIEngageWeaponRating(%client) < 20)
-				%task.setWeight($AIWeightNeedItemBadly);
-			else if (%closestItemDist < 10 && %closestItemLOS)
-				%task.setWeight($AIWeightNeedItem);
-			else if (%closestItemLOS)
-				%task.setWeight($AIWeightFoundItem);
-			else
-				%task.setWeight(0);
+            if (AIEngageWeaponRating(%client) < 20)
+                %task.setWeight($AIWeightNeedItemBadly);
+            else if (%closestItemDist < 10 && %closestItemLOS)
+                %task.setWeight($AIWeightNeedItem);
+            else if (%closestItemLOS)
+                %task.setWeight($AIWeightFoundItem);
+            else
+                %task.setWeight(0);
 		}
 		else
 		{
@@ -368,15 +378,15 @@ function AIPickupItemTask::weight(%task, %client)
 	}
 	else if (%closestItem > 0)
 	{
-		%task.pickupItem = %closestItem;
-      if (AIEngageWeaponRating(%client) < 20)
-			%task.setWeight($AIWeightNeedItemBadly);
-		else if (%closestItemDist < 10 && %closestItemLOS)
-			%task.setWeight($AIWeightNeedItem);
-		else if (%closestItemLOS)
-			%task.setWeight($AIWeightFoundItem);
-		else
-			%task.setWeight(0);
+        %task.pickupItem = %closestItem;
+        if (AIEngageWeaponRating(%client) < 20)
+            %task.setWeight($AIWeightNeedItemBadly);
+        else if (%closestItemDist < 10 && %closestItemLOS)
+            %task.setWeight($AIWeightNeedItem);
+        else if (%closestItemLOS)
+            %task.setWeight($AIWeightFoundItem);
+        else
+            %task.setWeight(0);
 	}
 	else
 		%task.setWeight(0);
@@ -386,7 +396,7 @@ function AIPickupItemTask::monitor(%task, %client)
 {
 	//move to the pickup location
 	if (isObject(%task.pickupItem))
-	   %client.stepMove(%task.pickupItem.getWorldBoxCenter(), 0.25);
+        %client.stepMove(%task.pickupItem.getWorldBoxCenter(), 0.25);
 
 	//this call works in conjunction with AIEngageTask
 	%client.setEngageTarget(%client.shouldEngage);
@@ -403,7 +413,7 @@ function AIUseInventoryTask::init(%task, %client)
 
 function AIUseInventoryTask::assume(%task, %client)
 {
-	%task.setWeightFreq(15);
+    %task.setWeightFreq(15);
 	%task.setMonitorFreq(5);
 
 	//mark the current time for the buy inventory state machine
@@ -426,30 +436,30 @@ function AIUseInventoryTask::weight(%task, %client)
 	%damage = %player.getDamagePercent();
 	%weaponry = AIEngageWeaponRating(%client);
 
-   //if there's an inv station, and we haven't used an inv station since we
-   //spawned, the bot should use an inv once regardless
-   if (%client.spawnUseInv)
-   {
-      //see if we're already heading there
-      if (%client.buyInvTime != %task.buyInvTime)
-      {
-	      //see if there's an inventory we can use
-         %result = AIFindClosestInventory(%client, false);
-         %closestInv = getWord(%result, 0);
-	      if (isObject(%closestInv))
-         {
+    //if there's an inv station, and we haven't used an inv station since we
+    //spawned, the bot should use an inv once regardless
+    if (%client.spawnUseInv)
+    {
+        //see if we're already heading there
+        if (%client.buyInvTime != %task.buyInvTime)
+        {
+            //see if there's an inventory we can use
+            %result = AIFindClosestInventory(%client, false);
+            %closestInv = getWord(%result, 0);
+            if (isObject(%closestInv))
+            {
+                %task.setWeight($AIWeightNeedItem);
+                return;
+            }
+            else
+                %client.spawnUseInv = false;
+        }
+        else
+        {
             %task.setWeight($AIWeightNeedItem);
             return;
-         }
-         else
-            %client.spawnUseInv = false;
-      }
-      else
-      {
-         %task.setWeight($AIWeightNeedItem);
-         return;
-      }
-   }
+        }
+    }
 
 	//first, see if we need equipment or health
 	if (%damage < 0.3 && %weaponry >= 40)
@@ -462,7 +472,7 @@ function AIUseInventoryTask::weight(%task, %client)
 	if (%damage < 0.6 && %client.getEngageTarget() > 0 && !AIEngageOutOfAmmo(%client))
 	{
 		%task.setWeight(0);
-		return;
+        return;
 	}
 
 	//if we're already buying, continue
@@ -472,7 +482,7 @@ function AIUseInventoryTask::weight(%task, %client)
 		if (%damage > 0.8 || AIEngageOutOfAmmo(%client))
 			%task.setWeight($AIWeightNeedItemBadly);
 		else
-			%task.setWeight($AIWeightNeedItem);
+            %task.setWeight($AIWeightNeedItem);
 		return;
 	}
 
@@ -492,7 +502,8 @@ function AIUseInventoryTask::weight(%task, %client)
 	%task.closestInv = %closestInv;
 	if (%damage > 0.8 || AIEngageOutOfAmmo(%client))
 		%task.setWeight($AIWeightNeedItemBadly);
-	else if (%closestDist < 20 && (AIEngageWeaponRating(%client) <= 30 || %damage > 0.4))
+	else if (%closestDist < 20 &&
+            (AIEngageWeaponRating(%client) <= 30 || %damage > 0.4))
 		%task.setWeight($AIWeightNeedItem);
 	else if (%hasLOS)
 		%task.setWeight($AIWeightFoundItem);
@@ -512,7 +523,7 @@ function AIUseInventoryTask::monitor(%task, %client)
 	if (%damage < 0.3 && %weaponry >= 40 && !%client.spawnUseInv)
 	{
 		%task.buyInvTime = getSimTime();
-		return;
+        return;
 	}
 
 	//pick a random set based on armor...
@@ -520,23 +531,22 @@ function AIUseInventoryTask::monitor(%task, %client)
 	if (%randNum < 0.4)
 		%buySet = "LightEnergyDefault MediumEnergySet HeavyEnergySet";
 	else if (%randNum < 0.6)
-		%buySet = "LightShieldSet MediumShieldSet HeavyShieldSet"; 
+		%buySet = "LightShieldSet MediumShieldSet HeavyShieldSet";
 	else if (%randNum < 0.8)
 		%buySet = "LightEnergyELF MediumRepairSet HeavyAmmoSet";
-   else
-      %buySet = "LightEnergySniper MediumEnergySet HeavyEnergySet";
+    else
+        %buySet = "LightEnergySniper MediumEnergySet HeavyEnergySet";
 
-	//process the inv buying state machine
-   %result = AIBuyInventory(%client, "", %buySet, %task.buyInvTime);
+    //process the inv buying state machine
+    %result = AIBuyInventory(%client, "", %buySet, %task.buyInvTime);
 
-   //if we succeeded, reset the spawn flag
-   if (%result $= "Finished")
-      %client.spawnUseInv = false;
+    //if we succeeded, reset the spawn flag
+    if (%result $= "Finished")
+        %client.spawnUseInv = false;
 
-   //if we succeeded or failed, reset the state machine...
-	if (%result !$= "InProgress")
-		%task.buyInvTime = getSimTime();
-
+    //if we succeeded or failed, reset the state machine...
+    if (%result !$= "InProgress")
+        %task.buyInvTime = getSimTime();
 
 	//this call works in conjunction with AIEngageTask
 	%client.setEngageTarget(%client.shouldEngage);
@@ -561,16 +571,18 @@ function AITauntCorpseTask::retire(%task, %client)
 
 function AITauntCorpseTask::weight(%task, %client)
 {
-   %task.corpse = %client.getVictimCorpse();
-   if (%task.corpse > 0 && getSimTime() - %client.getVictimTime() < 15000)
+    %task.corpse = %client.getVictimCorpse();
+    if (%task.corpse > 0 && getSimTime() - %client.getVictimTime() < 15000)
 	{
 		//see if we're already taunting, and if it's time to stop
-		if ((%task.tauntTime > %client.getVictimTime()) && (getSimTime() - %task.tauntTime > 5000))
+		if ((%task.tauntTime > %client.getVictimTime()) &&
+                (getSimTime() - %task.tauntTime > 5000))
 			%task.corpse = -1;
 		else
 		{
 			//if the corpse is within 50m, taunt
-         %distToCorpse = %client.getPathDistance(%task.corpse.getWorldBoxCenter());
+            %distToCorpse = %client.getPathDistance(
+                %task.corpse.getWorldBoxCenter());
 			if (%dist < 0 || %distToCorpse > 50)
 				%task.corpse = -1;
 		}
@@ -583,12 +595,12 @@ function AITauntCorpseTask::weight(%task, %client)
 	{
 		//don't taunt someone if there's an enemy right near by...
 		%result = AIFindClosestEnemy(%client, 40, 15000);
-      %closestEnemy = getWord(%result, 0);
-      %closestdist = getWord(%result, 1);
-      if (%closestEnemy > 0)
-			%task.setWeight(0);
-		else
-			%task.setWeight($AIWeightTauntVictim);
+        %closestEnemy = getWord(%result, 0);
+        %closestdist = getWord(%result, 1);
+        if (%closestEnemy > 0)
+            %task.setWeight(0);
+        else
+            %task.setWeight($AIWeightTauntVictim);
 	}
 	else
 		%task.setWeight(0);
@@ -604,7 +616,7 @@ function AITauntCorpseTask::monitor(%task, %client)
 	//make sure we still have a corpse, and are not fighting anyone
 	if (%client.getEngageTarget() <= 0 && %task.corpse > 0 && isObject(%task.corpse))
 	{
-      %clientPos = %client.player.getWorldBoxCenter();
+        %clientPos = %client.player.getWorldBoxCenter();
 		%corpsePos = %task.corpse.getWorldBoxCenter();
 		%distToCorpse = VectorDist(%clientPos, %corpsePos);
 		if (%distToCorpse < 2.0)
@@ -621,11 +633,13 @@ function AITauntCorpseTask::monitor(%task, %client)
 					%sound = $AITauntChat[mFloor(getRandom() * 3.99)];
 					%minCel = 2;
 					%maxCel = 8;
-				   schedule(250, %client, "AIPlayAnimSound", %client, %corpsePos, %sound, %minCel, %maxCel, 0);
+					schedule(250, %client, "AIPlayAnimSound", %client,
+                        %corpsePos, %sound, %minCel, %maxCel, 0);
 				}
 				//say 'bye'  :)
 				else
-				   schedule(250, %client, "AIPlayAnimSound", %client, %corpsePos, "gbl.bye", 2, 2, 0);
+					schedule(250, %client, "AIPlayAnimSound", %client,
+                        %corpsePos, "gbl.bye", 2, 2, 0);
 			}
 		}
 		else
@@ -718,6 +732,7 @@ function AIPatrolTask::monitor(%task, %client)
 				%foundItemLocation = true;
 			}
 		}
+
 		//choose a randomish location only if we're not in need of health or ammo
 		if (!%foundItemLocation)
 		{
@@ -757,22 +772,24 @@ function AIPatrolTask::monitor(%task, %client)
 					%pickPlayerLocation = true;
 				}
 			}
-			
+
 			if (!%pickGraphNode && !%pickPlayerLocation)
 			{
 				%itemCount = %chooseSet.getCount();
 				%item = %chooseSet.getObject(getRandom() * (%itemCount - 0.1));
-		      %nodeIndex = navGraph.randNode(%item.getWorldBoxCenter(), 10, true, true);
+				%nodeIndex = navGraph.randNode(
+                    %item.getWorldBoxCenter(), 10, true, true);
 				if (%nodeIndex <= 0)
 					%pickGraphNode = true;
 				else
 					%task.patrolLocation = navGraph.randNodeLoc(%nodeIndex);
 			}
 
-			//see if we failed above or have to pick just a random spot on the graph - use the spawn points...
+			//see if we failed above or have to pick just a random spot on the
+            //graph - use the spawn points...
 			if (%pickGraphNode)
 			{
-			   %task.patrolLocation = Game.pickPlayerSpawn(%client, true);
+				%task.patrolLocation = Game.pickPlayerSpawn(%client, true);
 				if (%task.patrolLocation == -1)
 				{
 					%client.stepIdle(%client.player.getWorldBoxCenter());
@@ -785,7 +802,6 @@ function AIPatrolTask::monitor(%task, %client)
 		%task.findLocation = false;
 		%client.stepMove(%task.patrolLocation, 8.0);
 	}
-
 	//else we're on patrol - see if we're close to our destination
 	else
 	{
@@ -823,11 +839,13 @@ function AIEngageTurretTask::weight(%task, %client)
 {
 	//see if we're still fighting a turret
 	%elapsedTime = getSimTime() - %task.startAttackTime;
-	if (isObject(%task.engageTurret) && %task.engageTurret.getDataBlock().getClassName() $= "TurretData")
+	if (isObject(%task.engageTurret) &&
+            %task.engageTurret.getDataBlock().getClassName() $= "TurretData")
 	{
 		if (%task.engageTurret == %client.lastdamageTurret)
 		{
-			if (%task.engageTurret.isEnabled() && getSimTime() - %client.lastDamageTurretTime < 5000)
+			if (%task.engageTurret.isEnabled() &&
+                    getSimTime() - %client.lastDamageTurretTime < 5000)
 				%task.setWeight($AIWeightReturnTurretFire);
 			else
 				%task.setWeight($AIWeightDestroyTurret);
@@ -835,33 +853,34 @@ function AIEngageTurretTask::weight(%task, %client)
 		else if (AIClientIsAlive(%client, %elapsedTime))
 		{
 			//if another turret is shooting us, disable this one first...
-			if (isObject(%client.lastDamageTurret) && %client.lastDamageTurret.getDataBlock().getClassName() $= "TurretData")
+			if (isObject(%client.lastDamageTurret) &&
+                    %client.lastDamageTurret.getDataBlock().getClassName() $= "TurretData")
 			{
 				if (%task.engageTurret.isEnabled())
 					%task.setWeight($AIWeightReturnTurretFire);
 				else
 				{
 					//see if we need to switch to the new turret
-					if (%client.lastDamageTurret.isEnabled() && %client.lastDamageTurretTime < 5000)
+					if (%client.lastDamageTurret.isEnabled() &&
+                            %client.lastDamageTurretTime < 5000)
 					{
 						%task.engageTurret = %client.lastDamageTurret;
 						%task.attackInitted = false;
 						%task.setWeight($AIWeightDestroyTurret);
 					}
-
 					else
 						%task.setWeight($AIWeightReturnTurretFire);
 				}
 			}
 			else
 			{
-				if (%task.engageTurret.isEnabled() && getSimTime() - %client.lastDamageTurretTime < 5000)
+				if (%task.engageTurret.isEnabled() &&
+                        getSimTime() - %client.lastDamageTurretTime < 5000)
 					%task.setWeight($AIWeightReturnTurretFire);
 				else
 					%task.setWeight($AIWeightDestroyTurret);
 			}
 		}
-
 		//else we died since - clear out the vars
 		else
 		{
@@ -869,9 +888,9 @@ function AIEngageTurretTask::weight(%task, %client)
 			%task.setWeight(0);
 		}
 	}
-
 	//else see if we have a new target
-	else if (isObject(%client.lastDamageTurret) && %client.lastDamageTurret.getDataBlock().getClassName() $= "TurretData")
+	else if (isObject(%client.lastDamageTurret) &&
+            %client.lastDamageTurret.getDataBlock().getClassName() $= "TurretData")
 	{
 		%task.engageTurret = %client.lastDamageTurret;
 		%task.attackInitted = false;
@@ -881,19 +900,18 @@ function AIEngageTurretTask::weight(%task, %client)
 		else
 			%task.setWeight($AIWeightDestroyTurret);
 	}
-
 	//else no turret to attack...  (later, do a query to find turrets before they attack)
 	else
 	{
 		%task.engageTurret = -1;
 		%task.setWeight(0);
 	}
-
 }
 
 function AIEngageTurretTask::monitor(%task, %client)
 {
-	if (isObject(%task.engageTurret) && %task.engageTurret.getDataBlock().getClassName() $= "TurretData")
+	if (isObject(%task.engageTurret) &&
+            %task.engageTurret.getDataBlock().getClassName() $= "TurretData")
 	{
 		//set the AI to fire at the turret
 		%client.setEngageTarget(-1);
@@ -907,7 +925,8 @@ function AIEngageTurretTask::monitor(%task, %client)
 		{
 			%task.attackInitted = true;
 			%task.startAttackTime = getSimTime();
-			%task.hideLocation = %client.getHideLocation(%turretPos, 40.0, %clientPos, 4.0); 
+			%task.hideLocation = %client.getHideLocation(
+                %turretPos, 40.0, %clientPos, 4.0);
 			%client.stepMove(%task.hideLocation, 2.0);
 		}
 		else if (getSimTime() - %task.startAttackTime > 5000)
@@ -934,18 +953,21 @@ function AIDetectMineTask::retire(%task, %client)
 {
 	%task.engageMine = -1;
 	%task.attackInitted = false;
-   %client.setTargetObject(-1);
+    %client.setTargetObject(-1);
 }
 
 function AIDetectMineTask::weight(%task, %client)
 {
-	//crappy hack, but they need the proper weapon before they can destroy a mine...
+	//crappy hack, but they need the proper weapon before they can destroy a
+    //mine...
 	%player = %client.player;
 	if (!isObject(%player))
 		return;
 
-   %hasPlasma = (%player.getInventory("Plasma") > 0) && (%player.getInventory("PlasmaAmmo") > 0);
-   %hasDisc = (%player.getInventory("Disc") > 0) && (%player.getInventory("DiscAmmo") > 0);
+    %hasPlasma = (%player.getInventory("Plasma") > 0) &&
+        (%player.getInventory("PlasmaAmmo") > 0);
+    %hasDisc = (%player.getInventory("Disc") > 0) &&
+        (%player.getInventory("DiscAmmo") > 0);
 
 	if (!%hasPlasma && !%hasDisc)
 	{
@@ -953,16 +975,17 @@ function AIDetectMineTask::weight(%task, %client)
 		return;
 	}
 
-	//if we're already attacking a mine, 
+	//if we're already attacking a mine,
 	if (%task.engageMine > 0 && isObject(%task.engageMine))
 	{
 		%task.setWeight($AIWeightDetectMine);
 		return;
 	}
-	//see if we're within the viscinity of a new (enemy) mine
+
+	//see if we're within the vicinity of a new (enemy) mine
 	%task.engageMine = -1;
 	%closestMine = -1;
-	%closestDist = 15;	//initialize so only mines within 15 m will be detected...
+	%closestDist = 15; //initialize so only mines within 15m will be detected...
 	%mineCount = $AIDeployedMineSet.getCount();
 	for (%i = 0; %i < %mineCount; %i++)
 	{
@@ -1012,17 +1035,14 @@ function AIDetectMineTask::monitor(%task, %client)
 		if (!%task.attackInitted)
 		{
 			%task.attackInitted = true;
-		   %client.stepRangeObject(%task.engageMine, "DefaultRepairBeam", 6, 12);
+            %client.stepRangeObject(%task.engageMine, "DefaultRepairBeam", 6, 12);
 			%client.setEngageTarget(-1);
 			%client.setTargetObject(-1);
 		}
-
-      else if (%client.getStepStatus() $= "Finished")
-		{
-			%client.stop();
-         %client.setTargetObject(%task.engageMine);
-		}
+        else if (%client.getStepStatus() $= "Finished")
+        {
+            %client.stop();
+            %client.setTargetObject(%task.engageMine);
+        }
 	}
 }
-
-//-----------------------------------------------------------------------------

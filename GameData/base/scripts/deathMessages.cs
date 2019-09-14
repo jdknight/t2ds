@@ -379,6 +379,3 @@ $DeathMessageTurretSelfKillCount = 3;
 $DeathMessageTurretSelfKill[0] = '\c0%1 somehow kills %2self with a turret.';
 $DeathMessageTurretSelfKill[1] = '\c0%1 apparently didn\'t know the turret was loaded.';
 $DeathMessageTurretSelfKill[2] = '\c0%1 helps his team by killing himself with a turret.';
-
-
-

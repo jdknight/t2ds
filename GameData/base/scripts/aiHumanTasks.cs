@@ -3,12 +3,14 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 {
 	//first, make sure the objective Q for the given team exists
 	if (!isObject($ObjectiveQ[%client.team]))
-		return 0;
+        return 0;
 
 	//if a target client is specified, create a link if we can...
 	if (%targetClient > 0)
 	{
-		if (aiHumanHasControl(%client, %targetClient) || (%targetClient.isAIControlled() && !aiAlreadyControlled(%targetClient)))
+		if (aiHumanHasControl(%client, %targetClient) ||
+                (%targetClient.isAIControlled() &&
+                !aiAlreadyControlled(%targetClient)))
 			aiSetHumanControl(%client, %targetClient);
 		else
 			return 0;
@@ -28,14 +30,16 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 	//parse the type of objective, and see if it already exists...
 	%useThisObjective = -1;
 	%objQ = $ObjectiveQ[%client.team];
-	if (%objective.getName() $= "AIOEscortPlayer" || %objective.getName() $= "AIOAttackPlayer")
+	if (%objective.getName() $= "AIOEscortPlayer" ||
+            %objective.getName() $= "AIOAttackPlayer")
 	{
 		//first, make sure the objective is legit
 		if (!AIClientIsAlive(%objective.targetClientId))
 			return 0;
 
 		//fill in the description:
-		%objective.description = %objective.getName() SPC getTaggedString(%objective.targetClientId.name);
+		%objective.description = %objective.getName() SPC
+            getTaggedString(%objective.targetClientId.name);
 
 		//now see if the objective already exists...
 		%count = %objQ.getCount();
@@ -45,7 +49,8 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			if (%obj.getName() $= %objective.getName())
 			{
 				//if we've found a previously existing version, use it instead of the new objective
-				if (%obj.issuedByClientId == %client && %obj.targetClientId == %objective.targetClientId)
+				if (%obj.issuedByClientId == %client &&
+                        %obj.targetClientId == %objective.targetClientId)
 				{
 					%useThisObjective = %obj;
 					break;
@@ -53,15 +58,16 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			}
 		}
 	}
-
-	else if (%objective.getName() $= "AIODefendLocation" || %objective.getName() $= "AIOAttackLocation")
+	else if (%objective.getName() $= "AIODefendLocation" ||
+            %objective.getName() $= "AIOAttackLocation")
 	{
 		//make sure it's a valid objective
 		if (%objective.location $= "" || %objective.location $= "0 0 0")
 			return 0;
 
 		//fill in the description:
-		%objective.description = %objective.getName() @ " at" SPC %objective.location;
+		%objective.description = %objective.getName() @
+            " at" SPC %objective.location;
 
 		//look for a duplicate...
 		%count = %objQ.getCount();
@@ -70,7 +76,8 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			%obj = %objQ.getObject(%i);
 			if (%obj.getName() $= %objective.getName())
 			{
-				if (%obj.issuedByClientId == %client && VectorDist(%objective.location, %obj.location) < 30)
+				if (%obj.issuedByClientId == %client &&
+                        VectorDist(%objective.location, %obj.location) < 30)
 				{
 					%useThisObjective = %obj;
 					break;
@@ -78,17 +85,19 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			}
 		}
 	}
-
-	else if (%objective.getName() $= "AIOAttackObject" || %objective.getName() $= "AIORepairObject" ||
-				%objective.getName() $= "AIOLazeObject" || %objective.getName() $= "AIOMortarObject" ||
-				%objective.getName() $= "AIOTouchObject")
+	else if (%objective.getName() $= "AIOAttackObject" ||
+            %objective.getName() $= "AIORepairObject" ||
+            %objective.getName() $= "AIOLazeObject" ||
+            %objective.getName() $= "AIOMortarObject" ||
+            %objective.getName() $= "AIOTouchObject")
 	{
 		//make sure it's a valid objective
 		if (!isObject(%objective.targetObjectId))
 			return 0;
 
 		//fill in the description:
-		%objective.description = %objective.getName() SPC %objective.targetObjectId.getDataBlock().getName();
+		%objective.description = %objective.getName() SPC
+            %objective.targetObjectId.getDataBlock().getName();
 
 		//look for a duplicate...
 		%count = %objQ.getCount();
@@ -97,7 +106,8 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			%obj = %objQ.getObject(%i);
 			if (%obj.getName() $= %objective.getName())
 			{
-				if (%obj.issuedByClientId == %client && %objective.targetObjectId == %obj.targetObjectId)
+				if (%obj.issuedByClientId == %client &&
+                        %objective.targetObjectId == %obj.targetObjectId)
 				{
 					%useThisObjective = %obj;
 					break;
@@ -108,11 +118,13 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 	else if (%objective.getName() $= "AIODeployEquipment")
 	{
 		//make sure it's a valid objective
-		if (%objective.location $= "" || %objective.location $= "0 0 0" || %objective.equipment $= "")
+		if (%objective.location $= "" || %objective.location $= "0 0 0" ||
+                %objective.equipment $= "")
 			return 0;
 
 		//fill in the description:
-		%objective.description = %objective.getName() SPC %objective.equipment SPC "at" SPC %objective.location;
+		%objective.description = %objective.getName() SPC
+            %objective.equipment SPC "at" SPC %objective.location;
 
 		//look for a duplicate...
 		%count = %objQ.getCount();
@@ -121,7 +133,9 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			%obj = %objQ.getObject(%i);
 			if (%obj.getName() $= %objective.getName())
 			{
-				if (%obj.issuedByClientId == %client && VectorDist(%objective.location, %obj.location) < 8 && %objective.equipment == %obj.equipment)
+				if (%obj.issuedByClientId == %client &&
+                        VectorDist(%objective.location, %obj.location) < 8 &&
+                        %objective.equipment == %obj.equipment)
 				{
 					%useThisObjective = %obj;
 					break;
@@ -135,15 +149,14 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 	{
 		%objective.delete();
 	}
-
 	//otherwise add it to the objective Q
 	else
 	{
 		%useThisObjective = %objective;
 	 	$ObjectiveQ[%client.team].add(%useThisObjective);
-      %objective.shouldAcknowledge = true;
+        %objective.shouldAcknowledge = true;
 		//now that it's been added, see if anyone picks it up within 10 seconds
-		schedule(10000, %objective, "AIReassessHumanObjective", %objective); 
+		schedule(10000, %objective, "AIReassessHumanObjective", %objective);
 	}
 
 	//now see if we're supposed to force the target to the objective
@@ -152,10 +165,11 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 	{
 		//if we were previously assigned to an objective which was forced on this client, we need to delete it...
 		%prevObjective = %targetClient.objective;
-		if (%prevObjective != %useThisObjective && %prevObjective.issuedByClientId == %targetClient.controlByHuman)
+		if (%prevObjective != %useThisObjective &&
+                %prevObjective.issuedByClientId == %targetClient.controlByHuman)
 		{
-	      AIClearObjective(%prevObjective);
-	      %prevObjective.delete();
+            AIClearObjective(%prevObjective);
+            %prevObjective.delete();
 		}
 
 		//if the command is an escort command, issue it at the forced escort weight instead
@@ -166,7 +180,8 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 		//reweight the client's objective
 		%testWeight = 0;
 		if (isObject(%client.objective))
-			%testWeight = %client.objective.weight(%client, %client.objectiveLevel, 0, %inventoryStr);
+			%testWeight = %client.objective.weight(%client,
+                %client.objectiveLevel, 0, %inventoryStr);
 		if (%testWeight <= 0 || %testWeight > %client.objectiveWeight)
 			%client.objectiveWeight = %testWeight;
 
@@ -181,29 +196,39 @@ function aiAddHumanObjective(%client, %objective, %targetClient, %fromCmdMap)
 			//send the "command accepted response"
 			if (!%fromCmdMap)
 			{
-				if (isObject(%client.player) && VectorDist(%targetClient.player.position, %client.player.position) <= 40)
-				   schedule(250, %targetClient.player, "AIPlayAnimSound", %targetClient, %client.player.getWorldBoxCenter(), "cmd.acknowledge", 1, 1, 0);
+				if (isObject(%client.player) && VectorDist(
+                        %targetClient.player.position, %client.player.position) <= 40)
+                    schedule(250, %targetClient.player, "AIPlayAnimSound",
+                        %targetClient, %client.player.getWorldBoxCenter(),
+                        "cmd.acknowledge", 1, 1, 0);
 			}
 			else
-				serverCmdAcceptTask(%targetClient, %client, -1, %useThisObjective.ackDescription);
+				serverCmdAcceptTask(%targetClient, %client, -1,
+                    %useThisObjective.ackDescription);
 		}
 		else
 		{
 			//send the "command declined response"
 			if (!%fromCmdMap)
 			{
-				if (isObject(%client.player) && VectorDist(%targetClient.player.position, %client.player.position) <= 40)
-            {
-				   schedule(250, %targetClient.player, "AIPlayAnimSound", %targetClient, %client.player.getWorldBoxCenter(), "cmd.decline", -1, -1, 0);
-               schedule(2000, %client.player, "AIRespondToEvent", %client, 'ChatCmdWhat', %targetClient);
-            }
+				if (isObject(%client.player) && VectorDist(
+                    %targetClient.player.position, %client.player.position) <= 40)
+                {
+                    schedule(250, %targetClient.player, "AIPlayAnimSound",
+                        %targetClient, %client.player.getWorldBoxCenter(),
+                        "cmd.decline", -1, -1, 0);
+                    schedule(2000, %client.player, "AIRespondToEvent",
+                        %client, 'ChatCmdWhat', %targetClient);
+                }
 			}
 			else
-				serverCmdDeclineTask(%targetClient, %client, %useThisObjective.ackDescription);
+				serverCmdDeclineTask(%targetClient, %client,
+                    %useThisObjective.ackDescription);
 		}
 	}
 
-	//return the objective used, so the calling function can know whether to delete the parameter one...
+	//return the objective used, so the calling function can know whether to
+    //delete the parameter one...
 	return %useThisObjective;
 }
 
@@ -212,15 +237,16 @@ function AIReassessHumanObjective(%objective)
 	if (%objective.issuedByHuman)
 	{
 		//see if there's anyone still assigned to this objective
-		if (!AIClientIsAlive(%objective.clientLevel1) && !AIClientIsAlive(%objective.clientLevel2) && !AIClientIsAlive(%objective.clientLevel3))
+		if (!AIClientIsAlive(%objective.clientLevel1) &&
+                !AIClientIsAlive(%objective.clientLevel2) &&
+                !AIClientIsAlive(%objective.clientLevel3))
 		{
 			AIClearObjective(%objective);
 			%objective.delete();
 		}
-
 		//else reassess this objective in another 10 seconds
 		else
-			schedule(10000, %objective, "AIReassessHumanObjective", %objective); 
+			schedule(10000, %objective, "AIReassessHumanObjective", %objective);
 	}
 }
 
@@ -286,7 +312,8 @@ function aiBreakHumanControl(%humanClient, %aiClient)
 	if (!aiHumanHasControl(%humanClient, %aiClient))
 		return;
 
-	//for now, just break the link, and worry about unassigning objectives later...
+	//for now, just break the link, and worry about unassigning objectives
+    //later...
 	%humanClient.controlAI = "";
 	%aiClient.controlByHuman = "";
 }

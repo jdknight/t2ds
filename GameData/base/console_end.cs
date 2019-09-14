@@ -10,9 +10,9 @@ exec("scripts/message.cs");
 //exec any user created .cs files found in scripts/autoexec (order is that returned by the OS)
 function loadCustomScripts()
 {
-   %path = "scripts/autoexec/*.cs";
-   for( %file = findFirstFile( %path ); %file !$= ""; %file = findNextFile( %path ) )
-       exec( %file );
+    %path = "scripts/autoexec/*.cs";
+    for (%file = findFirstFile(%path); %file !$= ""; %file = findNextFile(%path))
+        exec(%file);
 }
 loadCustomScripts();
 
@@ -22,7 +22,7 @@ exec("autoexec.cs");
 //TINMAN hack to add a command line option for starting a bot match...
 if ($CmdLineBotCount !$= "")
 {
-	$Host::BotCount = $CmdLineBotCount;
+    $Host::BotCount = $CmdLineBotCount;
 }
 
 // message.cs is loaded so autoexec can add new message callbacks
@@ -32,9 +32,8 @@ if ($CmdLineBotCount !$= "")
 //function to be called when the game exits
 function onExit()
 {
-   BanList::Export("prefs/banlist.cs");
+    BanList::Export("prefs/banlist.cs");
 }
-
 
 //--------------------------------------------------------------------------
 
@@ -52,8 +51,8 @@ exec("scripts/centerPrint.cs");
 
 // see if the mission and type are valid
 // if they are they will be assigned into $Host::Map and $Host::MissionType
-if($mission !$= "" && $missionType !$= "")
-   validateMissionAndType($mission, $missionType);
+if ($mission !$= "" && $missionType !$= "")
+    validateMissionAndType($mission, $missionType);
 
 enableWinConsole(true);
 $Host::Dedicated = true;

@@ -1,32 +1,32 @@
 datablock ParticleData(TR2FlagParticle)
 {
-   dragCoefficient      = 0.0;
-   gravityCoefficient   = 0.3;
-   inheritedVelFactor   = 0.8;
-   constantAcceleration = 0.3;
-   lifetimeMS           = 5000;
-   lifetimeVarianceMS   = 50;
-   textureName          = "special/Smoke/bigSmoke"; // special/Smoke/bigSmoke  special/droplet
-   colors[0]     = "0.5 0.25 0 1";
-   colors[1]     = "0 0.25 0.5 1";
-   sizes[0]      = 0.80;
-   sizes[1]      = 0.60;
+    dragCoefficient      = 0.0;
+    gravityCoefficient   = 0.3;
+    inheritedVelFactor   = 0.8;
+    constantAcceleration = 0.3;
+    lifetimeMS           = 5000;
+    lifetimeVarianceMS   = 50;
+    textureName          = "special/Smoke/bigSmoke"; // special/Smoke/bigSmoke  special/droplet
+    colors[0]     = "0.5 0.25 0 1";
+    colors[1]     = "0 0.25 0.5 1";
+    sizes[0]      = 0.80;
+    sizes[1]      = 0.60;
 };
 
 datablock ParticleEmitterData(TR2FlagEmitter)
 {
-   ejectionPeriodMS = 75;
-   periodVarianceMS = 0;
-   ejectionVelocity = 2;
-   velocityVariance = 1;
-   ejectionOffset   = 0.0;
-   thetaMin         = 0;
-   thetaMax         = 5;
-   phiReferenceVel  = 0;
-   phiVariance      = 360;
-   lifetimeMS = 5000;
-   overrideAdvances = false;
-   particles = "TR2FlagParticle";
+    ejectionPeriodMS = 75;
+    periodVarianceMS = 0;
+    ejectionVelocity = 2;
+    velocityVariance = 1;
+    ejectionOffset   = 0.0;
+    thetaMin         = 0;
+    thetaMax         = 5;
+    phiReferenceVel  = 0;
+    phiVariance      = 360;
+    lifetimeMS = 5000;
+    overrideAdvances = false;
+    particles = "TR2FlagParticle";
 };
 
 datablock ParticleData(GridjumpParticle)
@@ -164,39 +164,39 @@ datablock ParticleEmitterData(CannonEmitter)
     lifetimeMS = 2500;
 };
 
-datablock ParticleData( RoleChangeParticle )
+datablock ParticleData(RoleChangeParticle)
 {
-   dragCoefficient      = 0;
-   gravityCoefficient   = -1.0;
-   inheritedVelFactor   = 0.2;
-   constantAcceleration = -1.4;
-   lifetimeMS           = 300;
-   lifetimeVarianceMS   = 0;
-   textureName          = "special/droplet";
-   colors[0]     = "0.7 0.8 1.0 1.0";
-   colors[1]     = "0.7 0.8 1.0 0.5";
-   colors[2]     = "0.7 0.8 1.0 0.0";
-   sizes[0]      = 10.5;
-   sizes[1]      = 30.2;
-   sizes[2]      = 30.2;
-   times[0]      = 0.0;
-   times[1]      = 0.15;
-   times[2]      = 0.2;
+    dragCoefficient      = 0;
+    gravityCoefficient   = -1.0;
+    inheritedVelFactor   = 0.2;
+    constantAcceleration = -1.4;
+    lifetimeMS           = 300;
+    lifetimeVarianceMS   = 0;
+    textureName          = "special/droplet";
+    colors[0]     = "0.7 0.8 1.0 1.0";
+    colors[1]     = "0.7 0.8 1.0 0.5";
+    colors[2]     = "0.7 0.8 1.0 0.0";
+    sizes[0]      = 10.5;
+    sizes[1]      = 30.2;
+    sizes[2]      = 30.2;
+    times[0]      = 0.0;
+    times[1]      = 0.15;
+    times[2]      = 0.2;
 };
 
-datablock ParticleEmitterData( RoleChangeEmitter )
+datablock ParticleEmitterData(RoleChangeEmitter)
 {
-   ejectionPeriodMS = 4;
-   periodVarianceMS = 0;
-   ejectionVelocity = 10;
-   velocityVariance = 0.0;
-   ejectionOffset   = 0.0;
-   thetaMin         = 0;
-   thetaMax         = 50;
-   phiReferenceVel  = 0;
-   phiVariance      = 360;
-   overrideAdvances = false;
-   orientParticles  = true;
-   lifetimeMS       = 800;
-   particles = "RoleChangeParticle";
+    ejectionPeriodMS = 4;
+    periodVarianceMS = 0;
+    ejectionVelocity = 10;
+    velocityVariance = 0.0;
+    ejectionOffset   = 0.0;
+    thetaMin         = 0;
+    thetaMax         = 50;
+    phiReferenceVel  = 0;
+    phiVariance      = 360;
+    overrideAdvances = false;
+    orientParticles  = true;
+    lifetimeMS       = 800;
+    particles = "RoleChangeParticle";
 };

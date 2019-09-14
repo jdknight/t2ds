@@ -1,98 +1,100 @@
 //--------------------------------------------------------------------------
 function GameConnection::setVWeaponsHudActive(%client, %slot)
 {
-   %veh = %client.player.getObjectMount();
-   %vehType = %veh.getDatablock().getName();
-   commandToClient(%client, 'setVWeaponsHudActive', %slot, %vehType);
+    %veh = %client.player.getObjectMount();
+    %vehType = %veh.getDatablock().getName();
+    commandToClient(%client, 'setVWeaponsHudActive', %slot, %vehType);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setVWeaponsHudClearAll(%client)
 {
-   commandToClient(%client, 'setVWeaponsHudClearAll');
+    commandToClient(%client, 'setVWeaponsHudClearAll');
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudBitmap(%client, %slot, %name, %bitmap)
 {
-   commandToClient(%client, 'setWeaponsHudBitmap',%slot,%name,%bitmap);
+    commandToClient(%client, 'setWeaponsHudBitmap', %slot, %name, %bitmap);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudItem(%client, %name, %ammoAmount, %addItem)
 {
-   for(%i = 0; %i < $WeaponsHudCount; %i++)
-      if($WeaponsHudData[%i, itemDataName] $= %name)
-      {
-         if($WeaponsHudData[%i, ammoDataName] !$= "") {
-            %ammoInv = %client.player.inv[$WeaponsHudData[%i, ammoDataName]];
-            //error("  ----- player has " @ %ammoInv SPC $WeaponsHudData[%i, ammoDataName]);
-            //error("SWHI:Setting weapon "@%name@" ("@%i@") ammo to " @ %ammoInv);
-            commandToClient(%client, 'setWeaponsHudItem',%i,%ammoInv, %addItem);
-         }
-         else {
-            //error("SWHI:Setting weapon "@%name@" ("@%i@") ammo to infinite");
-            commandToClient(%client, 'setWeaponsHudItem',%i,-1, %addItem);
-         }
-         break;
-      }
+    for (%i = 0; %i < $WeaponsHudCount; %i++)
+    {
+        if ($WeaponsHudData[%i, itemDataName] $= %name)
+        {
+            if ($WeaponsHudData[%i, ammoDataName] !$= "")
+            {
+                %ammoInv = %client.player.inv[$WeaponsHudData[%i, ammoDataName]];
+                commandToClient(%client, 'setWeaponsHudItem', %i, %ammoInv, %addItem);
+            }
+            else
+            {
+                commandToClient(%client, 'setWeaponsHudItem', %i, -1, %addItem);
+            }
+
+            break;
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudAmmo(%client, %name, %ammoAmount)
 {
-   for(%i = 0; %i < $WeaponsHudCount; %i++)
-      if($WeaponsHudData[%i, ammoDataName] $= %name)
-      {
-         //error("SWHA:Setting ammo "@%name@" for weapon "@%i@" to " @ %ammoAmount);
-         commandToClient(%client, 'setWeaponsHudAmmo',%i, %ammoAmount);
-         break;
-      }
+    for (%i = 0; %i < $WeaponsHudCount; %i++)
+        if ($WeaponsHudData[%i, ammoDataName] $= %name)
+        {
+            commandToClient(%client, 'setWeaponsHudAmmo', %i, %ammoAmount);
+            break;
+        }
 }
 
 //----------------------------------------------------------------------------
 // z0dd - ZOD, 9/13/02. Serverside reticles, sever tells client what file to use.
 function GameConnection::setWeaponsHudActive(%client, %name, %clearActive)
 {
-   if(%clearActive)
-   {
-      commandToClient(%client, 'setWeaponsHudActive', -1);
-   }
-   else
-   {
-      for(%i = 0; %i < $WeaponsHudCount; %i++)
-      {
-         if($WeaponsHudData[%i, itemDataName] $= %name)
-         {
-            commandToClient(%client, 'setWeaponsHudActive', %i, $WeaponsHudData[%i, reticle], $WeaponsHudData[%i, visible]);
-            break;
-         }
-      }
-   }
+    if (%clearActive)
+    {
+        commandToClient(%client, 'setWeaponsHudActive', -1);
+    }
+    else
+    {
+        for (%i = 0; %i < $WeaponsHudCount; %i++)
+        {
+            if ($WeaponsHudData[%i, itemDataName] $= %name)
+            {
+                commandToClient(%client, 'setWeaponsHudActive', %i,
+                    $WeaponsHudData[%i, reticle], $WeaponsHudData[%i, visible]);
+                break;
+            }
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudBackGroundBmp(%client, %name)
 {
-   commandToClient(%client, 'setWeaponsHudBackGroundBmp',%name);
+    commandToClient(%client, 'setWeaponsHudBackGroundBmp', %name);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudHighLightBmp(%client, %name)
 {
-   commandToClient(%client, 'setWeaponsHudHighLightBmp',%name);
+    commandToClient(%client, 'setWeaponsHudHighLightBmp', %name);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudInfiniteAmmoBmp(%client, %name)
 {
-   commandToClient(%client, 'setWeaponsHudInfiniteAmmoBmp',%name);
+    commandToClient(%client, 'setWeaponsHudInfiniteAmmoBmp', %name);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setWeaponsHudClearAll(%client)
 {
-   commandToClient(%client, 'setWeaponsHudClearAll');
+    commandToClient(%client, 'setWeaponsHudClearAll');
 }
 
 //----------------------------------------------------------------------------
@@ -100,7 +102,7 @@ function GameConnection::setWeaponsHudClearAll(%client)
 //----------------------------------------------------------------------------
 function GameConnection::setAmmoHudCount(%client, %amount)
 {
-   commandToClient(%client, 'setAmmoHudCount', %amount);
+    commandToClient(%client, 'setAmmoHudCount', %amount);
 }
 
 //----------------------------------------------------------------------------
@@ -154,19 +156,19 @@ $BackpackHudCount = 20;
 
 function GameConnection::clearBackpackIcon(%client)
 {
-   commandToClient(%client, 'setBackpackHudItem', 0, 0);
+    commandToClient(%client, 'setBackpackHudItem', 0, 0);
 }
 
 function GameConnection::setBackpackHudItem(%client, %name, %addItem)
 {
-   for(%i = 0; %i < $BackpackHudCount; %i++)
-      if($BackpackHudData[%i, itemDataName] $= %name)
-         commandToClient(%client, 'setBackpackHudItem', %i, %addItem);
+    for (%i = 0; %i < $BackpackHudCount; %i++)
+        if ($BackpackHudData[%i, itemDataName] $= %name)
+            commandToClient(%client, 'setBackpackHudItem', %i, %addItem);
 }
 
 function GameConnection::updateSensorPackText(%client, %num)
 {
-   commandToClient(%client, 'updatePackText', %num);
+    commandToClient(%client, 'updatePackText', %num);
 }
 
 //----------------------------------------------------------------------------
@@ -219,182 +221,191 @@ $InventoryHudCount = 9;
 //-------------------------------------------------------------------------   ---
 function GameConnection::setInventoryHudBitmap(%client, %slot, %name, %bitmap)
 {
-   commandToClient(%client, 'setInventoryHudBitmap',%slot,%name,%bitmap);
+    commandToClient(%client, 'setInventoryHudBitmap', %slot, %name, %bitmap);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setInventoryHudItem(%client, %name, %amount, %addItem)
 {
-   for(%i = 0; %i < $InventoryHudCount; %i++)
-      if($InventoryHudData[%i, itemDataName] $= %name)
-      {
-         if($InventoryHudData[%i, ammoDataName] !$= "")
-            commandToClient(%client, 'setInventoryHudItem',$InventoryHudData[%i, slot],%amount, %addItem);
-         else
-            commandToClient(%client, 'setInventoryHudItem',$InventoryHudData[%i, slot],-1, %addItem);
-         break;   
-      }
+    for (%i = 0; %i < $InventoryHudCount; %i++)
+        if ($InventoryHudData[%i, itemDataName] $= %name)
+        {
+            if ($InventoryHudData[%i, ammoDataName] !$= "")
+                commandToClient(%client, 'setInventoryHudItem',
+                    $InventoryHudData[%i, slot], %amount, %addItem);
+            else
+                commandToClient(%client, 'setInventoryHudItem',
+                    $InventoryHudData[%i, slot], -1, %addItem);
+            break;
+        }
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setInventoryHudAmount(%client, %name, %amount)
 {
-   for(%i = 0; %i < $InventoryHudCount; %i++)
-      if($InventoryHudData[%i, ammoDataName] $= %name)
-      {
-         commandToClient(%client, 'setInventoryHudAmount',$InventoryHudData[%i, slot], %amount);
-         break;
-      }
+    for (%i = 0; %i < $InventoryHudCount; %i++)
+        if ($InventoryHudData[%i, ammoDataName] $= %name)
+        {
+            commandToClient(%client, 'setInventoryHudAmount',
+                $InventoryHudData[%i, slot], %amount);
+            break;
+        }
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setInventoryHudBackGroundBmp(%client, %name)
 {
-   commandToClient(%client, 'setInventoryHudBackGroundBmp',%name);
+    commandToClient(%client, 'setInventoryHudBackGroundBmp', %name);
 }
 
 //----------------------------------------------------------------------------
 function GameConnection::setInventoryHudClearAll(%client)
 {
-   commandToClient(%client, 'setInventoryHudClearAll');
+    commandToClient(%client, 'setInventoryHudClearAll');
 }
 
 //----------------------------------------------------------------------------
 function serverCmdTeamMessageSent(%client, %text)
 {
-   if(strlen(%text) >= $Host::MaxMessageLen)
-      %text = getSubStr(%text, 0, $Host::MaxMessageLen);
-   chatMessageTeam(%client, %client.team, '\c3%1: %2', %client.name, %text);
+    if (strlen(%text) >= $Host::MaxMessageLen)
+        %text = getSubStr(%text, 0, $Host::MaxMessageLen);
+    chatMessageTeam(%client, %client.team, '\c3%1: %2', %client.name, %text);
 }
 
 //------------------------------------------------------------------------------
 function serverCmdMessageSent(%client, %text)
 {
-   if(strlen(%text) >= $Host::MaxMessageLen)
-      %text = getSubStr(%text, 0, $Host::MaxMessageLen);
-   chatMessageAll(%client, '\c4%1: %2', %client.name, %text);
+    if (strlen(%text) >= $Host::MaxMessageLen)
+        %text = getSubStr(%text, 0, $Host::MaxMessageLen);
+    chatMessageAll(%client, '\c4%1: %2', %client.name, %text);
 }
 
 //------------------------------------------------------------------------------
 function serverCmdShowHud(%client, %tag)
 {
-   %tagName = getWord(%tag, 1);
-   %tag = getWord(%tag, 0);
-   messageClient(%client, 'OpenHud', "", %tag);
-   switch$ (%tag)
-   {
-      case 'inventoryScreen':
-         %client.numFavsCount = 0;
-         inventoryScreen::updateHud(1,%client,%tag);
-      case 'vehicleHud':
-         vehicleHud::updateHud(1,%client,%tag);
-      case 'scoreScreen':
-         updateScoreHudThread(%client, %tag);
-   }
+    %tagName = getWord(%tag, 1);
+    %tag = getWord(%tag, 0);
+    messageClient(%client, 'OpenHud', "", %tag);
+    switch$ (%tag)
+    {
+    case 'inventoryScreen':
+        %client.numFavsCount = 0;
+        inventoryScreen::updateHud(1, %client, %tag);
+    case 'vehicleHud':
+        vehicleHud::updateHud(1, %client, %tag);
+    case 'scoreScreen':
+        updateScoreHudThread(%client, %tag);
+    }
 }
 
 //------------------------------------------------------------------------------
 function updateScoreHudThread(%client, %tag)
 {
-   Game.updateScoreHud(%client, %tag);
-   cancel(%client.scoreHudThread);
-   %client.scoreHudThread = schedule(3000, %client, "updateScoreHudThread", %client, %tag);
+    Game.updateScoreHud(%client, %tag);
+    cancel(%client.scoreHudThread);
+    %client.scoreHudThread = schedule(3000,
+        %client, "updateScoreHudThread", %client, %tag);
 }
 
 //------------------------------------------------------------------------------
 function serverCmdHideHud(%client, %tag)
 {
-   %tag = getWord(%tag, 0);
-   messageClient(%client, 'CloseHud', "", %tag);
-   switch$ (%tag)
-   {
-      case 'scoreScreen':
-         cancel(%client.scoreHudThread);
-         %client.scoreHudThread = "";
-   }
+    %tag = getWord(%tag, 0);
+    messageClient(%client, 'CloseHud', "", %tag);
+    switch$ (%tag)
+    {
+    case 'scoreScreen':
+        cancel(%client.scoreHudThread);
+        %client.scoreHudThread = "";
+    }
 }
 
 //------------------------------------------------------------------------------
 function serverCmdSetClientFav(%client, %text)
 {
-   if ( getWord( getField( %text, 0 ), 0 ) $= armor )
-   {
-      %client.curFavList = %text;
-      %validList = checkInventory( %client, %text );
-      %client.favorites[0] = getField( %text, 1 );
-      %armor = getArmorDatablock( %client, $NameToInv[getField( %validList,1 )] );
-      %weaponCount = 0;
-      %packCount = 0;
-      %grenadeCount = 0;
-      %mineCount = 0;
-      %count = 1;
-      %client.weaponIndex = "";
-      %client.packIndex = "";
-      %client.grenadeIndex = "";
-      %client.mineIndex = "";
-      
-      for(%i = 3; %i < getFieldCount(%validList); %i = %i + 2)
-      {
-         %setItem = false;
-         switch$ (getField(%validList,%i-1))
-         {
+    if (getWord(getField(%text, 0), 0) $= armor)
+    {
+        %client.curFavList = %text;
+        %validList = checkInventory(%client, %text);
+        %client.favorites[0] = getField(%text, 1);
+        %armor = getArmorDatablock(%client,
+            $NameToInv[getField(%validList, 1)]);
+        %weaponCount = 0;
+        %packCount = 0;
+        %grenadeCount = 0;
+        %mineCount = 0;
+        %count = 1;
+        %client.weaponIndex = "";
+        %client.packIndex = "";
+        %client.grenadeIndex = "";
+        %client.mineIndex = "";
+
+        for (%i = 3; %i < getFieldCount(%validList); %i = %i + 2)
+        {
+            %setItem = false;
+            switch$ (getField(%validList, %i-1))
+            {
             case weapon:
-               if(%weaponCount < %armor.maxWeapons)
-               {
-                  if(!%weaponCount)
-                     %client.weaponIndex = %count;
-                  else
-                     %client.weaponIndex = %client.weaponIndex TAB %count;
-                  %weaponCount++;
-                  %setItem = true;   
-               }   
+                if (%weaponCount < %armor.maxWeapons)
+                {
+                    if (!%weaponCount)
+                        %client.weaponIndex = %count;
+                    else
+                        %client.weaponIndex = %client.weaponIndex TAB %count;
+                    %weaponCount++;
+                    %setItem = true;
+                }
             case pack:
-               if(%packCount < 1)
-               {
-                  %client.packIndex = %count;         
-                  %packCount++;
-                  %setItem = true;
-               }
+                if (%packCount < 1)
+                {
+                    %client.packIndex = %count;
+                    %packCount++;
+                    %setItem = true;
+                }
             case grenade:
-               if(%grenadeCount < %armor.maxGrenades)
-               {
-                  if(!%grenadeCount)
-                     %client.grenadeIndex = %count;
-                  else
-                     %client.grenadeIndex = %client.grenadeIndex TAB %count;
-                  %grenadeCount++;
-                  %setItem = true;   
-               }  
+                if (%grenadeCount < %armor.maxGrenades)
+                {
+                    if (!%grenadeCount)
+                        %client.grenadeIndex = %count;
+                    else
+                        %client.grenadeIndex = %client.grenadeIndex TAB %count;
+                    %grenadeCount++;
+                    %setItem = true;
+                }
             case mine:
-               if(%mineCount < %armor.maxMines)
-               {
-                  if(!%mineCount)
-                     %client.mineIndex = %count;
-                  else
-                     %client.mineIndex = %client.mineIndex TAB %count;
-                  %mineCount++;
-                  %setItem = true;   
-               }  
-         }
-         if(%setItem)
-         {   
-            %client.favorites[%count] = getField(%validList, %i);
-            %count++;
-         }
-      }
-      %client.numFavs = %count;
-      %client.numFavsCount = 0;
-      inventoryScreen::updateHud(1, %client, 'inventoryScreen');
-   }
+                if (%mineCount < %armor.maxMines)
+                {
+                    if (!%mineCount)
+                        %client.mineIndex = %count;
+                    else
+                        %client.mineIndex = %client.mineIndex TAB %count;
+                    %mineCount++;
+                    %setItem = true;
+                }
+            }
+
+            if (%setItem)
+            {
+                %client.favorites[%count] = getField(%validList, %i);
+                %count++;
+            }
+        }
+
+        %client.numFavs = %count;
+        %client.numFavsCount = 0;
+        inventoryScreen::updateHud(1, %client, 'inventoryScreen');
+    }
 }
 
 //------------------------------------------------------------------------------
 function displayObserverHud(%client, %targetClient, %potentialClient)
 {
-   if (%targetClient > 0)
-      bottomPrint(%client, "\nYou are now observing: " @ getTaggedString(%targetClient.name), 0, 3);
-   else if (%potentialClient > 0)
-      bottomPrint(%client, "\nObserver Fly Mode\n" @ getTaggedString(%potentialClient.name), 0, 3);    
-   else
-      bottomPrint(%client, "\nObserver Fly Mode", 0, 3);    
+    if (%targetClient > 0)
+        bottomPrint(%client,
+            "\nYou are now observing: " @ getTaggedString(%targetClient.name), 0, 3);
+    else if (%potentialClient > 0)
+        bottomPrint(%client,
+            "\nObserver Fly Mode\n" @ getTaggedString(%potentialClient.name), 0, 3);
+    else
+        bottomPrint(%client, "\nObserver Fly Mode", 0, 3);
 }

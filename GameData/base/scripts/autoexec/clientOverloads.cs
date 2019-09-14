@@ -4,6 +4,6 @@
 
 function serverCMDgetMod(%client)
 {
-   %paths = getModPaths();
-   commandToClient(%client, 'serverMod', %paths);
+    %paths = getModPaths();
+    commandToClient(%client, 'serverMod', %paths);
 }

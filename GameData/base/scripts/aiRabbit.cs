@@ -6,26 +6,26 @@
 
 function RabbitGame::onAIRespawn(%game, %client)
 {
-   //add the default task
-	if (! %client.defaultTasksAdded)
-	{
-		%client.defaultTasksAdded = true;
-	   %client.addTask(AIPickupItemTask);                                             
-	   %client.addTask(AIUseInventoryTask);
-	   %client.addTask(AITauntCorpseTask);
-      %client.rabbitTask = %client.addTask(AIRabbitTask);
-	}
+    //add the default task
+    if (!%client.defaultTasksAdded)
+    {
+        %client.defaultTasksAdded = true;
+        %client.addTask(AIPickupItemTask);
+        %client.addTask(AIUseInventoryTask);
+        %client.addTask(AITauntCorpseTask);
+        %client.rabbitTask = %client.addTask(AIRabbitTask);
+    }
 
-   //set the inv flag
-   %client.spawnUseInv = true;
+    //set the inv flag
+    %client.spawnUseInv = true;
 }
 
 //---------------------------------------------------------------------------
-   
+
 function RabbitGame::AIInit(%game)
 {
-   //call the default AIInit() function
-   AIInit();
+    //call the default AIInit() function
+    AIInit();
 }
 
 //---------------------------------------------------------------------------
@@ -39,9 +39,9 @@ function AIRabbitTask::init(%task, %client)
 
 function AIRabbitTask::assume(%task, %client)
 {
-   %task.setWeightFreq(20);
-   %task.setMonitorFreq(20);
-	%task.findLocation = true;
+    %task.setWeightFreq(20);
+    %task.setMonitorFreq(20);
+    %task.findLocation = true;
 }
 
 function AIRabbitTask::retire(%task, %client)
@@ -52,60 +52,59 @@ function AIRabbitTask::retire(%task, %client)
 
 function AIRabbitTask::weight(%task, %client)
 {
-	%player = %client.player;
+    %player = %client.player;
 
-	//see if I have the flag
-	if ($AIRabbitFlag.carrier == %player)
-		%task.setWeight($AIRabbitWeightDefault);
+    //see if I have the flag
+    if ($AIRabbitFlag.carrier == %player)
+        %task.setWeight($AIRabbitWeightDefault);
+    //else see if I'm close to the flag
+    else
+    {
+        if (isObject($AIRabbitFlag.carrier))
+            %distToFlag = %client.getPathDistance($AIRabbitFlag.carrier.getWorldBoxCenter());
+        else
+            %distToFlag = %client.getPathDistance($AIRabbitFlag.getWorldBoxCenter());
 
-	//else see if I'm close to the flag
-	else
-	{
-		if (isObject($AIRabbitFlag.carrier))
-			%distToFlag = %client.getPathDistance($AIRabbitFlag.carrier.getWorldBoxCenter());
-		else
-			%distToFlag = %client.getPathDistance($AIRabbitFlag.getWorldBoxCenter());
+        //if the flag is pretty close, or the inv station is quite far...
+        if (%distToFlag > 0 && %distToFlag < 50)
+            %task.setWeight($AIRabbitWeightDefault);
+        else
+            %task.setWeight($AIRabbitWeightNeedInv);
 
-		//if the flag is pretty close, or the inv station is quite far...
-		if (%distToFlag > 0 && %distToFlag < 50)
-			%task.setWeight($AIRabbitWeightDefault);
-		else
-			%task.setWeight($AIRabbitWeightNeedInv);
-
-      //see if the spawnUseInv flag should be reset
-      if (%client.spawnUseInv)
-      {
-         if (!isObject($AIRabbitFlag.carrier))
-         {
-            //see if there are any bots closer to a dropped flag
-            %found = false;
-            for (%i = 0; %i < ClientGroup.getCount(); %i++)
+        //see if the spawnUseInv flag should be reset
+        if (%client.spawnUseInv)
+        {
+            if (!isObject($AIRabbitFlag.carrier))
             {
-               %cl = ClientGroup.getObject(%i);
-               if (%cl != %client && %cl.isAIControlled() && isObject(%cl.player))
-               {
-                  %dist = VectorDist(%cl.player.position, $AIRabbitFlag.position);
-                  if (%dist < %distToFlag)
-                  {
-                     %found = true;
-                     break;
-                  }
-               }
-            }
+                //see if there are any bots closer to a dropped flag
+                %found = false;
+                for (%i = 0; %i < ClientGroup.getCount(); %i++)
+                {
+                    %cl = ClientGroup.getObject(%i);
+                    if (%cl != %client && %cl.isAIControlled() && isObject(%cl.player))
+                    {
+                        %dist = VectorDist(%cl.player.position, $AIRabbitFlag.position);
+                        if (%dist < %distToFlag)
+                        {
+                            %found = true;
+                            break;
+                        }
+                    }
+                }
 
-            //reset the spawnUseInv flag if we're the closest
-            if (!%found)
-               %client.spawnUsInv = false;
-         }
-      }
-	}
+                //reset the spawnUseInv flag if we're the closest
+                if (!%found)
+                    %client.spawnUsInv = false;
+            }
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
 
 function AIRabbitTask::monitor(%task, %client)
 {
-	%player = %client.player;
+    %player = %client.player;
 
 	//if we have the flag - run
 	if ($AIRabbitFlag.carrier == %player)
@@ -157,7 +156,7 @@ function AIRabbitTask::monitor(%task, %client)
 
 				for (%i = 0; %i < 10; %i++)
 				{
-				   %testLocation = Game.pickPlayerSpawn(%client, true);
+					%testLocation = Game.pickPlayerSpawn(%client, true);
 					if (%testLocation == -1)
 						break;
 
@@ -165,9 +164,10 @@ function AIRabbitTask::monitor(%task, %client)
 					if (%dist < 0 || %dist > %farthestDist)
 					{
 						//see if it's unoccupied...
-						%result = AIFindClosestEnemyToLoc(%client, %task.location, 50, $AIClientLOSTimeout, true);
-					   %closestEnemy = getWord(%result, 0);
-					   %closestdist = getWord(%result, 1);
+						%result = AIFindClosestEnemyToLoc(%client,
+                            %task.location, 50, $AIClientLOSTimeout, true);
+						%closestEnemy = getWord(%result, 0);
+						%closestdist = getWord(%result, 1);
 
 						if (!AIClientIsAlive(%closestEnemy))
 							%farthestLocation = %testLocation;
@@ -191,7 +191,7 @@ function AIRabbitTask::monitor(%task, %client)
 			//keep going there...
 			%client.stepMove(%task.seekLocation, 8);
 
-			//see if we've arrived 
+			//see if we've arrived
 			%distToDest = %client.getPathDistance(%task.seekLocation);
 			if (%distToDest > 0 && %distToDest < 10)
 			{
@@ -203,14 +203,12 @@ function AIRabbitTask::monitor(%task, %client)
 		if (%client.lastDamageClient != %client)
 			%client.setEngageTarget(%client.lastDamageClient);
 	}
-
 	//else if someone else has the flag - shoot them
 	else if (isObject($AIRabbitFlag.carrier))
 	{
 		%client.clientDetected($AIRabbitFlag.carrier.client);
 		%client.stepEngage($AIRabbitFlag.carrier.client);
 	}
-
 	//else the flag has been dropped
 	else
 	{
@@ -224,7 +222,5 @@ function AIRabbitTask::monitor(%task, %client)
 //---------------------------------------------------------------------------
 function air()
 {
-	exec("scripts/aiRabbit.cs");
+    exec("scripts/aiRabbit.cs");
 }
-
-

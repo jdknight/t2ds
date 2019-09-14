@@ -1,62 +1,59 @@
 //--------------------------------------------------------------------------
 // 
-// 
-// 
 //--------------------------------------------------------------------------
 
 datablock ShapeBaseImageData(MissileBarrelPackImage)
 {
-   mass = 10; // z0dd - ZOD, 7/17/02. Lower mass due to higher gravity. Was 15.
+    mass = 10; // z0dd - ZOD, 7/17/02. Lower mass due to higher gravity. Was 15.
 
-   className    = TurretPack;
+    className    = TurretPack;
 
-   shapeFile    = "pack_barrel_missile.dts";
-   item       = MissileBarrelPack;
-   mountPoint = 1;
-   offset     = "0 0 0";
-	turretBarrel = "MissileBarrelLarge";
+    shapeFile    = "pack_barrel_missile.dts";
+    item       = MissileBarrelPack;
+    mountPoint = 1;
+    offset     = "0 0 0";
+    turretBarrel = "MissileBarrelLarge";
 
-	stateName[0] = "Idle";
-	stateTransitionOnTriggerDown[0] = "Activate";
+    stateName[0] = "Idle";
+    stateTransitionOnTriggerDown[0] = "Activate";
 
-	stateName[1] = "Activate";
-	stateScript[1] = "onActivate";
-	stateTransitionOnTriggerUp[1] = "Deactivate";
+    stateName[1] = "Activate";
+    stateScript[1] = "onActivate";
+    stateTransitionOnTriggerUp[1] = "Deactivate";
 
-	stateName[2] = "Deactivate";
-	stateScript[2] = "onDeactivate";
-	stateTransitionOnTimeOut[2] = "Idle";
+    stateName[2] = "Deactivate";
+    stateScript[2] = "onDeactivate";
+    stateTransitionOnTimeOut[2] = "Idle";
 
-	isLarge = true;
+    isLarge = true;
 };
 
 datablock ItemData(MissileBarrelPack)
 {
-   className    = Pack;
-   catagory     = "Packs";
-   shapeFile    = "pack_barrel_missile.dts";
-   mass         = 1;
-   elasticity   = 0.2;
-   friction     = 0.6;
-   pickupRadius = 2;
-   rotate       = true;
-   image        = "MissileBarrelPackImage";
-	pickUpName = "a missile barrel pack";
+    className    = Pack;
+    catagory     = "Packs";
+    shapeFile    = "pack_barrel_missile.dts";
+    mass         = 1;
+    elasticity   = 0.2;
+    friction     = 0.6;
+    pickupRadius = 2;
+    rotate       = true;
+    image        = "MissileBarrelPackImage";
+    pickUpName = "a missile barrel pack";
 
-   computeCRC = true;
-
+    computeCRC = true;
 };
 
 //MissileBarrelPackImage.turretBarrel = "MissileBarrelLarge";
 
 function MissileBarrelPackImage::onActivate(%data, %obj, %slot)
 {
-	checkTurretMount(%data, %obj, %slot);
+    checkTurretMount(%data, %obj, %slot);
 }
 
 function MissileBarrelPackImage::onDeactivate(%data, %obj, %slot)
 {
-	%obj.setImageTrigger($BackpackSlot, false);
+    %obj.setImageTrigger($BackpackSlot, false);
 }
 
 function MissileBarrelPack::onPickup(%this, %obj, %shape, %amount)

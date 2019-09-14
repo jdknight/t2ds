@@ -6,48 +6,47 @@
 
 datablock ShapeBaseImageData(PlasmaBarrelPackImage)
 {
-   mass = 10; // z0dd - ZOD, 7/17/02. Lower mass due to higher gravity. Was 15.
+    mass = 10; // z0dd - ZOD, 7/17/02. Lower mass due to higher gravity. Was 15.
 
-   shapeFile  = "pack_barrel_fusion.dts";
-   item       = PlasmaBarrelPack;
-   mountPoint = 1;
-   offset     = "0 0 0";
-	turretBarrel = "PlasmaBarrelLarge";
+    shapeFile  = "pack_barrel_fusion.dts";
+    item       = PlasmaBarrelPack;
+    mountPoint = 1;
+    offset     = "0 0 0";
+    turretBarrel = "PlasmaBarrelLarge";
 
-	stateName[0] = "Idle";
-	stateTransitionOnTriggerDown[0] = "Activate";
+    stateName[0] = "Idle";
+    stateTransitionOnTriggerDown[0] = "Activate";
 
-	stateName[1] = "Activate";
-	stateScript[1] = "onActivate";
-	stateTransitionOnTriggerUp[1] = "Deactivate";
+    stateName[1] = "Activate";
+    stateScript[1] = "onActivate";
+    stateTransitionOnTriggerUp[1] = "Deactivate";
 
-	stateName[2] = "Deactivate";
-	stateScript[2] = "onDeactivate";
-	stateTransitionOnTimeOut[2] = "Idle";
+    stateName[2] = "Deactivate";
+    stateScript[2] = "onDeactivate";
+    stateTransitionOnTimeOut[2] = "Idle";
 
-	isLarge = true;
+    isLarge = true;
 };
 
 datablock ItemData(PlasmaBarrelPack)
 {
-   className    = Pack;
-   catagory     = "Packs";
-   shapeFile    = "pack_barrel_fusion.dts";
-   mass         = 1;
-   elasticity   = 0.2;
-   friction     = 0.6;
-   pickupRadius = 2;
-   rotate       = true;
-   image        = "PlasmaBarrelPackImage";
-	pickUpName = "a plasma barrel pack";
+    className    = Pack;
+    catagory     = "Packs";
+    shapeFile    = "pack_barrel_fusion.dts";
+    mass         = 1;
+    elasticity   = 0.2;
+    friction     = 0.6;
+    pickupRadius = 2;
+    rotate       = true;
+    image        = "PlasmaBarrelPackImage";
+    pickUpName = "a plasma barrel pack";
 
-   computeCRC = true;
-
+    computeCRC = true;
 };
 
 function PlasmaBarrelPackImage::onActivate(%data, %obj, %slot)
 {
-	checkTurretMount(%data, %obj, %slot);
+    checkTurretMount(%data, %obj, %slot);
 }
 
 function PlasmaBarrelPackImage::onDeactivate(%data, %obj, %slot)

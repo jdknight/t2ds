@@ -2,160 +2,162 @@
 
 function BountyGame::onAIRespawn(%game, %client)
 {
-   //add the default task
-	if (! %client.defaultTasksAdded)
-	{
-		%client.defaultTasksAdded = true;
-	   %client.addTask(AIPickupItemTask);                                             
-	   %client.addTask(AIUseInventoryTask);
-	   %client.addTask(AITauntCorpseTask);
-		%client.addTask(AIEngageTurretTask);
-		%client.addTask(AIDetectMineTask);
-		%client.addTask(AIBountyPatrolTask);
-		%client.bountyTask = %client.addTask(AIBountyEngageTask);
-	}
+    //add the default task
+    if (!%client.defaultTasksAdded)
+    {
+        %client.defaultTasksAdded = true;
+        %client.addTask(AIPickupItemTask);
+        %client.addTask(AIUseInventoryTask);
+        %client.addTask(AITauntCorpseTask);
+        %client.addTask(AIEngageTurretTask);
+        %client.addTask(AIDetectMineTask);
+        %client.addTask(AIBountyPatrolTask);
+        %client.bountyTask = %client.addTask(AIBountyEngageTask);
+    }
 
-   //set the inv flag
-   %client.spawnUseInv = true;
+    //set the inv flag
+    %client.spawnUseInv = true;
 }
 
 function BountyGame::AIInit(%game)
 {
-   AIInit();
+    AIInit();
 }
 
 function BountyGame::aiBountyAssignTarget(%game, %client, %target)
 {
-	if (!isObject(%client.bountyTask))
-		%client.bountyTask = %client.addTask(AIBountyEngageTask);
-	%task = %client.bountyTask;
+    if (!isObject(%client.bountyTask))
+        %client.bountyTask = %client.addTask(AIBountyEngageTask);
+    %task = %client.bountyTask;
 
-   %task.baseWeight = $AIWeightKillFlagCarrier[1];
-	%task.buyEquipmentSet = "LightEnergySniper";
+    %task.baseWeight = $AIWeightKillFlagCarrier[1];
+    %task.buyEquipmentSet = "LightEnergySniper";
 }
 
 function AIBountyEngageTask::assume(%task, %client)
 {
-   %task.setWeightFreq(15);
-   %task.setMonitorFreq(15);
+    %task.setWeightFreq(15);
+    %task.setMonitorFreq(15);
 }
 
 function AIBountyEngageTask::retire(%task, %client)
 {
-	%client.setEngageTarget(-1);
+    %client.setEngageTarget(-1);
 }
 
-function AIBountyEngageTask::weight(%task, %client)                              
+function AIBountyEngageTask::weight(%task, %client)
 {
-   %player = %client.player;
-	if (!isObject(%player))
-		return;
+    %player = %client.player;
+    if (!isObject(%player))
+        return;
 
-   %clientPos = %player.getWorldBoxCenter();
-   %client.shouldEngage = -1;
+    %clientPos = %player.getWorldBoxCenter();
+    %client.shouldEngage = -1;
 
-	//first, make sure we actually can fight
-	if (AIEngageOutOfAmmo(%client))
-	{
-		%task.setWeight(0);
-		return;
-	}
+    //first, make sure we actually can fight
+    if (AIEngageOutOfAmmo(%client))
+    {
+        %task.setWeight(0);
+        return;
+    }
 
-	//see if anyone has fired on us recently...
-   %mustEngage = false;
-   %losTimeout = $AIClientMinLOSTime + ($AIClientLOSTimeout * %client.getSkillLevel());
-   if (AIClientIsAlive(%client.lastDamageClient, %losTimeout) && getSimTime() - %client.lastDamageTime < %losTimeout)
-   {
-		//see if the attacker is either our target or, we are their target
-		if (%client.lastDamageClient == %client.objectiveTarget || %client.lastDamageClient.objectiveTarget == %client)
-		{
-         %mustEngage = true;
-			%currentTarget = %client.getEngageTarget();
+    //see if anyone has fired on us recently...
+    %mustEngage = false;
+    %losTimeout = $AIClientMinLOSTime + ($AIClientLOSTimeout * %client.getSkillLevel());
+    if (AIClientIsAlive(%client.lastDamageClient, %losTimeout) &&
+            getSimTime() - %client.lastDamageTime < %losTimeout)
+    {
+        //see if the attacker is either our target or, we are their target
+        if (%client.lastDamageClient == %client.objectiveTarget ||
+                %client.lastDamageClient.objectiveTarget == %client)
+        {
+            %mustEngage = true;
+            %currentTarget = %client.getEngageTarget();
 
-			//see if this is a new attacker
-			if (AIClientIsAlive(%currentTarget) && %currentTarget != %client.lastDamageClient)
-			{
-	         %targPos = %currentTarget.player.getWorldBoxCenter();
-	         %curTargDist = %client.getPathDistance(%targPos);
-	      
-	         %newTargPos = %client.lastDamageClient.player.getWorldBoxCenter();
-	         %newTargDist = %client.getPathDistance(%newTargPos);
-	      
-	         //see if the new targ is no more than 30 m further
-	         if (%newTargDist > 0 && %newTargDist < %curTargDist + 30)
-	            %client.shouldEngage = %client.lastDamageClient;
-				else
-					%client.shouldEngage = %currentTarget;
-	      }
-	      else
-	         %client.shouldEngage = %client.lastDamageClient;
-		}
-
-		//otherwise we should run react to an attacker who is not really supposed to be attacking us...
-		else
-			%client.setDangerLocation(%client.player.position, 20);
-	}
-
-   //no one has fired at us recently, see if we're near our objective target...
-   else
-   {
-		//see if we still have sight of the current target
-		%hasLOS = %client.hasLOSToClient(%client.objectiveTarget);
-		%losTime = %client.getClientLOSTime(%client.objectiveTarget);
-		if (%hasLOS || %losTime < %losTimeout)
-	      %client.shouldEngage = %client.objectiveTarget;
-		else
-			%client.shouldEngage = -1;
-	}
-
-	//now set the weight
-	if (%client.shouldEngage > 0)
-   {
-      //if we've been fired upon...
-      if (%mustEngage)
-	      %task.setWeight($AIWeightReturnFire);
-
-      //see if we can allow the bot to use an inv station...
-      else if (%client.spawnUseInv)
-      {
-         //see if there's an available inv station
-         %result = AIFindClosestInventory(%client, false);
-         %closestInv = getWord(%result, 0);
-	      %closestDist = getWord(%result, 1);
-	      if (isObject(%closestInv))
-         {
-            if (isObject(%client.shouldEngage.player))
+            //see if this is a new attacker
+            if (AIClientIsAlive(%currentTarget) && %currentTarget != %client.lastDamageClient)
             {
-               %dist = %client.getPathDistance(%client.shouldEngage.player.position);
-               if (%dist < 70 || %closestDist > 200)
-	               %task.setWeight($AIWeightReturnFire);
-               else
-	               %task.setWeight($AIBountyWeightShouldEngage);
+                %targPos = %currentTarget.player.getWorldBoxCenter();
+                %curTargDist = %client.getPathDistance(%targPos);
+
+                %newTargPos = %client.lastDamageClient.player.getWorldBoxCenter();
+                %newTargDist = %client.getPathDistance(%newTargPos);
+
+                //see if the new targ is no more than 30 m further
+                if (%newTargDist > 0 && %newTargDist < %curTargDist + 30)
+                    %client.shouldEngage = %client.lastDamageClient;
+                else
+                    %client.shouldEngage = %currentTarget;
             }
             else
-	            %task.setWeight($AIBountyWeightShouldEngage);
-         }
-         else
-         {
-            %client.spawnUseInv = false;
-	         %task.setWeight($AIWeightReturnFire);
-         }
-      }
-      else
-	      %task.setWeight($AIWeightReturnFire);
-   }
-	else
-	   %task.setWeight(0);
+                %client.shouldEngage = %client.lastDamageClient;
+        }
+        //otherwise we should run react to an attacker who is not really
+        //supposed to be attacking us...
+        else
+            %client.setDangerLocation(%client.player.position, 20);
+    }
+    //no one has fired at us recently, see if we're near our objective target...
+    else
+    {
+        //see if we still have sight of the current target
+        %hasLOS = %client.hasLOSToClient(%client.objectiveTarget);
+        %losTime = %client.getClientLOSTime(%client.objectiveTarget);
+        if (%hasLOS || %losTime < %losTimeout)
+            %client.shouldEngage = %client.objectiveTarget;
+        else
+            %client.shouldEngage = -1;
+    }
+
+    //now set the weight
+    if (%client.shouldEngage > 0)
+    {
+        //if we've been fired upon...
+        if (%mustEngage)
+            %task.setWeight($AIWeightReturnFire);
+        //see if we can allow the bot to use an inv station...
+        else if (%client.spawnUseInv)
+        {
+            //see if there's an available inv station
+            %result = AIFindClosestInventory(%client, false);
+            %closestInv = getWord(%result, 0);
+            %closestDist = getWord(%result, 1);
+            if (isObject(%closestInv))
+            {
+                if (isObject(%client.shouldEngage.player))
+                {
+                    %dist = %client.getPathDistance(
+                        %client.shouldEngage.player.position);
+                    if (%dist < 70 || %closestDist > 200)
+                        %task.setWeight($AIWeightReturnFire);
+                    else
+                        %task.setWeight($AIBountyWeightShouldEngage);
+                }
+                else
+                    %task.setWeight($AIBountyWeightShouldEngage);
+            }
+            else
+            {
+                %client.spawnUseInv = false;
+                %task.setWeight($AIWeightReturnFire);
+            }
+        }
+        else
+            %task.setWeight($AIWeightReturnFire);
+    }
+    else
+        %task.setWeight(0);
 }
 
 function AIBountyEngageTask::monitor(%task, %client)
 {
-   if (AIClientIsAlive(%client.shouldEngage))
-      %client.stepEngage(%client.shouldEngage);
+    if (AIClientIsAlive(%client.shouldEngage))
+        %client.stepEngage(%client.shouldEngage);
 }
 
 //-----------------------------------------------------------------------------
-//AIPatrolTask used to wander around the map (DM and Hunters mainly) looking for something to do...
+//AIPatrolTask used to wander around the map (DM and Hunters mainly) looking for
+//something to do...
 
 function AIBountyPatrolTask::init(%task, %client)
 {
@@ -163,12 +165,12 @@ function AIBountyPatrolTask::init(%task, %client)
 
 function AIBountyPatrolTask::assume(%task, %client)
 {
-	%task.setWeightFreq(13);
-	%task.setMonitorFreq(13);
-	%task.findLocation = true;
-	%task.patrolLocation = "0 0 0";
-	%task.idleing = false;
-	%task.idleEndTime = 0;
+    %task.setWeightFreq(13);
+    %task.setMonitorFreq(13);
+    %task.findLocation = true;
+    %task.patrolLocation = "0 0 0";
+    %task.idleing = false;
+    %task.idleEndTime = 0;
 }
 
 function AIBountyPatrolTask::retire(%task, %client)
@@ -177,7 +179,7 @@ function AIBountyPatrolTask::retire(%task, %client)
 
 function AIBountyPatrolTask::weight(%task, %client)
 {
-	%task.setWeight($AIWeightPatrolling);
+    %task.setWeight($AIWeightPatrolling);
 }
 
 function AIBountyPatrolTask::monitor(%task, %client)
@@ -271,7 +273,7 @@ function AIBountyPatrolTask::monitor(%task, %client)
 				%pickGraphNode = false;
 				%pickPlayerLocation = true;
 			}
-			
+
 			if (!%pickGraphNode && !%pickPlayerLocation)
 			{
 				%itemCount = %chooseSet.getCount();
@@ -304,7 +306,7 @@ function AIBountyPatrolTask::monitor(%task, %client)
 	else
 	{
 		%client.stepMove(%task.patrolLocation, 8.0);
-		%distToDest = %client.getPathDistance(%task.patrolLocation);
+        %distToDest = %client.getPathDistance(%task.patrolLocation);
 		if (%distToDest > 0 && %distToDest < 10)
 		{
 			%task.idleing = true;

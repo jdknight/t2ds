@@ -4,62 +4,69 @@
 
 function StaticShapeData::onGainPowerEnabled(%data, %obj)
 {
-   if(%data.ambientThreadPowered)
-      %obj.playThread($AmbientThread, "ambient");
-   // if it's a deployed object, schedule the power thread; else play it immediately
-   if(%data.deployAmbientThread)
-      %obj.schedule(750, "playThread", $PowerThread, "Power");
-   else
-      %obj.playThread($PowerThread,"Power");
-   // deployable objects get their recharge rate set right away -- don't set it again unless
-   // the object has just been re-enabled
-   if(%obj.initDeploy)
-      %obj.initDeploy = false;
-   else
-   {
-      if(%obj.getRechargeRate() <= 0)
-      {
-         %oldERate = %obj.getRechargeRate();
-         %obj.setRechargeRate(%oldERate + %data.rechargeRate);
-      }
-   }
-   if(%data.humSound !$= "")
-      %obj.playAudio($HumSound, %data.humSound);
-   %obj.setPoweredState(true);
+    if (%data.ambientThreadPowered)
+        %obj.playThread($AmbientThread, "ambient");
+
+    // if it's a deployed object, schedule the power thread; else play it immediately
+    if (%data.deployAmbientThread)
+        %obj.schedule(750, "playThread", $PowerThread, "Power");
+    else
+        %obj.playThread($PowerThread, "Power");
+
+    // deployable objects get their recharge rate set right away -- don't set it again unless
+    // the object has just been re-enabled
+    if (%obj.initDeploy)
+        %obj.initDeploy = false;
+    else
+    {
+        if (%obj.getRechargeRate() <= 0)
+        {
+            %oldERate = %obj.getRechargeRate();
+            %obj.setRechargeRate(%oldERate + %data.rechargeRate);
+        }
+    }
+
+    if (%data.humSound !$= "")
+        %obj.playAudio($HumSound, %data.humSound);
+    %obj.setPoweredState(true);
 }
 
 function StaticShapeData::onLosePowerDisabled(%data, %obj)
 {
-   %client = %obj.getControllingClient();
-   if(%client != 0)
-      serverCmdResetControlObject(%client);
-   
-   if(%data.ambientThreadPowered)
-      %obj.pauseThread($AmbientThread);
-   if(!%data.alwaysAmbient)
-   {
-      %obj.stopThread($PowerThread);
-      // MES -- drop shields and stop them from regenerating after power loss
-      %obj.setRechargeRate(0.0);
-      %obj.setEnergyLevel(0.0);
-   }
-   if(%data.humSound !$= "")
-      %obj.stopAudio($HumSound);
-   %obj.setPoweredState(false);
+    %client = %obj.getControllingClient();
+    if (%client != 0)
+        serverCmdResetControlObject(%client);
+
+    if (%data.ambientThreadPowered)
+        %obj.pauseThread($AmbientThread);
+
+    if (!%data.alwaysAmbient)
+    {
+        %obj.stopThread($PowerThread);
+        // MES -- drop shields and stop them from regenerating after power loss
+        %obj.setRechargeRate(0.0);
+        %obj.setEnergyLevel(0.0);
+    }
+
+    if (%data.humSound !$= "")
+        %obj.stopAudio($HumSound);
+    %obj.setPoweredState(false);
 }
 
 function StaticShapeData::gainPower(%data, %obj)
 {
-   if(%obj.isEnabled())
-      %data.onGainPowerEnabled(%obj);
-   Parent::gainPower(%data, %obj);
+    if (%obj.isEnabled())
+        %data.onGainPowerEnabled(%obj);
+
+    Parent::gainPower(%data, %obj);
 }
 
 function StaticShapeData::losePower(%data, %obj)
 {
-   if(%obj.isEnabled())
-      %data.onLosePowerDisabled(%obj);
-   Parent::losePower(%data, %obj);
+    if (%obj.isEnabled())
+        %data.onLosePowerDisabled(%obj);
+
+    Parent::losePower(%data, %obj);
 }
 
 function ShapeBaseData::onEnabled()
@@ -72,16 +79,18 @@ function ShapeBaseData::onDisabled()
 
 function StaticShapeData::onEnabled(%data, %obj, %prevState)
 {
-   if(%obj.isPowered())
-      %data.onGainPowerEnabled(%obj);
-   Parent::onEnabled(%data, %obj, %prevState);
+    if (%obj.isPowered())
+        %data.onGainPowerEnabled(%obj);
+
+    Parent::onEnabled(%data, %obj, %prevState);
 }
 
 function StaticShapeData::onDisabled(%data, %obj, %prevState)
 {
-   if(%obj.isPowered() || (%data.className $= "Generator"))
-      %data.onLosePowerDisabled(%obj);
-   Parent::onDisabled(%data, %obj, %prevState);
+    if (%obj.isPowered() || (%data.className $= "Generator"))
+        %data.onLosePowerDisabled(%obj);
+
+    Parent::onDisabled(%data, %obj, %prevState);
 }
 
 function StaticShape::deploy(%this)
@@ -91,9 +100,10 @@ function StaticShape::deploy(%this)
 
 function StaticShapeData::onEndSequence(%data, %obj, %thread)
 {
-   if(%thread == $DeployThread)
-      %obj.setSelfPowered();
-   Parent::onEndSequence(%data, %obj, %thread);
+    if (%thread == $DeployThread)
+        %obj.setSelfPowered();
+
+    Parent::onEndSequence(%data, %obj, %thread);
 }
 
 function ShapeBaseData::onEndSequence()
@@ -106,24 +116,24 @@ function ShapeBaseData::onEndSequence()
 
 datablock EffectProfile(ShapeExplosionEffect)
 {
-   effectname = "explosions/explosion.xpl03";
-   minDistance = 10;
-   maxDistance = 50;
+    effectname = "explosions/explosion.xpl03";
+    minDistance = 10;
+    maxDistance = 50;
 };
 
 datablock AudioProfile(ShapeExplosionSound)
 {
-   filename = "fx/explosions/explosion.xpl03.wav";
-   description = AudioExplosion3d;
-   preload = true;
-   effect = ShapeExplosionEffect;
+    filename = "fx/explosions/explosion.xpl03.wav";
+    description = AudioExplosion3d;
+    preload = true;
+    effect = ShapeExplosionEffect;
 };
 
 datablock ExplosionData(ShapeExplosion)
 {
-   explosionShape = "disc_explosion.dts";
-   soundProfile = ShapeExplosionSound;
-   faceViewer = true;
+    explosionShape = "disc_explosion.dts";
+    soundProfile = ShapeExplosionSound;
+    faceViewer = true;
 };
 
 //******************************************************************************
@@ -132,52 +142,52 @@ datablock ExplosionData(ShapeExplosion)
 
 datablock StaticShapeData(HeavyMaleHuman_Dead)
 {
-   className = "deadArmor";
-   catagory = "Player Armors";
-   shapeFile = "heavy_male_dead.dts";
-   isInvincible = true;
+    className = "deadArmor";
+    catagory = "Player Armors";
+    shapeFile = "heavy_male_dead.dts";
+    isInvincible = true;
 };
 
 datablock StaticShapeData(MediumMaleHuman_Dead)
 {
-   className = "deadArmor";
-   catagory = "Player Armors";
-   shapeFile = "medium_male_dead.dts";
-   isInvincible = true;
+    className = "deadArmor";
+    catagory = "Player Armors";
+    shapeFile = "medium_male_dead.dts";
+    isInvincible = true;
 };
 
 datablock StaticShapeData(LightMaleHuman_Dead)
 {
-   className = "deadArmor";
-   catagory = "Player Armors";
-   shapeFile = "light_male_dead.dts";
-   isInvincible = true;
+    className = "deadArmor";
+    catagory = "Player Armors";
+    shapeFile = "light_male_dead.dts";
+    isInvincible = true;
 };
 
 function deadArmor::onAdd(%data, %obj)
 {
-   Parent::onAdd(%data, %obj);
+    Parent::onAdd(%data, %obj);
 }
 
 //*****************************************************************************
-//*   Flagstands - Data Blocks                        
+//*   Flagstands - Data Blocks
 //*****************************************************************************
 datablock StaticShapeData(InteriorFlagStand)
 {
-   className = "FlagIntStand";
-   catagory = "Objectives";
-   shapefile = "int_flagstand.dts";
-   isInvincible = true;
-   needsNoPower = true;
+    className = "FlagIntStand";
+    catagory = "Objectives";
+    shapefile = "int_flagstand.dts";
+    isInvincible = true;
+    needsNoPower = true;
 };
 
 datablock StaticShapeData(ExteriorFlagStand)
 {
-   className = "FlagIntStand";
-   catagory = "Objectives";
-   shapefile = "ext_flagstand.dts";
-   isInvincible = true;
-   needsNoPower = true;
+    className = "FlagIntStand";
+    catagory = "Objectives";
+    shapefile = "ext_flagstand.dts";
+    isInvincible = true;
+    needsNoPower = true;
 };
 
 ///////////////////////////////////////////
@@ -188,683 +198,233 @@ datablock StaticShapeData(ExteriorFlagStand)
 
 function ExteriorFlagStand::onAdd(%this, %obj)
 {
-   Parent::onAdd(%this, %obj);
-   %obj.playThread($ActivateThread, "activate");
+    Parent::onAdd(%this, %obj);
+    %obj.playThread($ActivateThread, "activate");
 }
 
 function ExteriorFlagStand::onFlagTaken(%this, %obj)
-{  
-   %obj.setThreadDir($ActivateThread, 0);
+{
+    %obj.setThreadDir($ActivateThread, 0);
 }
 
 function ExteriorFlagStand::onFlagReturn(%this, %obj)
 {
-   %obj.setThreadDir($ActivateThread, 1);
+    %obj.setThreadDir($ActivateThread, 1);
 }
-                        
+
 function ExteriorFlagStand::onCollision(%this, %obj, %colObj)
 {
-   game.flagStandCollision(%this, %obj, %colObj);
+    game.flagStandCollision(%this, %obj, %colObj);
 }
-                        
+
 function InteriorFlagStand::onCollision(%this, %obj, %colObj)
 {
-   game.flagStandCollision(%this, %obj, %colObj);
+    game.flagStandCollision(%this, %obj, %colObj);
 }
-                        
+
 ///////////////////////////////////////////////
 //end flag stand functions
 ///////////////////////////////////////////////
 
 datablock StaticShapeData(FlipFlop)
 {
-   catagory = "Objectives";
-   shapefile = "switch.dts";
+    catagory = "Objectives";
+    shapefile = "switch.dts";
 
-   isInvincible = true;
-   cmdCategory = "Objectives";
-   cmdIcon = "CMDSwitchIcon";
-   cmdMiniIconName = "commander/MiniIcons/com_switch_grey";
-   targetTypeTag = 'Switch';
-   alwaysAmbient = true;
-   needsNoPower = true;
-   emap = true;
+    isInvincible = true;
+    cmdCategory = "Objectives";
+    cmdIcon = "CMDSwitchIcon";
+    cmdMiniIconName = "commander/MiniIcons/com_switch_grey";
+    targetTypeTag = 'Switch';
+    alwaysAmbient = true;
+    needsNoPower = true;
+    emap = true;
 };
 
-function FlipFlop::onCollision(%data,%obj,%col)
+function FlipFlop::onCollision(%data, %obj, %col)
 {
-   if (%col.getDataBlock().className $= Armor && %col.getState() !$= "Dead")
-      %data.playerTouch(%obj, %col);
+    if (%col.getDataBlock().className $= Armor && %col.getState() !$= "Dead")
+        %data.playerTouch(%obj, %col);
 }
 
-function FlipFlop::playerTouch(%data,%obj,%col)
+function FlipFlop::playerTouch(%data, %obj, %col)
 {
-   messageAll('MsgPlayerTouchSwitch', 'Player %1 touched switch %2', %col, %obj);
+    messageAll('MsgPlayerTouchSwitch', 'Player %1 touched switch %2', %col, %obj);
 }
 
-//******************************************************************************
-//*   Organics  -                                                              *
-//******************************************************************************
-
-//function to add random Organics to mission pre-creation
-//(could be used to add other things...its cool with bioderm armors ;) )
-
-function randomOrg(%organicName, %num, %radius)
-{
-   %SPACING = 1.0; //meters between center of organic and another object
-
-   //return help info
-   if(%organicName $="" || !%num || !%radius) {
-      echo("randomOrg(<shape name>, <quantity>, <radius of grove desired>);");
-      return;
-   }
-
-   %organicIndex = -1;
-   // --------------------------------------------------------
-   // z0dd - ZOD, 5/8/02. Typo fix.
-   //for (%i = 0; %i < $NumAStaticTSObjects; %i++) {
-   for (%i = 0; %i < $NumStaticTSObjects; %i++) {
-      if (getWord($StaticTSObjects[%i], 1) $= %organicName) {
-         %organicIndex = %i;
-         break;
-      }
-   }
-   if (%organicIndex == -1) {
-      error("There is no static shape named" SPC %organicName);
-      return;
-   }
-   %shapeFileName = getWord($StaticTSObjects[%organicIndex], 2);
-
-   %maxSlope = getWord($StaticTSObjects[%organicIndex], 3);
-   if (%maxSlope $= "")
-      %maxSlope = 40;
-
-   %zOffset = getWord($StaticTSObjects[%organicIndex], 4);
-   if (%zOffset $= "")
-      %zOffset = 0;
-
-   %slopeWithTerrain = getWord($StaticTSObjects[%organicIndex], 5);
-   if (%slopeWithTerrain $= "")
-      %slopeWithTerrain = false;
-
-   %minScale = getWord($StaticTSObjects[%organicIndex], 6);
-   %maxScale = getWord($StaticTSObjects[%organicIndex], 7);
-
-   //set up folders in mis file
-   $RandomOrganicsAdded++;  //to keep track of groups
-   if(!isObject(RandomOrganics)) {
-      %randomOrgGroup = new simGroup(RandomOrganics);
-      MissionGroup.add(%randomOrgGroup);
-   }
-   %groupName = "Addition"@$RandomOrganicsAdded@%organicName;
-   %group = new simGroup(%groupName);
-   RandomOrganics.add(%group);
-   
-       
-   %ctr = LocalClientConnection.camera.getPosition();
-   %areaX = getWord(%ctr, 0) - %radius;
-   %areaY = getWord(%ctr, 1) - %radius;
-   
-   %orgCount = %num;
-   while((%orgCount > 0) && (%retries < (15000 / %maxSlope)))  //theoretically, a thorough number of retries 
-   {
-      //find a tile
-      %x = (getRandom(mFloor(%areaX / 8), mFloor((%areaX + (%radius * 2)) / 8)) * 8) + 4;  //tile center             
-      %y = (getRandom(mFloor(%areaY / 8), mFloor((%areaY + (%radius * 2)) / 8)) * 8) + 4;    
-
-      %start = %x @ " " @ %y @ " 2000";
-      %end = %x @ " " @ %y @ " -1";
-      %ground = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);      
-      %z = getWord(%ground, 3);
-      %z += %zOffset;            
-      %position = %x @ " " @ %y @ " " @ %z;
-
-
-      // get normal from both sides of the square      
-      %start = %x + 2 @ " " @ %y @ " 2000";
-      %end = %x + 2 @ " " @ %y @ " -1";
-      %hit1 = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);
-            
-      %start = %x - 2 @ " " @ %y @ " 2000";
-      %end = %x - 2 @ " " @ %y @ " -1";
-      %hit2 = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);    
-
-      %norm1 = getWord(%hit1, 4) @ " " @ getWord(%hit1, 5) @ " " @ getWord(%hit1, 6);
-      %norm2 = getWord(%hit2, 4) @ " " @ getWord(%hit2, 5) @ " " @ getWord(%hit2, 6);
-
-      //if either side of tile has greater slope than allowed, move on.
-      %angNorm1 = getTerrainAngle(%norm1);
-      %angNorm2 = getTerrainAngle(%norm2);
-      if ((getTerrainAngle(%norm1) > %maxSlope) || (getTerrainAngle(%norm2) > %maxslope))
-      {      
-         %retries++;
-         continue;
-      }
-
-      %terrainNormal = VectorAdd(%norm1, %norm2);
-      %terrainNormal = VectorNormalize(%terrainNormal);       
-      
-      //search surroundings for obstacles. If obstructed, move on.      
-      InitContainerRadiusSearch(%position, %spacing,  $TypeMasks::VehicleObjectType | 
-                                          $TypeMasks::MoveableObjectType |
-                                                $TypeMasks::StaticShapeObjectType |
-                                                // -----------------------------
-                                                // z0dd - ZOD, 5/8/02. Typo fix.
-                                                //$TypeMasks::TSStaticShapeObjectType |
-                                                $TypeMasks::StaticTSObjectType |
-                                                $TypeMasks::ForceFieldObjectType |
-                                                $TypeMasks::TurretObjectType | 
-                                                $TypeMasks::InteriorObjectType | 
-                                                $TypeMasks::ItemObjectType);  
-      %this = containerSearchNext();
-      if(%this)
-      {        
-         %retries++;
-         continue;         
-      }
-      
-         
-      //rotate it
-      if(%slopeWithTerrain)
-      {
-         %rotAxis = vectorCross(%terrainNormal, "0 0 1");
-         %rotAxis = vectorNormalize(%rotAxis);
-         %rotation = %rotAxis @ " " @ getTerrainAngle(%terrainNormal);              
-      }        
-      else %rotation = "1 0 0 0";      
-      %randomAngle = getRandom(360);
-      %zrot = MatrixCreate("0 0 0", "0 0 1 " @ %randomAngle); 
-      %orient = MatrixCreate(%position, %rotation);
-      %finalXForm = MatrixMultiply(%orient, %zrot);
-      
-
-      //scale it
-      %scaleMin = 8;  //default min
-      %scaleMax = 14; //default max
-      if(%minScale)
-         %scaleMin = %minScale * 10;
-      if(%maxScale)
-         %scaleMax = %maxScale * 10;
-      %scaleInt = getRandom(%scaleMin, %scaleMax);
-      %scale = %scaleInt/10;
-      %evenScale = %scale SPC %scale SPC %scale;
-
-      //create it
-      %position = %x SPC %y SPC (%z += %zoffset);        
-      %newOrganic = new TSStatic() {
-         position  = %position;
-         rotation  = %rotation;
-         scale     = %evenScale;
-         shapeName = %shapeFileName;
-      };
-      %group.add(%newOrganic);
-      %newOrganic.setTransform(%finalXForm);
-
-      %orgCount--;   //dec number of shapes left to place
-      %retries = 0; //reset retry counter
-   }
-   if (%orgCount > 0)
-   {
-      error("Unable to place all shapes, area saturated.");
-      error("Looking for clear area " @ (%spacing * 2) @ " meters in diameter, with a max slope of " @ %maxSlope);
-   }
-   echo("Placed " @ %num - %orgCount @ " of " @ %num);
-}
+//--------------------------------------------------------------------------
 
 function getTerrainAngle(%point)
 {
-   %up = "0 0 1";
-   %angleRad = mACos(vectorDot(%point, %up));
-   %angleDeg = mRadToDeg(%angleRad);
-   //echo("angle is "@%angleDeg);
-   return %angleDeg;
+    %up = "0 0 1";
+    %angleRad = mACos(vectorDot(%point, %up));
+    %angleDeg = mRadToDeg(%angleRad);
+    return %angleDeg;
 }
-function randomGrove(%organicName, %num, %radius)
-{
-	%minHeight = 0;
-	%maxHeight = 1000;
-	%SPACING = 1.5; //meters between center of organic and another object
-
-	//return help info
-	if(%organicName $="" || !%num || !%radius) {
-		echo("randomOrg(<shape name>, <quantity>[, radius of grove desired]);");
-		return;
-	}
-
-	%organicIndex = -1;
-	for (%i = 0; %i < $NumStaticTSObjects; %i++) {
-		if (getWord($StaticTSObjects[%i], 1) $= %organicName) {
-			%organicIndex = %i;
-			break;
-		}
-	}
-	if (%organicIndex == -1) {
-		error("There is no static shape named" SPC %organicName);
-		return;
-	}
-	%shapeFileName = getWord($StaticTSObjects[%organicIndex], 2);
-
-	%maxSlope = getWord($StaticTSObjects[%organicIndex], 3);
-	if (%maxSlope $= "")
-		%maxSlope = 40;
-
-	%zOffset = getWord($StaticTSObjects[%organicIndex], 4);
-	if (%zOffset $= "")
-		%zOffset = 0;
-
-	%slopeWithTerrain = getWord($StaticTSObjects[%organicIndex], 5);
-	if (%slopeWithTerrain $= "")
-		%slopeWithTerrain = false;
-
-	%minScale = getWord($StaticTSObjects[%organicIndex], 6);
-	%maxScale = getWord($StaticTSObjects[%organicIndex], 7);
-
-	//set up folders in mis file
-	$RandomOrganicsAdded++;  //to keep track of groups
-	if(!isObject(RandomOrganics)) {
-		%randomOrgGroup = new simGroup(RandomOrganics);
-		MissionGroup.add(%randomOrgGroup);
-	}
-	%groupName = "Addition"@$RandomOrganicsAdded@%organicName;
-	%group = new simGroup(%groupName);
-	RandomOrganics.add(%group);
-
-
-	%ctr = LocalClientConnection.camera.getPosition();
-	%areaX = getWord(%ctr, 0) - %radius;
-	%areaY = getWord(%ctr, 1) - %radius;
-
-	%orgCount = %num;
-	while((%orgCount > 0) && (%retries < (15000 / %maxSlope)))  //theoretically, a thorough number of retries 
-	{
-		//find a tile
-		%x = (getRandom(mFloor(%areaX / 8), mFloor((%areaX + (%radius * 2)) / 8)) * 8) + 4;  //tile center			   	
-		%y = (getRandom(mFloor(%areaY / 8), mFloor((%areaY + (%radius * 2)) / 8)) * 8) + 4;		
-
-		%start = %x @ " " @ %y @ " 2000";
-		%end = %x @ " " @ %y @ " -1";
-		%ground = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);		
-		%z = getWord(%ground, 3);
-
-
-		// elevation test		
-		if ((%z < %minHeight) || (%z > %maxHeight)) 
-		{
-			echo("Broke height range rules.  Readjust allowable elevations.");
-			%retries++;
-			echo("Z is " @ %z);
-			continue;
-		}
-		%z += %zOffset;				
-		%position = %x @ " " @ %y @ " " @ %z;
-
-
-		// get normal from both sides of the square      
-		%start = %x + 2 @ " " @ %y @ " 2000";
-		%end = %x + 2 @ " " @ %y @ " -1";
-		%hit1 = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);
-
-		%start = %x - 2 @ " " @ %y @ " 2000";
-		%end = %x - 2 @ " " @ %y @ " -1";
-		%hit2 = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);	  
-
-		%norm1 = getWord(%hit1, 4) @ " " @ getWord(%hit1, 5) @ " " @ getWord(%hit1, 6);
-		%norm2 = getWord(%hit2, 4) @ " " @ getWord(%hit2, 5) @ " " @ getWord(%hit2, 6);
-
-		//if either side of tile has greater slope than allowed, move on.
-		%angNorm1 = getTerrainAngle(%norm1);
-		%angNorm2 = getTerrainAngle(%norm2);
-		if ((getTerrainAngle(%norm1) > %maxSlope) || (getTerrainAngle(%norm2) > %maxslope))
-		{	  	 
-			%retries++;
-			continue;
-		}
-
-		%terrainNormal = VectorAdd(%norm1, %norm2);
-		%terrainNormal = VectorNormalize(%terrainNormal);		  
-
-		//search surroundings for obstacles. If obstructed, move on.		
-		InitContainerRadiusSearch(%position, %spacing,	$TypeMasks::VehicleObjectType | 
-			$TypeMasks::MoveableObjectType |
-			$TypeMasks::StaticShapeObjectType |
-                  // -----------------------------
-                  // z0dd - ZOD, 5/8/02. Typo fix.
-                  //$TypeMasks::TSStaticShapeObjectType |
-                  $TypeMasks::StaticTSObjectType | 
-			$TypeMasks::ForceFieldObjectType |
-			$TypeMasks::TurretObjectType | 
-			$TypeMasks::InteriorObjectType | 
-			$TypeMasks::ItemObjectType);	
-		%this = containerSearchNext();
-		if(%this)
-		{			
-			%retries++;
-			continue;		   
-		}
-
-
-		//rotate it
-		if(%slopeWithTerrain)
-		{
-			%rotAxis = vectorCross(%terrainNormal, "0 0 1");
-			%rotAxis = vectorNormalize(%rotAxis);
-			%rotation = %rotAxis @ " " @ getTerrainAngle(%terrainNormal);					
-		}
-		else %rotation = "1 0 0 0";		
-		%randomAngle = getRandom(360);
-		%zrot = MatrixCreate("0 0 0", "0 0 1 " @ %randomAngle); 
-		%orient = MatrixCreate(%position, %rotation);
-		%finalXForm = MatrixMultiply(%orient, %zrot);
-
-
-		//scale it
-		%scaleMin = 8;	 //default min
-		%scaleMax = 14; //default max
-		if(%minScale)
-			%scaleMin = %minScale * 10;
-		if(%maxScale)
-			%scaleMax = %maxScale * 10;
-		%scaleInt = getRandom(%scaleMin, %scaleMax);
-		%scale = %scaleInt/10;
-		%evenScale = %scale SPC %scale SPC %scale;
-
-		//create it
-
-		%position = %x SPC %y SPC (%z += %zoffset);			
-		%newOrganic = new TSStatic() {
-			position  = %position;
-			rotation  = %rotation;
-			scale     = %evenScale;
-			shapeName = %shapeFileName;
-		};
-		%group.add(%newOrganic);
-		%newOrganic.setTransform(%finalXForm);
-
-		%orgCount--;	//dec number of shapes left to place
-		%retries = 0; //reset retry counter
-	}
-	if (%orgCount > 0)
-	{
-		error("Unable to place all shapes, area saturated.");
-		error("Looking for clear area " @ (%spacing * 2) @ " meters in diameter, with a max slope of " @ %maxSlope);
-	}
-	echo("Placed " @ %num - %orgCount @ " of " @ %num);
-}
-
-
-function randomRock(%rock, %quantity, %radius, %maxElev)
-{
-	if (!%radius || !%quantity || !%rock)
-	{
-		echo("randomRock(<name>, <quantity>, <radius>, [maximum elevation]");
-		return;
-	}
-
-	if (!%maxElev)
-		%maxElev = 2000;
-
-
-	%rotation[0] = "0 0 1 0";
-	%rotation[1] = "0.999378 -0.0145686 -0.0321219 194.406";
-	%rotation[2] = "0.496802 0.867682 0.0177913 176.44";
-	%rotation[3] = "0.991261 0.0933696 0.0931923 181.867";
-	%rotation[4] = "0.246801 0.360329 -0.899584 92.3648";
-	%rotation[5] = "1 0 0 82.59";
-	%rotation[6] = "0.0546955 -0.629383 0.55201 116.103";
-
-	%spacing = 4.0;  //check 4 meters around object for collisions before placing
-	%ctr = localClientConnection.camera.getPosition();
-	%areaX = getWord(%ctr, 0) - %radius;
-	%areaY = getWord(%ctr, 1) - %radius;
-
-	$RandomOrganicsAdded++;
-	if(!isObject(RandomRocks)) {
-		%randomOrgGroup = new simGroup(RandomRocks);
-		MissionGroup.add(%randomOrgGroup);
-	}
-	%groupName = "Addition"@$RandomOrganicsAdded@%rock;
-	%group = new simGroup(%groupName);
-	RandomRocks.add(%group);
-
-	%orgCount = %quantity;
-	while((%orgCount > 0) && (%retries < (15000 / %maxSlope)))  //theoretically, a thorough number of retries 
-	{
-		//find a tile
-		%x = %areaX + getRandom(%radius * 2);
-		%y = %areaY + getRandom(%radius * 2);
-
-		%start = %x @ " " @ %y @ " 2000";
-		%end = %x @ " " @ %y @ " -1";
-		%ground = containerRayCast(%start, %end, $TypeMasks::TerrainObjectType, 0);
-		%position = getWord(%ground, 1) @ " " @ getWord(%ground, 2) @ " " @	getWord(%ground, 3);
-		echo("position =*" @ %position @ "*");	
-		%z = getWord(%position, 2);
-
-
-		// elevation test		
-		if (%z > %maxElev) //65 meters and above only
-		{
-			%retries++;
-			echo("Z is " @ %z);
-			continue;
-		}				
-
-
-		//search surroundings for obstacles. If obstructed, move on.		
-		InitContainerRadiusSearch(%position, %spacing,	$TypeMasks::VehicleObjectType | 
-			$TypeMasks::MoveableObjectType |
-			$TypeMasks::StaticShapeObjectType |
-                  // -----------------------------
-                  // z0dd - ZOD, 5/8/02. Typo fix.
-                  //$TypeMasks::TSStaticShapeObjectType |
-                  $TypeMasks::StaticTSObjectType |  
-			$TypeMasks::ForceFieldObjectType |
-			$TypeMasks::TurretObjectType | 
-			$TypeMasks::InteriorObjectType | 
-			$TypeMasks::ItemObjectType);	
-		%this = containerSearchNext();
-		if(%this)
-		{			
-			%retries++;
-			continue;		   
-		}
-		%primaryRot	= %rotation[getRandom(7)];
-
-		%randomAngle = mDegToRad(getRandom(360));
-		%zrot = MatrixCreate("0 0 0", "0 0 1 " @ %randomAngle); 
-		%orient = MatrixCreate(%position, %primaryRot);
-
-
-		%scale = getRandom(3);
-		%evenScale = %scale @ " " @ %scale @ " " @ %scale;					
-		%newRock = new InteriorInstance() {				
-			scale     = %evenScale;
-			interiorFile = %rock @ ".dif";
-			showTerrainInside = "0";
-		};
-		%group.add(%newRock);
-		%transfrm = MatrixMultiply(%orient, %zrot);
-		echo("Transform = *" @ %transfrm @ "*");
-		%newRock.setTransform(%transfrm);
-
-		%orgCount--;	//dec number of shapes left to place
-		%retries = 0; //reset retry counter
-	}
-	if (%orgCount > 0)
-	{
-		error("Unable to place all shapes, area saturated.");
-		error("Looking for clear area " @ (%spacing * 2) @ " meters in diameter, with a max slope of " @ %maxSlope);
-	}
-	echo("Placed " @ %num - %orgCount @ " of " @ %num);
-}
-
-
-//--------------------------------------------------------------------------
-//-------------------------------------- Organics
-//--------------------------------------------------------------------------
-
 
 //******************************************************************************
 //*   Pulse Sensor  -  Data Blocks                                             *
 //******************************************************************************
 
-datablock DebrisData( StaticShapeDebris )
+datablock DebrisData(StaticShapeDebris)
 {
-   explodeOnMaxBounce = false;
+    explodeOnMaxBounce = false;
 
-   elasticity = 0.20;
-   friction = 0.5;
+    elasticity = 0.20;
+    friction = 0.5;
 
-   lifetime = 17.0;
-   lifetimeVariance = 0.0;
+    lifetime = 17.0;
+    lifetimeVariance = 0.0;
 
-   minSpinSpeed = 60;
-   maxSpinSpeed = 600;
+    minSpinSpeed = 60;
+    maxSpinSpeed = 600;
 
-   numBounces = 10;
-   bounceVariance = 0;
+    numBounces = 10;
+    bounceVariance = 0;
 
-   staticOnMaxBounce = true;
+    staticOnMaxBounce = true;
 
-   useRadiusMass = true;
-   baseRadius = 0.4;
+    useRadiusMass = true;
+    baseRadius = 0.4;
 
-   velocity = 9.0;
-   velocityVariance = 4.5;
-};             
+    velocity = 9.0;
+    velocityVariance = 4.5;
+};
 
-datablock DebrisData( SmallShapeDebris )
+datablock DebrisData(SmallShapeDebris)
 {
-   explodeOnMaxBounce = false;
+    explodeOnMaxBounce = false;
 
-   elasticity = 0.20;
-   friction = 0.5;
+    elasticity = 0.20;
+    friction = 0.5;
 
-   lifetime = 17.0;
-   lifetimeVariance = 0.0;
+    lifetime = 17.0;
+    lifetimeVariance = 0.0;
 
-   minSpinSpeed = 60;
-   maxSpinSpeed = 600;
+    minSpinSpeed = 60;
+    maxSpinSpeed = 600;
 
-   numBounces = 10;
-   bounceVariance = 0;
+    numBounces = 10;
+    bounceVariance = 0;
 
-   staticOnMaxBounce = true;
+    staticOnMaxBounce = true;
 
-   useRadiusMass = true;
-   baseRadius = 0.2;
+    useRadiusMass = true;
+    baseRadius = 0.2;
 
-   velocity = 5.0;
-   velocityVariance = 2.5;
-};             
+    velocity = 5.0;
+    velocityVariance = 2.5;
+};
 
 datablock AudioProfile(SensorHumSound)
 {
-   filename    = "fx/powered/sensor_hum.wav";
-   description = CloseLooping3d;
-   preload = true;
+    filename    = "fx/powered/sensor_hum.wav";
+    description = CloseLooping3d;
+    preload = true;
 };
 
 datablock SensorData(SensorLgPulseObj)
 {
-   detects = true;
-   detectsUsingLOS = true;
-   detectsPassiveJammed = false;
-   detectsActiveJammed = false;
-   detectsCloaked = false;
-   detectionPings = true;
-   detectRadius = 300;
+    detects = true;
+    detectsUsingLOS = true;
+    detectsPassiveJammed = false;
+    detectsActiveJammed = false;
+    detectsCloaked = false;
+    detectionPings = true;
+    detectRadius = 300;
 };
 
 datablock StaticShapeData(SensorLargePulse) : StaticShapeDamageProfile
 {
-   className = Sensor;  
-   catagory = "Sensors";
-   shapeFile = "sensor_pulse_large.dts";
-   maxDamage = 1.5;
-   destroyedLevel = 1.5;
-   disabledLevel = 0.85;
-   explosion      = ShapeExplosion;
-   expDmgRadius = 10.0;
-   expDamage = 0.5;
-   expImpulse = 2000.0;
+    className = Sensor;
+    catagory = "Sensors";
+    shapeFile = "sensor_pulse_large.dts";
+    maxDamage = 1.5;
+    destroyedLevel = 1.5;
+    disabledLevel = 0.85;
+    explosion      = ShapeExplosion;
+    expDmgRadius = 10.0;
+    expDamage = 0.5;
+    expImpulse = 2000.0;
 
-   dynamicType = $TypeMasks::SensorObjectType;
-   isShielded = true;
-   energyPerDamagePoint = 33;
-   maxEnergy = 110;
-   rechargeRate = 0.31;
-   ambientThreadPowered = true;
-   humSound = SensorHumSound;
+    dynamicType = $TypeMasks::SensorObjectType;
+    isShielded = true;
+    energyPerDamagePoint = 33;
+    maxEnergy = 110;
+    rechargeRate = 0.31;
+    ambientThreadPowered = true;
+    humSound = SensorHumSound;
 
-   cmdCategory = "Support";
-   cmdIcon = CMDSensorIcon;
-   cmdMiniIconName = "commander/MiniIcons/com_sensor_grey";
-   targetNameTag = 'Large';
-   targetTypeTag = 'Sensor';
-   sensorData = SensorLgPulseObj;
-   sensorRadius = SensorLgPulseObj.detectRadius;
-   sensorColor = "255 194 9";
+    cmdCategory = "Support";
+    cmdIcon = CMDSensorIcon;
+    cmdMiniIconName = "commander/MiniIcons/com_sensor_grey";
+    targetNameTag = 'Large';
+    targetTypeTag = 'Sensor';
+    sensorData = SensorLgPulseObj;
+    sensorRadius = SensorLgPulseObj.detectRadius;
+    sensorColor = "255 194 9";
 
-   debrisShapeName = "debris_generic.dts";
-   debris = StaticShapeDebris;
+    debrisShapeName = "debris_generic.dts";
+    debris = StaticShapeDebris;
 };
 
 datablock SensorData(SensorMedPulseObj)
 {
-   detects = true;
-   detectsUsingLOS = true;
-   detectsPassiveJammed = false;
-   detectsActiveJammed = false;
-   detectsCloaked = false;
-   detectionPings = true;
-   detectRadius = 175;
+    detects = true;
+    detectsUsingLOS = true;
+    detectsPassiveJammed = false;
+    detectsActiveJammed = false;
+    detectsCloaked = false;
+    detectionPings = true;
+    detectRadius = 175;
 };
 
 datablock StaticShapeData(SensorMediumPulse) : StaticShapeDamageProfile
 {
-   className = Sensor;  
-   catagory = "Sensors";
-   shapeFile = "sensor_pulse_medium.dts";
-   maxDamage = 1.2;
-   destroyedLevel = 1.2;
-   disabledLevel = 0.68;
-   explosion      = ShapeExplosion;
-   expDmgRadius = 7.0;
-   expDamage = 0.4;
-   expImpulse = 1500;
+    className = Sensor;
+    catagory = "Sensors";
+    shapeFile = "sensor_pulse_medium.dts";
+    maxDamage = 1.2;
+    destroyedLevel = 1.2;
+    disabledLevel = 0.68;
+    explosion      = ShapeExplosion;
+    expDmgRadius = 7.0;
+    expDamage = 0.4;
+    expImpulse = 1500;
 
-   dynamicType = $TypeMasks::SensorObjectType;
-   isShielded = true;
-   energyPerDamagePoint = 33;
-   maxEnergy = 90;
-   rechargeRate = 0.31;
-   ambientThreadPowered = true;
-   humSound = SensorHumSound;
+    dynamicType = $TypeMasks::SensorObjectType;
+    isShielded = true;
+    energyPerDamagePoint = 33;
+    maxEnergy = 90;
+    rechargeRate = 0.31;
+    ambientThreadPowered = true;
+    humSound = SensorHumSound;
 
-   cmdCategory = "Support";
-   cmdIcon = CMDSensorIcon;
-   cmdMiniIconName = "commander/MiniIcons/com_sensor_grey";
-   targetNameTag = 'Medium';
-   targetTypeTag = 'Sensor';
-   sensorData = SensorMedPulseObj;
-   sensorRadius = SensorMedPulseObj.detectRadius;
-   sensorColor = "255 194 9";
+    cmdCategory = "Support";
+    cmdIcon = CMDSensorIcon;
+    cmdMiniIconName = "commander/MiniIcons/com_sensor_grey";
+    targetNameTag = 'Medium';
+    targetTypeTag = 'Sensor';
+    sensorData = SensorMedPulseObj;
+    sensorRadius = SensorMedPulseObj.detectRadius;
+    sensorColor = "255 194 9";
 
-   debrisShapeName = "debris_generic.dts";
-   debris = StaticShapeDebris;
+    debrisShapeName = "debris_generic.dts";
+    debris = StaticShapeDebris;
 };
 
 function Sensor::onGainPowerEnabled(%data, %obj)
 {
-   setTargetSensorData(%obj.target, %data.sensorData);
-   Parent::onGainPowerEnabled(%data, %obj);
+    setTargetSensorData(%obj.target, %data.sensorData);
+
+    Parent::onGainPowerEnabled(%data, %obj);
 }
 
 function Sensor::onLosePowerDisabled(%data, %obj)
 {
-   setTargetSensorData(%obj.target, 0);
-   Parent::onLosePowerDisabled(%data, %obj);
+    setTargetSensorData(%obj.target, 0);
+
+    Parent::onLosePowerDisabled(%data, %obj);
 }
 
 //******************************************************************************
@@ -873,85 +433,87 @@ function Sensor::onLosePowerDisabled(%data, %obj)
 
 datablock AudioProfile(GeneratorHumSound)
 {
-   filename    = "fx/powered/generator_hum.wav";
-   description = CloseLooping3d;
-   preload = true;
+    filename    = "fx/powered/generator_hum.wav";
+    description = CloseLooping3d;
+    preload = true;
 };
 
 
-datablock StaticShapeData(GeneratorLarge) : StaticShapeDamageProfile 
-{   
-   className      = Generator;
-   catagory       = "Generators";
-   shapeFile      = "station_generator_large.dts";
-   explosion      = ShapeExplosion;
-   maxDamage      = 1.5;
-   destroyedLevel = 1.5;
-   disabledLevel  = 0.85;
-   expDmgRadius = 10.0;
-   expDamage = 0.5;
-   expImpulse = 1500.0;
-   noIndividualDamage = true; //flag to make these invulnerable for certain mission types
+datablock StaticShapeData(GeneratorLarge) : StaticShapeDamageProfile
+{
+    className      = Generator;
+    catagory       = "Generators";
+    shapeFile      = "station_generator_large.dts";
+    explosion      = ShapeExplosion;
+    maxDamage      = 1.50;
+    destroyedLevel = 1.50;
+    disabledLevel  = 0.85;
+    expDmgRadius = 10.0;
+    expDamage = 0.5;
+    expImpulse = 1500.0;
+    noIndividualDamage = true; //flag to make these invulnerable for certain mission types
 
-   dynamicType = $TypeMasks::GeneratorObjectType;
-   isShielded = true;
-   energyPerDamagePoint = 30; // z0dd - ZOD, 9/27/02. was 30
-   maxEnergy = 70; // z0dd - ZOD, 09/20/02. Was 50
-   rechargeRate = 0.15; // z0dd - ZOD, 09/20/02. Was 0.05
-   humSound = GeneratorHumSound;
-   
-   cmdCategory = "Support";
-   cmdIcon = "CMDGeneratorIcon";
-   cmdMiniIconName = "commander/MiniIcons/com_generator";   
-   targetTypeTag = 'Generator';
+    dynamicType = $TypeMasks::GeneratorObjectType;
+    isShielded = true;
+    energyPerDamagePoint = 30; // z0dd - ZOD, 9/27/02. was 30
+    maxEnergy = 70; // z0dd - ZOD, 09/20/02. Was 50
+    rechargeRate = 0.15; // z0dd - ZOD, 09/20/02. Was 0.05
+    humSound = GeneratorHumSound;
 
-   debrisShapeName = "debris_generic.dts";
-   debris = StaticShapeDebris;
+    cmdCategory = "Support";
+    cmdIcon = "CMDGeneratorIcon";
+    cmdMiniIconName = "commander/MiniIcons/com_generator";
+    targetTypeTag = 'Generator';
+
+    debrisShapeName = "debris_generic.dts";
+    debris = StaticShapeDebris;
 };
 
 datablock StaticShapeData(SolarPanel) : StaticShapeDamageProfile
 {
-   className = Generator;
-   catagory = "Generators";
-   shapeFile = "solarpanel.dts";
-   explosion = ShapeExplosion;
-   maxDamage = 1.00;
-   destroyedLevel = 1.00;
-   disabledLevel = 0.55;
-   expDmgRadius = 5.0;
-   expDamage = 0.3;
-   expImpulse = 1000.0;
-   noIndividualDamage = true; //flag to make these invulnerable for certain mission types
-   emap = true;
+    className = Generator;
+    catagory = "Generators";
+    shapeFile = "solarpanel.dts";
+    explosion = ShapeExplosion;
+    maxDamage = 1.00;
+    destroyedLevel = 1.00;
+    disabledLevel = 0.55;
+    expDmgRadius = 5.0;
+    expDamage = 0.3;
+    expImpulse = 1000.0;
+    noIndividualDamage = true; //flag to make these invulnerable for certain mission types
+    emap = true;
 
-   isShielded = true;
-   energyPerDamagePoint = 30;
-   rechargeRate = 0.1; // z0dd - ZOD, 09/20/02. Was 0.05
+    isShielded = true;
+    energyPerDamagePoint = 30;
+    rechargeRate = 0.1; // z0dd - ZOD, 09/20/02. Was 0.05
 
-   dynamicType = $TypeMasks::GeneratorObjectType;
-   maxEnergy = 30;
-   humSound = GeneratorHumSound;
+    dynamicType = $TypeMasks::GeneratorObjectType;
+    maxEnergy = 30;
+    humSound = GeneratorHumSound;
 
-   cmdCategory = "Support";
-   cmdIcon = CMDSolarGeneratorIcon;
-   cmdMiniIconName = "commander/MiniIcons/com_solargen_grey";
-   targetTypeTag = 'Solar Panel';
+    cmdCategory = "Support";
+    cmdIcon = CMDSolarGeneratorIcon;
+    cmdMiniIconName = "commander/MiniIcons/com_solargen_grey";
+    targetTypeTag = 'Solar Panel';
 
-   debrisShapeName = "debris_generic.dts";
-   debris = StaticShapeDebris;
+    debrisShapeName = "debris_generic.dts";
+    debris = StaticShapeDebris;
 };
 
 function Generator::onDisabled(%data, %obj, %prevState)
 {
-   %obj.decPowerCount();
-   Parent::onDisabled(%data, %obj, %prevState);
+    %obj.decPowerCount();
+
+    Parent::onDisabled(%data, %obj, %prevState);
 }
 
 function Generator::onEnabled(%data, %obj, %prevState)
 {
-   %obj.incPowerCount();
-   Parent::onEnabled(%data, %obj, %prevState);
-}  
+    %obj.incPowerCount();
+
+    Parent::onEnabled(%data, %obj, %prevState);
+}
 
 //******************************************************************************
 //Nexus Effect (Hunters)
@@ -959,34 +521,33 @@ function Generator::onEnabled(%data, %obj, %prevState)
 
 datablock StaticShapeData(Nexus_Effect)
 {
-   catagory = "Objectives";
-   shapefile = "nexus_effect.dts";
-   mass = 10;
-   elasticity = 0.2;
-   friction = 0.6;
-   pickupRadius = 2;
+    catagory = "Objectives";
+    shapefile = "nexus_effect.dts";
+    mass = 10;
+    elasticity = 0.2;
+    friction = 0.6;
+    pickupRadius = 2;
 };
 
 
 datablock StaticShapeData(NexusBase)
 {
-   catagory = "Objectives";
-   shapefile = "Nexusbase.dts";
-   mass = 10;
-   elasticity = 0.2;
-   friction = 0.6;
-   pickupRadius = 2;
+    catagory = "Objectives";
+    shapefile = "Nexusbase.dts";
+    mass = 10;
+    elasticity = 0.2;
+    friction = 0.6;
+    pickupRadius = 2;
 };
-
 
 datablock StaticShapeData(NexusCap)
 {
-   catagory = "Objectives";
-   shapefile = "Nexuscap.dts";
-   mass = 10;
-   elasticity = 0.2;
-   friction = 0.6;
-   pickupRadius = 2;
+    catagory = "Objectives";
+    shapefile = "Nexuscap.dts";
+    mass = 10;
+    elasticity = 0.2;
+    friction = 0.6;
+    pickupRadius = 2;
 };
 
 //******************************************************************************
@@ -995,245 +556,249 @@ datablock StaticShapeData(NexusCap)
 
 function StaticShapeData::create(%block)
 {
-   %obj = new StaticShape() 
-   {
-      dataBlock = %block;
-   };
-   return(%obj);
+    %obj = new StaticShape()
+    {
+        dataBlock = %block;
+    };
+    return(%obj);
 }
 
 function ShapeBase::damage(%this, %sourceObject, %position, %amount, %damageType)
 {
-   %this.getDataBlock().damageObject(%this, %sourceObject, %position, %amount, %damageType);
+    %this.getDataBlock().damageObject(%this, %sourceObject, %position,
+        %amount, %damageType);
 }
 
 function ShapeBaseData::damageObject(%data, %targetObject, %position, %sourceObject, %amount, %damageType)
 {
-
 }
 
 function ShapeBaseData::onDestroyed(%data, %obj, %prevState)
 {
-
 }
 
 function ShapeBaseData::checkShields(%data, %targetObject, %position, %amount, %damageType)
 {
-   %energy   = %targetObject.getEnergyLevel();
-   %strength = %energy / %data.energyPerDamagePoint;
-   %shieldScale = %data.shieldDamageScale[%damageType];
-   if(%shieldScale $= "")
-      %shieldScale = 1;
-      
-   if (%amount * %shieldScale <= %strength) {
-      // Shield absorbs all
-      %lost = %amount * %shieldScale * %data.energyPerDamagePoint;
-      %energy -= %lost;
-      %targetObject.setEnergyLevel(%energy);
+    %energy   = %targetObject.getEnergyLevel();
+    %strength = %energy / %data.energyPerDamagePoint;
+    %shieldScale = %data.shieldDamageScale[%damageType];
+    if (%shieldScale $= "")
+        %shieldScale = 1;
 
-      %normal = "0.0 0.0 1.0";
-      %targetObject.playShieldEffect( %normal );
+    if (%amount * %shieldScale <= %strength)
+    {
+        // Shield absorbs all
+        %lost = %amount * %shieldScale * %data.energyPerDamagePoint;
+        %energy -= %lost;
+        %targetObject.setEnergyLevel(%energy);
 
-      return 0;
-   }
-   // Shield exhausted
-   %targetObject.setEnergyLevel(0);
-   return %amount - %strength / %shieldScale;
+        %normal = "0.0 0.0 1.0";
+        %targetObject.playShieldEffect(%normal);
+
+        return 0;
+    }
+
+    // Shield exhausted
+    %targetObject.setEnergyLevel(0);
+    return %amount - %strength / %shieldScale;
 }
 
 function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %position, %amount, %damageType)
 {
-   // if this is a non-team mission type and the object is "protected", don't damage it
-   if(%data.noIndividualDamage && Game.allowsProtectedStatics())
-      return;
+    // if this is a non-team mission type and the object is "protected", don't damage it
+    if (%data.noIndividualDamage && Game.allowsProtectedStatics())
+        return;
 
-   // if this is a Siege mission and this object shouldn't take damage (e.g. vehicle stations)
-   if(%data.noDamageInSiege && Game.class $= "SiegeGame")
-      return;
+    // if this is a Siege mission and this object shouldn't take damage (e.g. vehicle stations)
+    if (%data.noDamageInSiege && Game.class $= "SiegeGame")
+        return;
 
-   if(%sourceObject && %targetObject.isEnabled())
-   {
-      if(%sourceObject.client)
-      {
-        %targetObject.lastDamagedBy = %sourceObject.client;
-        %targetObject.lastDamagedByTeam = %sourceObject.client.team;
-        %targetObject.damageTimeMS = GetSimTime();
-      }
-      else
-      {
-        %targetObject.lastDamagedBy = %sourceObject;
-        %targetObject.lastDamagedByTeam = %sourceObject.team;
-        %targetObject.damageTimeMS = GetSimTime();
-      }
-   }
+    if (%sourceObject && %targetObject.isEnabled())
+    {
+        if (%sourceObject.client)
+        {
+            %targetObject.lastDamagedBy = %sourceObject.client;
+            %targetObject.lastDamagedByTeam = %sourceObject.client.team;
+            %targetObject.damageTimeMS = GetSimTime();
+        }
+        else
+        {
+            %targetObject.lastDamagedBy = %sourceObject;
+            %targetObject.lastDamagedByTeam = %sourceObject.team;
+            %targetObject.damageTimeMS = GetSimTime();
+        }
+    }
 
-   // Scale damage type & include shield calculations...
-   if (%data.isShielded)
-      %amount = %data.checkShields(%targetObject, %position, %amount, %damageType);
+    // Scale damage type & include shield calculations...
+    if (%data.isShielded)
+        %amount = %data.checkShields(%targetObject, %position, %amount, %damageType);
 
-   %damageScale = %data.damageScale[%damageType];
-   if(%damageScale !$= "")
-      %amount *= %damageScale;
+    %damageScale = %data.damageScale[%damageType];
+    if (%damageScale !$= "")
+        %amount *= %damageScale;
 
     //if team damage is off, cap the amount of damage so as not to disable the object...
     if (!$TeamDamage && !%targetObject.getDataBlock().deployedObject)
     {
-       // -------------------------------------
-       // z0dd - ZOD, 6/24/02. Console spam fix
-       if(isObject(%sourceObject))
-       {
-          //see if the object is being shot by a friendly
-          if(%sourceObject.getDataBlock().catagory $= "Vehicles")
-             %attackerTeam = getVehicleAttackerTeam(%sourceObject);
-          else
-             %attackerTeam = %sourceObject.team;
-      }
-      if ((%targetObject.getTarget() != -1) && isTargetFriendly(%targetObject.getTarget(), %attackerTeam))
-      {
-         %curDamage = %targetObject.getDamageLevel();
-         %availableDamage = %targetObject.getDataBlock().disabledLevel - %curDamage - 0.05;
-         if (%amount > %availableDamage)
-            %amount = %availableDamage;
-      }
+        // -------------------------------------
+        // z0dd - ZOD, 6/24/02. Console spam fix
+        if (isObject(%sourceObject))
+        {
+            //see if the object is being shot by a friendly
+            if (%sourceObject.getDataBlock().catagory $= "Vehicles")
+                %attackerTeam = getVehicleAttackerTeam(%sourceObject);
+            else
+                %attackerTeam = %sourceObject.team;
+        }
+
+        if ((%targetObject.getTarget() != -1) && isTargetFriendly(%targetObject.getTarget(), %attackerTeam))
+        {
+            %curDamage = %targetObject.getDamageLevel();
+            %availableDamage = %targetObject.getDataBlock().disabledLevel - %curDamage - 0.05;
+            if (%amount > %availableDamage)
+                %amount = %availableDamage;
+        }
     }
 
-   // if there's still damage to apply
-   if (%amount > 0)
-      %targetObject.applyDamage(%amount);
+    // if there's still damage to apply
+    if (%amount > 0)
+        %targetObject.applyDamage(%amount);
 }
 
 // little special casing for the above function
 function getVehicleAttackerTeam(%vehicleId)
 {
-    %name = %vehicleId.getDataBlock().getName(); 
-    if(%name $= "BomberFlyer" || %name $= "AssaultVehicle")
+    %name = %vehicleId.getDataBlock().getName();
+    if (%name $= "BomberFlyer" || %name $= "AssaultVehicle")
         %gunner = %vehicleId.getMountNodeObject(1);
     else
         %gunner = %vehicleId.getMountNodeObject(0);
-    
-    if(%gunner)
+
+    if (%gunner)
         return %gunner.team;
-    
+
     return %vehicleId.team;
 }
 
-
-function StaticShapeData::onDamage(%this,%obj)
+function StaticShapeData::onDamage(%this, %obj)
 {
-   // Set damage state based on current damage level
-   %damage = %obj.getDamageLevel();
-   if(%damage >= %this.destroyedLevel)
-   {
-      if(%obj.getDamageState() !$= "Destroyed")
-      {
-         %obj.setDamageState(Destroyed);
-         // if object has an explosion damage radius associated with it, apply explosion damage
-         if(%this.expDmgRadius)
-            RadiusExplosion(%obj, %obj.getWorldBoxCenter(), %this.expDmgRadius, %this.expDamage, %this.expImpulse, %obj, $DamageType::Explosion);
-         %obj.setDamageLevel(%this.maxDamage);
-      }
-   }
-   else
-   {
-      if(%damage >= %this.disabledLevel)
-      {
-         if(%obj.getDamageState() !$= "Disabled")
-            %obj.setDamageState(Disabled);
-      }
-      else
-      {
-         if(%obj.getDamageState() !$= "Enabled")
-            %obj.setDamageState(Enabled);
-      }
-   }
-}   
+    // Set damage state based on current damage level
+    %damage = %obj.getDamageLevel();
+    if (%damage >= %this.destroyedLevel)
+    {
+        if (%obj.getDamageState() !$= "Destroyed")
+        {
+            %obj.setDamageState(Destroyed);
+            // if object has an explosion damage radius associated with it, apply explosion damage
+            if (%this.expDmgRadius)
+                RadiusExplosion(%obj, %obj.getWorldBoxCenter(),
+                    %this.expDmgRadius, %this.expDamage, %this.expImpulse,
+                    %obj, $DamageType::Explosion);
+            %obj.setDamageLevel(%this.maxDamage);
+        }
+    }
+    else
+    {
+        if (%damage >= %this.disabledLevel)
+        {
+            if (%obj.getDamageState() !$= "Disabled")
+                %obj.setDamageState(Disabled);
+        }
+        else
+        {
+            if (%obj.getDamageState() !$= "Enabled")
+                %obj.setDamageState(Enabled);
+        }
+    }
+}
 
 // --------------------------------------------------------------------
 // Team logos - only the logo projector should be placed in a mission
 
 datablock StaticShapeData(BaseLogo)  //storm logo
 {
-   className = Logo;
-   shapeFile = "teamlogo_storm.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_storm.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(BaseBLogo)  //Inferno Logo
 {
-   className = Logo;
-   shapeFile = "teamlogo_inf.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_inf.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(BiodermLogo)
 {
-   className = Logo;
-   shapeFile = "teamlogo_bd.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_bd.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(BEagleLogo)
 {
-   className = Logo;
-   shapeFile = "teamlogo_be.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_be.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(DSwordLogo)
 {
-   className = Logo;
-   shapeFile = "teamlogo_ds.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_ds.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(COTPLogo)
 {
-   className = Logo;
-   shapeFile = "teamlogo_hb.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_hb.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(SwolfLogo)
 {
-   className = Logo;
-   shapeFile = "teamlogo_sw.dts";
-   alwaysAmbient = true;
+    className = Logo;
+    shapeFile = "teamlogo_sw.dts";
+    alwaysAmbient = true;
 };
 
 datablock StaticShapeData(LogoProjector)
 {
-   className = Projector;
-   catagory = "Objectives";
-   shapeFile = "teamlogo_projector.dts";
-   alwaysAmbient = true;
-   isInvincible = true;
+    className = Projector;
+    catagory = "Objectives";
+    shapeFile = "teamlogo_projector.dts";
+    alwaysAmbient = true;
+    isInvincible = true;
 };
 
 function Projector::onAdd(%data, %obj)
 {
-   Parent::onAdd(%data, %obj);
-   %obj.holo = 0;
+    Parent::onAdd(%data, %obj);
+
+    %obj.holo = 0;
 }
 
 ////////////////////////////////////////////
 //  Tapestries
 ///////////////////////////////////////////
 datablock StaticShapeData(Banner_Honor)
-{     
-   catagory = "Eyecandy";
-   shapefile = "banner_honor.dts";   
+{
+    catagory = "Eyecandy";
+    shapefile = "banner_honor.dts";
 };
 
 datablock StaticShapeData(Banner_Strength)
-{     
-   catagory = "Eyecandy";
-   shapefile = "banner_strength.dts";   
+{
+    catagory = "Eyecandy";
+    shapefile = "banner_strength.dts";
 };
 
 datablock StaticShapeData(Banner_Unity)
-{     
-   catagory = "Eyecandy";
-   shapefile = "banner_unity.dts";   
+{
+    catagory = "Eyecandy";
+    shapefile = "banner_unity.dts";
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1250,7 +815,6 @@ datablock StaticShapeData(Banner_Unity)
 //  5:      slopeWithTerrain     [ only used with the randomOrg function ]
 //  6:      minScale             [ only used with the randomOrg function ]
 //  7:      maxScale             [ only used with the randomOrg function ]
-
 
 $StaticTSObjects[0]  = "Organics BiodermPlant3 xorg3.dts";
 $StaticTSObjects[1]  = "Organics BiodermPlant4 xorg4.dts";
@@ -1335,7 +899,7 @@ $StaticTSObjects[69] = "Statues HeavyMaleStatue statue_hmale.dts";
 $StaticTSObjects[70] = "Statues LightFemaleStatue statue_lfemale.dts";
 $StaticTSObjects[71] = "Statues LightMaleStatue statue_lmale.dts";
 $StaticTSObjects[72] = "Statues Plaque statue_plaque.dts";
-                                  
+
 $StaticTSObjects[73] = "Debris BomberDebris1 bdb1.dts";
 $StaticTSObjects[74] = "Debris BomberDebris2 bdb2.dts";
 $StaticTSObjects[75] = "Debris BomberDebris3 bdb3.dts";
@@ -1360,21 +924,17 @@ $StaticTSObjects[93] = "Test Test3 test3.dts";
 $StaticTSObjects[94] = "Test Test4 test4.dts";
 $StaticTSObjects[95] = "Test Test5 test5.dts";
 
-
-
 $NumStaticTSObjects = 96;
 
 function TSStatic::create(%shapeName)
 {
-   //echo("Foo:" SPC %shapeName);
-   %obj = new TSStatic() 
-   {
-      shapeName = %shapeName;
-   };
-   return(%obj);
+    %obj = new TSStatic()
+    {
+        shapeName = %shapeName;
+    };
+    return %obj;
 }
 
 function TSStatic::damage(%this)
 {
-   // prevent console error spam
 }
