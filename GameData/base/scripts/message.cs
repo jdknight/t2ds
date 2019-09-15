@@ -231,8 +231,8 @@ function playAnim(%client, %anim)
 {
     %player = %client.player;
 
-    // don't play animations if player is in a vehicle
-    if (!isObject(%player) || %player.isMounted())
+    // don't play animations if player is in a vehicle (pilot/weapon operator)
+    if (!isObject(%player) || %player.isPilot() || %player.isWeaponOperator())
         return;
 
     %weapon = (%player.getMountedImage($WeaponSlot) == 0 ? "" :
