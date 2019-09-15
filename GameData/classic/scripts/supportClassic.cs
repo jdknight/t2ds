@@ -106,11 +106,6 @@ function AIConnection::startMission(%client)
 // z0dd - ZOD: Universal functions //////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
-function stripTaggedVar(%var)
-{
-    return stripChars(detag(getTaggedString(%var)), "\cp\co\c6\c7\c8\c9");
-}
-
 // Removes triggers from Siege when players switch sides, also used in practiceCTF
 function cleanTriggers(%group)
 {

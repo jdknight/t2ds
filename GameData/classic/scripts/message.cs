@@ -120,12 +120,11 @@ function chatMessageAll(%sender, %msgString, %a1, %a2, %a3, %a4, %a5, %a6,
         //----------------------------------------------------------------------
     }
 
-    // z0dd - ZOD 5/13/02. Echo chat to console for remote telnet apps.
-    if ($Host::ClassicEchoChat)
+    // relay chat to console/telnet if server administrators desire it
+    if ($Host::EchoChat)
     {
-        echo(stripTaggedVar(%sender.name), ": ", %a2);
+        echo(stripTaggedVar(%sender.name), ": ", stripAudioStr(%a2));
     }
-    //echo("SAY: " @ stripchars(detag(gettaggedstring(%sender.name)),"\cp\co\c6\c7\c8\c9") @ " \"" @ %a2 @ "\"");
 }
 
 function cannedChatMessageAll(%sender, %msgString, %name, %string, %keys)
@@ -138,12 +137,11 @@ function cannedChatMessageAll(%sender, %msgString, %name, %string, %keys)
         cannedChatMessageClient(ClientGroup.getObject(%i), %sender, %msgString,
             %name, %string, %keys);
 
-    // z0dd - ZOD 5/13/02. Echo chat to console for remote telnet apps.
-    if ($Host::ClassicEchoChat)
+    // relay chat to console/telnet if server administrators desire it
+    if ($Host::EchoChat)
     {
-        echo(stripTaggedVar(%sender.name), ": ", getSubStr(%string, 0, strstr(%string, "~w")));
+        echo(stripTaggedVar(%sender.name), ": ", stripAudioStr(%string));
     }
-    //echo("SAY: " @ stripchars(detag(gettaggedstring(%sender.name)),"\cp\co\c6\c7\c8\c9") @ " \"" @ %string @ "\"");
 }
 
 //---------------------------------------------------------------------------
@@ -247,4 +245,19 @@ function teamDestroyMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4,
         }
     }
 }
-// -----------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+function stripAudioStr(%var)
+{
+    %idx = strstr(%var, "~w");
+    if (%idx != -1)
+        %var = getSubStr(%var, 0, %idx);
+
+    return %var;
+}
+
+//---------------------------------------------------------------------------
+function stripTaggedVar(%var)
+{
+    return stripChars(detag(getTaggedString(%var)), "\cp\co\c6\c7\c8\c9");
+}

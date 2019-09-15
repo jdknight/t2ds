@@ -103,6 +103,12 @@ function chatMessageAll(%sender, %msgString, %a1, %a2, %a3, %a4, %a5, %a6,
         chatMessageClient(%obj, %sender, %sender.voiceTag, %sender.voicePitch,
             %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10);
     }
+
+    // relay chat to console/telnet if server administrators desire it
+    if ($Host::EchoChat)
+    {
+        echo(stripTaggedVar(%sender.name), ": ", stripAudioStr(%a2));
+    }
 }
 
 function cannedChatMessageAll(%sender, %msgString, %name, %string, %keys)
@@ -114,6 +120,12 @@ function cannedChatMessageAll(%sender, %msgString, %name, %string, %keys)
     for (%i = 0; %i < %count; %i++)
         cannedChatMessageClient(ClientGroup.getObject(%i), %sender, %msgString,
             %name, %string, %keys);
+
+    // relay chat to console/telnet if server administrators desire it
+    if ($Host::EchoChat)
+    {
+        echo(stripTaggedVar(%sender.name), ": ", stripAudioStr(%string));
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -195,4 +207,20 @@ function teamRepairMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4,
             commandToClient(%recipient, 'TeamRepairMessage', %msgType,
                 %msgString, %a1, %a2, %a3, %a4, %a5, %a6);
     }
+}
+
+//---------------------------------------------------------------------------
+function stripAudioStr(%var)
+{
+    %idx = strstr(%var, "~w");
+    if (%idx != -1)
+        %var = getSubStr(%var, 0, %idx);
+
+    return %var;
+}
+
+//---------------------------------------------------------------------------
+function stripTaggedVar(%var)
+{
+    return stripChars(detag(getTaggedString(%var)), "\cp\co\c6\c7\c8\c9");
 }

@@ -4,6 +4,11 @@
 //
 //------------------------------------------------------------------------------
 
+if ($Host::EchoChat $= "" && $Host::ClassicEchoChat !$= "")
+{
+    $Host::EchoChat = $Host::ClassicEchoChat;
+}
+
 if ($Host::Telnet $= "" && $Host::ClassicTelnet !$= "")
 {
     $Host::Telnet = $Host::ClassicTelnet;
