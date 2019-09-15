@@ -796,6 +796,7 @@ function MineDeployed::onThrow(%this, %mine, %thrower)
     %mine.detonated = false;
     %mine.depCount = 0;
     %mine.theClient = %thrower.client;
+    $TeamDeployedCount[%mine.sourceObject.team, MineDeployed]++;
     schedule(1500, %mine, "deployMineCheck", %mine, %thrower);
 }
 
@@ -830,7 +831,6 @@ function deployMineCheck(%mineObj, %player)
         %mineObj.playThread(0, "deploy");
         serverPlay3D(MineDeploySound, %mineObj.getTransform());
         %mineTeam = %mineObj.sourceObject.team;
-        $TeamDeployedCount[%mineTeam, MineDeployed]++;
         if ($TeamDeployedCount[%mineTeam, MineDeployed] > $TeamDeployableMax[MineDeployed])
         {
             messageClient(%player.client, '', 'Maximum allowable mines deployed.');
