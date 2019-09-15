@@ -209,6 +209,23 @@ function teamRepairMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4,
     }
 }
 
+// -----------------------------------------------------------------------------
+function teamDestroyMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4,
+        %a5, %a6)
+{
+    %team = %client.team;
+    %count = ClientGroup.getCount();
+    for (%i = 0; %i < %count; %i++)
+    {
+        %recipient = ClientGroup.getObject(%i);
+        if (%recipient.team == %team && %recipient != %client)
+        {
+            commandToClient(%recipient, 'TeamDestroyMessage', %msgType,
+                %msgString, %a1, %a2, %a3, %a4, %a5, %a6);
+        }
+    }
+}
+
 //---------------------------------------------------------------------------
 function stripAudioStr(%var)
 {

@@ -87,22 +87,6 @@ function DnDGame::initGameVars(%game)
 
 package DnDGame {
 
-// z0dd - ZOD. From Classic MOD, placed here for base and mod compatibility.
-function teamDestroyMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4, %a5, %a6)
-{
-    %team = %client.team;
-    %count = ClientGroup.getCount();
-    for (%i = 0; %i < %count; %i++)
-    {
-        %recipient = ClientGroup.getObject(%i);
-        if (%recipient.team == %team && %recipient != %client)
-        {
-            commandToClient(%recipient, 'TeamDestroyMessage', %msgType,
-                %msgString, %a1, %a2, %a3, %a4, %a5, %a6);
-        }
-    }
-}
-
 function ShapeBaseData::onDestroyed(%data, %obj, %prevstate)
 {
     %scorer = %obj.lastDamagedBy;
