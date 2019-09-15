@@ -130,6 +130,9 @@ function TurretDeployedCamera::onAdd(%this, %obj)
 
     %obj.mountImage(DeployableCameraBarrel, 0, true);
     %obj.setRechargeRate(%this.rechargeRate);
+
+    // disable auto-fire management on cameras
+    %obj.setAutoFire(false);
 }
 
 function TurretDeployedCamera::onDestroyed(%this, %obj, %prevState)
