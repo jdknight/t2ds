@@ -162,6 +162,7 @@ if (isFile("autoexec.cs"))
 exec("scripts/serverDefaults.cs", true);
 if (isFile($serverprefs))
     exec($serverprefs, true, true);
+exec("scripts/preferences.cs");
 
 // convert the team skin and name vars to tags
 $index = 0;

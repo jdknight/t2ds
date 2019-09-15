@@ -43,13 +43,6 @@ function initializeTelnet()
             $telnetPassword = $Host::TelnetPassword;
             $telnetListenPass = $Host::TelnetListenPass;
         }
-        // attempt to pull from a classic-defined configuration options
-        else if ($Host::ClassicTelnet == 1)
-        {
-            $telnetPort = $Host::ClassicTelnetPort;
-            $telnetPassword = $Host::ClassicTelnetPassword;
-            $telnetListenPass = $Host::ClassicTelnetListenPass;
-        }
     }
 
     if ($telnetPort !$= "")
