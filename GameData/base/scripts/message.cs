@@ -202,7 +202,7 @@ function teamRepairMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4,
     %count = ClientGroup.getCount();
     for (%i = 0; %i < %count; %i++)
     {
-        %recipient = ClientGroup.getObject(%cl);
+        %recipient = ClientGroup.getObject(%i);
         if (%recipient.team == %team && %recipient != %client)
             commandToClient(%recipient, 'TeamRepairMessage', %msgType,
                 %msgString, %a1, %a2, %a3, %a4, %a5, %a6);
