@@ -255,6 +255,23 @@ function DMGame::scoreLimitReached(%game)
     cycleMissions();
 }
 
+function DMGame::startMatch(%game)
+{
+    DefaultGame::startMatch(%game);
+
+    for (%i = 0; %i < ClientGroup.getCount(); %i++)
+    {
+        %client = ClientGroup.getObject(%i);
+        if (%client.outOfBounds)
+        {
+            messageClient(%client, 'DMAlertPlayer',
+                '\c1You are out of the mission area. Return or take damage.~wfx/misc/warning_beep.wav');
+            %client.player.alertThread = %game.schedule(
+                1000, "DMAlertPlayer", 10, %client.player);
+        }
+    }
+}
+
 function DMGame::gameOver(%game)
 {
     //call the default
@@ -287,16 +304,26 @@ function DMGame::leaveMissionArea(%game, %playerData, %player)
         return;
 
     %player.client.outOfBounds = true;
-    messageClient(%player.client, 'LeaveMissionArea',
-        '\c1You have left the mission area. Return or take damage.~wfx/misc/warning_beep.wav');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") left mission area");
-    %player.alertThread = %game.schedule(1000, "DMAlertPlayer", 3, %player);
+
+    if (!$MatchStarted)
+        messageClient(%player.client, 'LeaveMissionArea',
+            '\c1You have left the mission area.');
+    else
+    {
+        messageClient(%player.client, 'LeaveMissionArea',
+            '\c1You have left the mission area. Return or take damage.~wfx/misc/warning_beep.wav');
+
+        if (getSimTime() - %player.client.spawnTime < 500)
+            %alertNum = 10;
+        else
+            %alertNum = 3;
+        %player.alertThread = %game.schedule(1000,
+            "DMAlertPlayer", %alertNum, %player);
+    }
 }
 
 function DMGame::DMAlertPlayer(%game, %count, %player)
 {
-    // MES - I commented below line out because it prints a blank line to chat window
-    //messageClient(%player.client, 'MsgDMLeftMisAreaWarn', '~wfx/misc/red_alert.wav');
     if (%count > 1)
         %player.alertThread = %game.schedule(1000,
             "DMAlertPlayer", %count - 1, %player);
