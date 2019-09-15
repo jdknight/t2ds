@@ -42,7 +42,7 @@ function serverCmdCannedChat(%client, %command, %fromAI)
             AudioClosest3d, true);
 
     if (%chatItem.animation !$= "")
-        PlayAnim(%client, %chatItem.animation); // z0dd - ZOD, 8/15/02. Remove client direct requests to start animations. Was: serverCmdPlayAnim
+        playAnim(%client, %chatItem.animation);
 
     // Let the AI respond to the canned chat messages (from humans only)
     if (!%fromAI)

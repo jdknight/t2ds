@@ -43,6 +43,7 @@ exec("scripts/voiceChat.cs");
 exec("scripts/targetManager.cs");
 exec("scripts/gameCanvas.cs");
 exec("scripts/centerPrint.cs");
+exec("scripts/obsolete.cs");
 
 // see if the mission and type are valid
 // if they are they will be assigned into $Host::Map and $Host::MissionType

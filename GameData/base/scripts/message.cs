@@ -227,6 +227,28 @@ function teamDestroyMessage(%client, %msgType, %msgString, %a1, %a2, %a3, %a4,
 }
 
 //---------------------------------------------------------------------------
+function playAnim(%client, %anim)
+{
+    %player = %client.player;
+
+    // don't play animations if player is in a vehicle
+    if (!isObject(%player) || %player.isMounted())
+        return;
+
+    %weapon = (%player.getMountedImage($WeaponSlot) == 0 ? "" :
+        %player.getMountedImage($WeaponSlot).getName().item);
+    if (%weapon $= "MissileLauncher" || %weapon $= "SniperRifle")
+    {
+        %player.animResetWeapon = true;
+        %player.lastWeapon = %weapon;
+        %player.unmountImage($WeaponSlot);
+        %player.setArmThread(look);
+    }
+
+    %player.setActionThread(%anim);
+}
+
+//---------------------------------------------------------------------------
 function stripAudioStr(%var)
 {
     %idx = strstr(%var, "~w");

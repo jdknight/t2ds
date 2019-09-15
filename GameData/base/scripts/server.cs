@@ -1184,39 +1184,6 @@ function serverCmdPlayCel(%client, %anim)
     }
 }
 
-// NOTENOTENOTE: Review
-function serverCmdPlayAnim(%client, %anim)
-{
-    if (%anim $= "Death1" || %anim $= "Death2" || %anim $= "Death3" ||
-            %anim $= "Death4" || %anim $= "Death5" || %anim $= "Death6" ||
-            %anim $= "Death7" || %anim $= "Death8" || %anim $= "Death9" ||
-            %anim $= "Death10" || %anim $= "Death11")
-        return;
-
-    %player = %client.player;
-    // don't play animations if player is in a vehicle
-    // ------------------------------------------------------------------
-    // z0dd - ZOD, 5/8/02. Console spam fix, check for player object too.
-    //if (%player.isMounted())
-    //   return;
-    if (%player.isMounted() || !isObject(%player))
-        return;
-
-    %weapon = (%player.getMountedImage($WeaponSlot) == 0 ? "" :
-        %player.getMountedImage($WeaponSlot).getName().item);
-    if (%weapon $= "MissileLauncher" || %weapon $= "SniperRifle")
-    {
-        %player.animResetWeapon = true;
-        %player.lastWeapon = %weapon;
-        %player.unmountImage($WeaponSlot);
-        // ----------------------------------------------
-        // z0dd - ZOD, 5/8/02. %obj is the wrong varible.
-        //%obj.setArmThread(look);
-        %player.setArmThread(look);
-    }
-    %player.setActionThread(%anim);
-}
-
 function serverCmdPlayDeath(%client, %anim)
 {
     if ($testcheats)

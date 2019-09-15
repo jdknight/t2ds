@@ -42,7 +42,7 @@ function serverCmdCannedChat(%client, %command, %fromAI)
             AudioClosest3d, true);
 
     if (%chatItem.animation !$= "")
-        serverCmdPlayAnim(%client, %chatItem.animation);
+        playAnim(%client, %chatItem.animation);
 
     // Let the AI respond to the canned chat messages (from humans only)
     if (!%fromAI)
