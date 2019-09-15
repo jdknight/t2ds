@@ -22,12 +22,21 @@ function serverCmdUse(%client, %data)
     // into DataBlocks
     // %data = ItemDataBlock[%item];
 
+    %client.getControlObject().use(%data);
+}
+
+function serverCmdThrow(%client, %data)
+{
+    // Item names from the client must converted
+    // into DataBlocks
+    // %data = ItemDataBlock[%item];
+
     //-----------------------------------------------------------------------
     // z0dd - ZOD, 4/18/02. Let one keybind handle all grenade types.
-    if (%data $= Grenade)
+    if(%data $= Grenade)
     {
         // figure out which grenade type you're using
-        for (%x = 0; $InvGrenade[%x] !$= ""; %x++)
+        for(%x = 0; $InvGrenade[%x] !$= ""; %x++)
         {
             if (%client.getControlObject().inv[$NameToInv[$InvGrenade[%x]]] > 0)
             {
@@ -35,7 +44,6 @@ function serverCmdUse(%client, %data)
                 break;
             }
         }
-
         %client.getControlObject().throw(%data);
     }
     else if (%data $= "Ammo")
@@ -51,14 +59,6 @@ function serverCmdUse(%client, %data)
     }
     else
         %client.getControlObject().throw(%data);
-}
-
-function serverCmdThrow(%client, %data)
-{
-    // Item names from the client must converted
-    // into DataBlocks
-    // %data = ItemDataBlock[%item];
-    %client.getControlObject().throw(%data);
 }
 
 function serverCmdThrowWeapon(%client, %data)
