@@ -100,19 +100,8 @@ function chatMessageAll(%sender, %msgString, %a1, %a2, %a3, %a4, %a5, %a6,
     for (%i = 0; %i < %count; %i++)
     {
         %obj = ClientGroup.getObject(%i);
-        if (%sender.team != 0)
-            chatMessageClient(%obj, %sender, %sender.voiceTag,
-                %sender.voicePitch, %msgString, %a1, %a2, %a3, %a4, %a5, %a6,
-                %a7, %a8, %a9, %a10);
-        else
-        {
-            // message sender is an observer -- only send message to
-            // other observers
-            if (%obj.team == %sender.team || %obj.isAdmin || %obj.isSuperAdmin)
-                chatMessageClient(%obj, %sender, %sender.voiceTag,
-                    %sender.voicePitch, %msgString, %a1, %a2, %a3, %a4, %a5,
-                    %a6, %a7, %a8, %a9, %a10);
-        }
+        chatMessageClient(%obj, %sender, %sender.voiceTag, %sender.voicePitch,
+            %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10);
     }
 }
 
