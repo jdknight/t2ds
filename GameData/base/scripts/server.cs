@@ -78,6 +78,8 @@ function CreateServer(%mission, %missionType)
         exec("scripts/" @ %type @ ".cs");
     }
 
+    loadPostModScripts();
+
     $missionSequence = 0;
     $CurrentMissionType = %missionType;
     $HostGameBotCount = 0;

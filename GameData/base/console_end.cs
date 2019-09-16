@@ -45,6 +45,18 @@ exec("scripts/gameCanvas.cs");
 exec("scripts/centerPrint.cs");
 exec("scripts/obsolete.cs");
 
+//------------------------------------------------------------------------------
+
+function loadPostModScripts()
+{
+    %path = "scripts/post.d/*.cs";
+    for (%f = findFirstFile(%path); %f !$= ""; %f = findNextFile(%path))
+        exec(%f);
+}
+//loadPostModScripts(); -- interim; invoked in server.cs for now
+
+//------------------------------------------------------------------------------
+
 // see if the mission and type are valid
 // if they are they will be assigned into $Host::Map and $Host::MissionType
 if ($mission !$= "" && $missionType !$= "")
