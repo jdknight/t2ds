@@ -1190,7 +1190,8 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
     // player killed by a turret
     else if (isObject(%implement) && (%implement.getClassName() $= "Turret" ||
             %implement.getClassName() $= "VehicleTurret" ||
-            %implement.getClassName() $= "FlyingVehicle"))
+            %implement.getClassName() $= "FlyingVehicle" ||
+            %implement.getClassName() $= "HoverVehicle"))
     {
         // is turret being controlled?
         if (%implement.getControllingClient() != 0)
