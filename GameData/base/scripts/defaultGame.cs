@@ -1463,7 +1463,7 @@ function DefaultGame::clientJoinTeam(%game, %client, %team, %respawn)
         %client.name, %game.getTeamName(%team), %client, %team);
     messageClient(%client, 'MsgClientJoinTeam',
         '\c1You joined the %2 team.',
-        $client.name, %game.getTeamName(%client.team), %client, %client.team);
+        %client.name, %game.getTeamName(%client.team), %client, %client.team);
 
     updateCanListenState(%client);
 
@@ -1585,16 +1585,16 @@ function DefaultGame::clientChangeTeam(%game, %client, %team, %fromObs)
             %client.name, %game.getTeamName(%client.team), %client, %client.team);
         messageClient(%client, 'MsgClientJoinTeam',
             '\c1You switched to team %2.',
-            $client.name, %game.getTeamName(%client.team), %client, %client.team);
+            %client.name, %game.getTeamName(%client.team), %client, %client.team);
     }
     else
     {
         messageAllExcept(%client, -1, 'MsgClientJoinTeam',
             '\c1%1 joined team %2.',
-            %client.name, %game.getTeamName(%client.team), %client, %team);
+            %client.name, %game.getTeamName(%client.team), %client, %client.team);
         messageClient(%client, 'MsgClientJoinTeam',
             '\c1You joined team %2.',
-            $client.name, %game.getTeamName(%client.team), %client, %client.team);
+            %client.name, %game.getTeamName(%client.team), %client, %client.team);
     }
 
     updateCanListenState(%client);
