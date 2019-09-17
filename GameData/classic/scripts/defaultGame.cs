@@ -12,9 +12,9 @@ function DefaultGame::activatePackages(%game)
 
 function DefaultGame::deactivatePackages(%game)
 {
-    deactivatePackage(DefaultGame);
     if (isPackage(%game.class) && %game.class !$= DefaultGame)
         deactivatePackage(%game.class);
+    deactivatePackage(DefaultGame);
 }
 
 package DefaultGame {
