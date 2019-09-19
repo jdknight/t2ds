@@ -1982,12 +1982,6 @@ function serverCmdGetPlayerPopupMenu(%client, %targetClient, %key)
         Game.sendGamePlayerPopupMenu(%client, %targetClient, %key);
 }
 
-function serverCmdGetTeamList(%client, %key)
-{
-    if (isObject(Game))
-        Game.sendGameTeamList(%client, %key);
-}
-
 function serverCmdGetMissionTypes(%client, %key)
 {
     for (%type = 0; %type < $HostTypeCount; %type++)

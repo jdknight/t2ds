@@ -2992,21 +2992,6 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 }
 
 //------------------------------------------------------------------------------
-function DefaultGame::sendGameTeamList(%game, %client, %key)
-{
-    %teamCount = %game.numTeams;
-    if (%teamCount < 2)
-    {
-        warn("Team menu requested for one-team game!");
-        return;
-    }
-
-    for (%team = 1; %team - 1 < %teamCount; %team++)
-        messageClient(%client, 'MsgVoteItem', "", %key, %team, "",
-            detag(getTaggedString(%game.getTeamName(%team))));
-}
-
-//------------------------------------------------------------------------------
 function DefaultGame::sendTimeLimitList(%game, %client, %key)
 {
     messageClient(%client, 'MsgVoteItem', "", %key, 10, "", '10 minutes');
