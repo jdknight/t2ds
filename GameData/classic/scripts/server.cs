@@ -2216,6 +2216,32 @@ function serverCmdAddToSuperAdminList(%admin, %client)
     logEcho(getTaggedString(%admin.name) @ " added " @ getTaggedString(%client.name) @ " " @ %client.guid @ " to Super Admin list.");
 }
 
+function setModeFFA(%mission, %missionType)
+{
+    if ($Host::TournamentMode)
+    {
+        $Host::TournamentMode = false;
+
+        if (isObject(Game))
+            Game.gameOver();
+
+        loadMission(%mission, %missionType, false);
+    }
+}
+
+function setModeTournament(%mission, %missionType)
+{
+    if (!$Host::TournamentMode)
+    {
+        $Host::TournamentMode = true;
+
+        if (isObject(Game))
+            Game.gameOver();
+
+        loadMission(%mission, %missionType, false);
+    }
+}
+
 function resetTournamentPlayers()
 {
     %count = ClientGroup.getCount();

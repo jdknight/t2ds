@@ -396,33 +396,3 @@ function clearVotes()
         Game.totalVotesNone = 0;
     }
 }
-
-// Tournament mode Stuff-----------------------------------
-
-function setModeFFA(%mission, %missionType)
-{
-    if ($Host::TournamentMode)
-    {
-        $Host::TournamentMode = false;
-
-        if (isObject(Game))
-            Game.gameOver();
-
-        loadMission(%mission, %missionType, false);
-    }
-}
-
-//------------------------------------------------------------------
-
-function setModeTournament(%mission, %missionType)
-{
-    if (!$Host::TournamentMode)
-    {
-        $Host::TournamentMode = true;
-
-        if (isObject(Game))
-            Game.gameOver();
-
-        loadMission(%mission, %missionType, false);
-    }
-}
