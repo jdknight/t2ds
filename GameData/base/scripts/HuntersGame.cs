@@ -1136,200 +1136,269 @@ function HuntersGame::recalcScore(%game, %cl)
 
 function HuntersGame::sendGameVoteMenu(%game, %client, %key)
 {
-    // Don't send any options if a vote is already running:
-    if (%game.scheduleVote $= "")
+    DefaultGame::sendGameVoteMenu(%game, %client, %key);
+
+    %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
+
+    if (%isAdmin)
     {
-        // First send the common options:
-        DefaultGame::sendGameVoteMenu(%game, %client, %key);
-
-        if (!%client.isAdmin)
-        {
-            // Now send the Hunters-specific options:
-            if (%game.greedMode)
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
-                    'disable greed mode', 'Vote Disable GREED Mode');
-            else
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
-                    'enable greed mode', 'Vote Enable GREED Mode');
-
-            if (%game.HoardMode)
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
-                    'disable hoard mode', 'Vote Disable HOARD Mode');
-            else
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
-                    'enable hoard mode', 'Vote Enable HOARD Mode');
-        }
+        if (%game.greedMode)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteGreedMode', '', 'Disable Greed Mode');
         else
-        {
-            if (%game.greedMode)
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
-                    'disable greed mode', 'Disable GREED Mode');
-            else
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
-                    'enable greed mode', 'Enable GREED Mode');
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteGreedMode', '', 'Enable Greed Mode');
 
-            if (%game.HoardMode)
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
-                    'disable hoard mode', 'Disable HOARD Mode');
-            else
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
-                    'enable hoard mode', 'Enable HOARD Mode');
-        }
+        if (%game.HoardMode)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteHoardMode', '', 'Disable Hoard Mode');
+        else
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteHoardMode', '', 'Enable Hoard Mode');
+    }
+    // show options if we can vote and a vote is not already running
+    else if (%client.canVote && Vote.scheduled $= "")
+    {
+        if (%game.greedMode)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteGreedMode',
+                'disable greed mode', 'Vote Disable Greed Mode');
+        else
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteGreedMode', '', 'Vote Enable Greed Mode');
+
+        if (%game.HoardMode)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteHoardMode', '', 'Vote Disable Hoard Mode');
+        else
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteHoardMode', '', 'Vote Enable Hoard Mode');
     }
 }
 
-function HuntersGame::voteGreedMode(%game, %admin, %player)
+function HuntersGame::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
 {
-    %cause = "";
-    %setto = "";
-    if (%admin)
+    switch$ (%type)
     {
+    case "VoteGreedMode": return true;
+    case "VoteHoardMode": return true;
+    }
+
+    return DefaultGame::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4);
+}
+
+function HuntersGame::preprocessVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+    %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
+
+    switch$ (%type)
+    {
+    case "VoteGreedMode":
+        if (!%isAdmin)
+            return false;
+
+        // check if this request was pending a vote
+        if (Vote.type $= "VoteGreedMode")
+            clearVotes();
+
         if (%game.greedMode)
         {
             messageAll('AdminDisableGreedMode',
-                '\c2The Admin has disabled GREED mode.~wfx/misc/hunters_greed.wav');
+                '\c2An administrator has disabled greed mode.~wfx/misc/hunters_greed.wav');
             %game.greedMode = false;
-            %setto = "disabled";
         }
         else
         {
             messageAll('AdminEnableGreedMode',
-                '\c2The Admin has enabled GREED mode.~wfx/misc/hunters_greed.wav');
+                '\c2An administrator enabled greed mode.~wfx/misc/hunters_greed.wav');
             %game.greedMode = true;
-            %setto = "enabled";
         }
-        %cause = "(admin)";
+
+        messageAll('MsgHuntGreedStatus', "",
+            %game.greedMode, %game.greedMinFlags);
+        if (%game.teamMode)
+            $Host::TeamHuntersGreedMode = %game.greedMode;
+        else
+            $Host::HuntersGreedMode = %game.greedMode;
+
+    case "VoteHoardMode":
+        if (!%isAdmin)
+            return false;
+
+        // check if this request was pending a vote
+        if (Vote.type $= "VoteHoardMode")
+            clearVotes();
+
+        if (%game.hoardMode)
+        {
+            messageAll('AdminDisableHoardMode',
+                '\c2An administrator has disabled hoard mode.~wfx/misc/hunters_horde.wav');
+            %game.hoardMode = false;
+        }
+        else
+        {
+            messageAll('AdminEnableHoardMode',
+                '\c2An administrator has enabled hoard mode.~wfx/misc/hunters_horde.wav');
+            %game.hoardMode = true;
+        }
+
+        %curTimeLeftMs = ($Host::TimeLimit * 60 * 1000) +
+            $missionStartTime - getSimTime();
+        messageAll('MsgHuntHoardStatus', "",
+            %game.hoardMode, $Host::TimeLimit, %curTimeLeftMs,
+            %game.hoardStartTime, %game.hoardDuration);
+
+        if (%game.teamMode)
+            $Host::TeamHuntersHoardMode = %game.hoardMode;
+        else
+            $Host::HuntersHoardMode = %game.hoardMode;
+
+    default:
+        return DefaultGame::preprocessVote(%game, %client, %type,
+            %arg1, %arg2, %arg3, %arg4);
     }
-    else
+
+    return true;
+}
+
+function HuntersGame::notifyVote(%game, %client, %origin, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+    switch$ (%type)
     {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor / %totalVotes) > 0.7)
+    case "VoteGreedMode":
+        if (%game.greedMode)
+            messageClient(%client, 'VoteStarted',
+                '\c2%1 initiated a vote to disable greed mode.',
+                %origin.name);
+        else
+            messageClient(%client, 'VoteStarted',
+                '\c2%1 initiated a vote to enable greed mode.',
+                %origin.name);
+
+    case "VoteHoardMode":
+        if (%game.hoardMode)
+            messageClient(%client, 'VoteStarted',
+                '\c2%1 initiated a vote to disable hoard mode.',
+                %origin.name);
+        else
+            messageClient(%client, 'VoteStarted',
+                '\c2%1 initiated a vote to enable hoard mode.',
+                %origin.name);
+
+    default:
+        DefaultGame::notifyVote(%game, %client, %origin, %type,
+            %arg1, %arg2, %arg3, %arg4);
+    }
+}
+
+function HuntersGame::processVote(%game, %client, %type, %passed, %percentage,
+            %arg1, %arg2, %arg3, %arg4)
+{
+    switch$ (%type)
+    {
+    case "VoteGreedMode":
+        if (%passed)
         {
             if (%game.greedMode)
             {
                 messageAll('MsgVotePassed',
-                    '\c2GREED mode was disabled by vote.~wfx/misc/hunters_greed.wav');
+                    '\c2Greed mode was disabled by vote.');
                 %game.greedMode = false;
-                %setto = "disabled";
             }
             else
             {
                 messageAll('MsgVotePassed',
-                    '\c2GREED mode was enabled by vote.~wfx/misc/hunters_greed.wav');
+                    '\c2Greed mode was enabled by vote.');
                 %game.greedMode = true;
-                %setto = "enabled";
             }
-            %cause = "(vote)";
-            // alxPlay(VotePassSound, 0, 0, 0);
+
+            messageAll('MsgHuntGreedStatus', "",
+                %game.greedMode, %game.greedMinFlags);
+            if (%game.teamMode)
+                $Host::TeamHuntersGreedMode = %game.greedMode;
+            else
+                $Host::HuntersGreedMode = %game.greedMode;
         }
         else
         {
             if (%game.greedMode)
-                messageAll('MsgVoteFailed',
-                    '\c2Disable GREED mode vote did not pass, %1 to %2.',
-                    %game.totalVotesFor, %game.totalVotesAgainst);
-            else
-                messageAll('MsgVoteFailed',
-                    '\c2Enable GREED mode vote did not pass, %1 to %2.',
-                    %game.totalVotesFor, %game.totalVotesAgainst);
-            // alxPlay(VoteNotPassSound, 0, 0, 0);
-        }
-    }
-
-    // send the global message
-    messageAll('MsgHuntGreedStatus', "", %game.greedMode, %game.GreedMinFlags);
-    if (%setto !$= "")
-        logEcho("greed mode "@%setto SPC %cause);
-
-    // store the result
-    if (%game.teamMode)
-        $Host::TeamHuntersGreedMode = %game.greedMode;
-    else
-        $Host::HuntersGreedMode = %game.greedMode;
-}
-
-function HuntersGame::voteHoardMode(%game, %admin, %player)
-{
-    %cause = "";
-    %setto = "";
-
-    if (%admin)
-    {
-        if (%game.HoardMode)
-        {
-            messageAll('AdminDisableHoardMode', '\c2The Admin has disabled HOARD mode.');
-            %game.HoardMode = false;
-            %setto = "disabled";
-        }
-        else
-        {
-            messageAll('AdminEnableHoardMode', '\c2The Admin has enabled HOARD mode.');
-            %game.HoardMode = true;
-            %setto = "enabled";
-        }
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor / %totalVotes) > 0.7)
-        {
-            if (%game.HoardMode)
             {
-                messageAll('MsgVotePassed', '\c2HOARD mode was disabled by vote.');
-                %game.HoardMode = false;
-                %setto = "disabled";
+                messageAll('MsgVoteFailed',
+                    "\c2Vote to disable greed mode did not pass (" @ %percentage @ "\%).");
             }
             else
             {
-                messageAll('MsgVotePassed', '\c2HOARD mode was enabled by vote.');
-                %game.HoardMode = true;
-                %setto = "enabled";
+                messageAll('MsgVoteFailed',
+                    "\c2Vote to enable greed mode did not pass (" @ %percentage @ "\%).");
             }
-            %cause = "(vote)";
-            // alxPlay(VotePassSound, 0, 0, 0);
+        }
+
+    case "VoteHoardMode":
+        if (%passed)
+        {
+            if (%game.hoardMode)
+            {
+                messageAll('MsgVotePassed',
+                    '\c2Hoard mode was disabled by vote.');
+                %game.hoardMode = false;
+            }
+            else
+            {
+                messageAll('MsgVotePassed',
+                    '\c2Hoard mode was enabled by vote.');
+                %game.hoardMode = true;
+            }
+
+            %curTimeLeftMs = ($Host::TimeLimit * 60 * 1000) +
+                $missionStartTime - getSimTime();
+            messageAll('MsgHuntHoardStatus', "",
+                %game.hoardMode, $Host::TimeLimit, %curTimeLeftMs,
+                %game.hoardStartTime, %game.hoardDuration);
+
+            if (%game.teamMode)
+                $Host::TeamHuntersHoardMode = %game.hoardMode;
+            else
+                $Host::HuntersHoardMode = %game.hoardMode;
         }
         else
         {
-            if (%game.HoardMode)
+            if (%game.hoardMode)
+            {
                 messageAll('MsgVoteFailed',
-                    '\c2Disable HOARD mode vote did not pass, %1 to %2.',
-                    %game.totalVotesFor, %game.totalVotesAgainst);
+                    "\c2Vote to disable hoard mode did not pass (" @ %percentage @ "\%).");
+            }
             else
+            {
                 messageAll('MsgVoteFailed',
-                    '\c2Enable HOARD mode vote did not pass, %1 to %2.',
-                    %game.totalVotesFor, %game.totalVotesAgainst);
-            // alxPlay(VoteNotPassSound, 0, 0, 0);
+                    "\c2Vote to enable hoard mode did not pass (" @ %percentage @ "\%).");
+            }
         }
+
+    default:
+        DefaultGame::processVote(%game, %client, %type, %passed, %percentage,
+            %arg1, %arg2, %arg3, %arg4);
     }
-
-    // send the global message
-    %curTimeLeftMS = ($Host::TimeLimit * 60 * 1000) + $missionStartTime - getSimTime();
-    messageAll('MsgHuntHoardStatus', "",
-        %game.HoardMode, $Host::TimeLimit, %curTimeLeftMS,
-        %game.HoardStartTime, %game.HoardDuration);
-    if (%setto !$= "")
-        logEcho("hoard mode "@%setto SPC %cause);
-
-    // store the result
-    if (%game.teamMode)
-        $Host::TeamHuntersHoardMode = %game.HoardMode;
-    else
-        $Host::HuntersHoardMode = %game.HoardMode;
 }
 
-function HuntersGame::voteChangeTimeLimit(%game, %admin, %newLimit)
+//------------------------------------------------------------------------------
+function HuntersGame::handleNewTimeLimit(%game, %newLimit)
 {
-    %oldTimeLimit = $Host::TimeLimit;
-    DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit);
+    %isNewTimeLimit = (%newLimit != $Host::TimeLimit);
 
-    // if the time limit changed, this will affect hoard mode:
-    if ($Host::TimeLimit != %oldTimeLimit)
+    DefaultGame::handleNewTimeLimit(%game, %newLimit);
+
+    // correct hoard countdown if the time limit has been changed
+    if (%isNewTimeLimit)
     {
         %game.setupHoardCountdown();
     }
 }
 
+//------------------------------------------------------------------------------
 function createDroppedFlag(%data, %value, %player, %game)
 {
     %client = %player.client;

@@ -2784,13 +2784,15 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
         return;
 
     // regular vote options on players
-    if (%game.scheduleVote $= "" && !%isAdmin && !%isTargetAdmin)
+    if (Vote.scheduled $= "" && !%isAdmin && !%isTargetAdmin)
     {
         if ($Host::allowAdminPlayerVotes && !%isTargetBot)
             messageClient(%client, 'MsgPlayerPopupItem', "", %key,
                 "AdminPlayer", "", 'Vote to Make Admin', 2);
 
-        if (!%isTargetSelf)
+        %teamSpecific = (Game.numTeams > 1 && %targetClient.team != 0);
+        if (!%isTargetSelf &&
+                (!%teamSpecific || %client.team == %targetClient.team))
             messageClient(%client, 'MsgPlayerPopupItem', "", %key,
                 "KickPlayer", "", 'Vote to Kick', 3);
     }
@@ -2811,7 +2813,6 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
                 // ------------------------------------------------------------------------------------------------------
                 // z0dd - ZOD 4/4/02. Warn player,  send private message and remove admin privileges
                 messageClient(%client, 'MsgPlayerPopupItem', "", %key, "Warn", "", 'Warn player', 13);
-                messageClient(%client, 'MsgPlayerPopupItem', "", %key, "SendMessage", "", 'Send Private Message', 15);
                 if (%isTargetAdmin)
                     messageClient(%client, 'MsgPlayerPopupItem', "", %key, "StripAdmin", "", 'Strip admin', 14);
 
@@ -2824,6 +2825,10 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
                         "ToObserver", "", 'Force observer', 5);
             }
         }
+
+        if (!%isTargetBot)
+            messageClient(%client, 'MsgPlayerPopupItem', "", %key,
+                "SendMessage", "", 'Send Private Message', 15);
 
         if (%isTargetSelf || %outrankTarget)
         {
@@ -2867,127 +2872,105 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
     %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
     %multipleTeams = (%game.numTeams > 1);
 
-    // no one is going anywhere until this thing starts
-    if ($MatchStarted)
+    if (!%game.voteTeamManagementOverrides)
     {
-        // Client options:
-        if (%client.team != 0)
+        if ($MatchStarted)
         {
-            if (%multipleTeams)
-                if (!$Host::TournamentMode)
+            if (%client.team != 0)
+            {
+                if (%multipleTeams && !$Host::TournamentMode)
                     messageClient(%client, 'MsgVoteItem', "", %key,
-                        'ChooseTeam', "", 'Change your Team');
-            messageClient(%client, 'MsgVoteItem', "", %key,
-                'MakeObserver', "", 'Become an Observer');
-        }
-        else
-        {
-            if (!%multipleTeams && !$Host::TournamentMode)
+                        'ChooseTeam', "", 'Change Teams');
                 messageClient(%client, 'MsgVoteItem', "", %key,
-                    'JoinGame', "", 'Join the Game');
-        }
-
-        //%totalSlots = $Host::maxPlayers - ($HostGamePlayerCount + $HostGameBotCount);
-        // if ($HostGameBotCount > 0 && %totalSlots > 0 && %client.isAdmin)
-        //messageClient(%client, 'MsgVoteItem', "", %key, 'Addbot', "", 'Add a Bot');
-    }
-
-    if (!%client.canVote && !%isAdmin)
-        return;
-
-    if (%game.scheduleVote $= "")
-    {
-        if (!%client.isAdmin)
-        {
-            // Actual vote options:
-            messageClient(%client, 'MsgVoteItem',
-                "", %key, 'VoteChangeMission',
-                'change the mission to', 'Vote to Change the Mission');
-
-            if ($Host::TournamentMode)
-            {
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteFFAMode',
-                    'Change server to Free For All.', 'Vote Free For All Mode');
-
-                if (!$MatchStarted && !$CountdownStarted)
-                    messageClient(%client, 'MsgVoteItem',
-                        "", %key, 'VoteMatchStart',
-                        'Start Match', 'Vote to Start the Match');
+                    'MakeObserver', "", 'Become an Observer');
             }
             else
-                messageClient(%client, 'MsgVoteItem',
-                    "", %key, 'VoteTournamentMode',
-                    'Change server to Tournament.', 'Vote Tournament Mode');
-
-            if (%multipleTeams)
             {
-                if (!$MatchStarted && !$Host::TournamentMode)
-                    messageClient(%client, 'MsgVoteItem',
-                        "", %key, 'ChooseTeam', "", 'Change your Team');
-
-                if ($teamDamage)
-                    messageClient(%client, 'MsgVoteItem',
-                        "", %key, 'VoteTeamDamage',
-                        'disable team damage', 'Vote to Disable Team Damage');
-                else
-                    messageClient(%client, 'MsgVoteItem',
-                        "", %key, 'VoteTeamDamage',
-                        'enable team damage', 'Vote to Enable Team Damage');
+                if (!%multipleTeams && !$Host::TournamentMode)
+                    messageClient(%client, 'MsgVoteItem', "", %key,
+                        'JoinGame', "", 'Join the Game');
             }
         }
+        else if (%multipleTeams)
+        {
+            if (%isAdmin)
+            {
+                messageClient(%client, 'MsgVoteItem', "", %key,
+                    'ChooseTeam', "", 'Choose Team');
+            }
+            else if (!$Host::TournamentMode)
+            {
+                messageClient(%client, 'MsgVoteItem', "", %key,
+                    'ChooseTeam', "", 'Change Teams');
+            }
+        }
+    }
+
+    if (%isAdmin)
+    {
+        if ($Host::TournamentMode && !$MatchStarted && !$CountdownStarted)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteMatchStart', '', 'Start Match');
+
+        messageClient(%client, 'MsgVoteItem', "", %key,
+            'VoteChangeMission', '', 'Change the Mission');
+
+        messageClient(%client, 'MsgVoteItem', "", %key,
+            'VoteChangeTimeLimit', '', 'Change the Time Limit');
+
+        if (!$Host::TournamentMode)
+            if ($TeamDamage)
+                messageClient(%client, 'MsgVoteItem', "", %key,
+                    'VoteTeamDamage', '', 'Disable Team Damage');
+            else
+                messageClient(%client, 'MsgVoteItem', "", %key,
+                    'VoteTeamDamage', '', 'Enable Team Damage');
+
+        if ($Host::TournamentMode)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteFFAMode', '', 'Free-for-all Mode');
         else
-        {
-            // Actual vote options:
-            messageClient(%client, 'MsgVoteItem',
-                "", %key, 'VoteChangeMission',
-                'change the mission to', 'Change the Mission');
-
-            if ($Host::TournamentMode)
-            {
-                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteFFAMode',
-                    'Change server to Free For All.', 'Free For All Mode');
-
-                if (!$MatchStarted && !$CountdownStarted)
-                    messageClient(%client, 'MsgVoteItem', "", %key,
-                        'VoteMatchStart', 'Start Match', 'Start Match');
-            }
-            else
-                messageClient(%client, 'MsgVoteItem',
-                    "", %key, 'VoteTournamentMode',
-                    'Change server to Tournament.', 'Tournament Mode');
-
-            if (%multipleTeams)
-            {
-                if (!$MatchStarted)
-                    messageClient(%client, 'MsgVoteItem', "", %key,
-                        'ChooseTeam', "", 'Choose Team');
-
-                if ($teamDamage)
-                    messageClient(%client, 'MsgVoteItem',
-                        "", %key, 'VoteTeamDamage',
-                        'disable team damage', 'Disable Team Damage');
-                else
-                    messageClient(%client, 'MsgVoteItem',
-                        "", %key, 'VoteTeamDamage',
-                        'enable team damage', 'Enable Team Damage');
-            }
-        }
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteTournamentMode', '', 'Tournament Mode');
     }
-
-    // Admin only options:
-    if (%client.isAdmin)
+    // show options if we can vote and a vote is not already running
+    else if (%client.canVote && Vote.scheduled $= "")
     {
-        messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit',
-            'change the time limit', 'Change the Time Limit');
-        messageClient(%client, 'MsgVoteItem', "", %key, 'VoteResetServer',
-            'reset server defaults', 'Reset the Server');
+        if ($Host::TournamentMode && !$MatchStarted && !$CountdownStarted)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteMatchStart', '', 'Vote to Start the Match');
 
-        // -----------------------------------------------------------------------------
-        // z0dd - ZOD, 5/12/02. Add bot menu for admins
-        %totalSlots = $Host::maxPlayers - ($HostGamePlayerCount + $HostGameBotCount);
-        if ($HostGameBotCount > 0 && %totalSlots > 0)
-            messageClient(%client, 'MsgVoteItem', "", %key, 'Addbot', "", 'Add a Bot');
-        // -----------------------------------------------------------------------------
+        messageClient(%client, 'MsgVoteItem', "", %key,
+            'VoteChangeMission', '', 'Vote to Change the Mission');
+
+        if (!$Host::TournamentMode)
+            if ($TeamDamage)
+                messageClient(%client, 'MsgVoteItem', "", %key,
+                    'VoteTeamDamage', '', 'Vote to Disable Team Damage');
+            else
+                messageClient(%client, 'MsgVoteItem', "", %key,
+                    'VoteTeamDamage', '', 'Vote to Enable Team Damage');
+
+        if ($Host::TournamentMode)
+            messageClient(%client, 'MsgVoteItem', "", %key,
+                'VoteFFAMode', '', 'Vote Free-for-all Mode');
+    }
+}
+
+function DefaultGame::sendGameVoteMenuTail(%game, %client, %key)
+{
+    %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
+    if (!%isAdmin) return;
+
+    %totalSlots = $Host::MaxPlayers - $HostGamePlayerCount + $HostGameBotCount;
+    if ($HostGameBotCount > 0 && %totalSlots > 0)
+        messageClient(%client, 'MsgVoteItem', "", %key,
+            'Addbot', "", 'Add a Bot');
+
+    if (%client.isSuperAdmin && $Host::AllowSuperAdminServerReboot)
+    {
+        messageClient(%client, 'MsgVoteItem', "", %key,
+            'VoteRebootServer', '', 'Reboot the Server');
     }
 }
 
@@ -3001,473 +2984,372 @@ function DefaultGame::sendTimeLimitList(%game, %client, %key)
     messageClient(%client, 'MsgVoteItem', "", %key, 30, "", '30 minutes');
     messageClient(%client, 'MsgVoteItem', "", %key, 45, "", '45 minutes');
     messageClient(%client, 'MsgVoteItem', "", %key, 60, "", '60 minutes');
-    messageClient(%client, 'MsgVoteItem', "", %key, 200, "", 'No time limit');
+    messageClient(%client, 'MsgVoteItem', "", %key, 999, "", 'No time limit');
 }
 
 //------------------------------------------------------------------------------
-// all global votes here
-function DefaultGame::evalVote(%game, %typeName, %admin, %arg1, %arg2, %arg3, %arg4)
+function DefaultGame::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
 {
-    switch$ (%typeName)
+    switch$ (%type)
     {
-    case "voteChangeMission":
-        %game.voteChangeMission(%admin, %arg1, %arg2, %arg3, %arg4);
+    case "VoteChangeMission":
+        // verify mission and type pair is valid
+        %missionId = %arg3;
+        %missionType = %arg4;
+        %found = false;
+        for (%i = 0; %i < $HostMissionCount[%missionType]; %i++)
+        {
+            if ($HostMission[%missionType, %i] == %missionId)
+            {
+                %found = true;
+                break;
+            }
+        }
+        if (!%found) return false;
 
-    case "voteTeamDamage":
-        %game.voteTeamDamage(%admin, %arg1, %arg2, %arg3, %arg4);
+        // ensure client did not provide a map that does not support bots (if
+        // we currently have bots)
+        if ($HostGameBotCount > 0 && !$BotEnabled[%missionId])
+            return false;
 
-    case "voteTournamentMode":
-        %game.voteTournamentMode(%admin, %arg1, %arg2, %arg3, %arg4);
+    case "VoteChangeTimeLimit":
+        %newLimit = %arg1;
+        if (%newLimit < 1)
+            return false;
 
-    case "voteMatchStart":
-        %game.voteMatchStart(%admin, %arg1, %arg2, %arg3, %arg4);
+    case "VoteFfaMode":
+        if (!$Host::TournamentMode)
+            return false;
 
-    case "voteFFAMode":
-        %game.voteFFAMode(%admin, %arg1, %arg2, %arg3, %arg4);
+    case "VoteMatchStart":
+        if (!$Host::TournamentMode || $MatchStarted || $CountdownStarted)
+            return false;
 
-    case "voteChangeTimeLimit":
-        %game.voteChangeTimeLimit(%admin, %arg1, %arg2, %arg3, %arg4);
+    case "VoteTeamDamage":
+        if ($Host::TournamentMode || %game.numTeams == 1)
+            return false;
 
-    case "voteResetServer":
-        %game.voteResetServer(%admin, %arg1, %arg2, %arg3, %arg4);
+    case "VoteTournamentMode":
+        if ($Host::TournamentMode || !(%client.isAdmin || %client.isSuperAdmin))
+            return false;
 
-    case "voteKickPlayer":
-        %game.voteKickPlayer(%admin, %arg1, %arg2, %arg3, %arg4);
+    default:
+        return false;
+    }
 
-    case "voteAdminPlayer":
-        %game.voteAdminPlayer(%admin, %arg1, %arg2, %arg3, %arg4);
+    return true;
+}
 
-    case "voteGreedMode":
-        %game.voteGreedMode(%admin, %arg1, %arg2, %arg3, %arg4);
+function DefaultGame::preprocessVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+    if (!%client.isAdmin && !%client.isSuperAdmin)
+        return false;
 
-    case "voteHoardMode":
-        %game.voteHoardMode(%admin, %arg1, %arg2, %arg3, %arg4);
+    switch$ (%type)
+    {
+    case "VoteChangeMission":
+        // abort any active vote on map change
+        if (Vote.type !$= "")
+            clearVotes();
+
+        %missionDisplayName = %arg1;
+        %typeDisplayName = %arg2;
+        %mission = $HostMissionFile[%arg3];
+        %missionType = $HostTypeName[%arg4];
+
+        messageAll('MsgAdminChangeMission',
+            '\c2An administrator has changed the mission to %1 (%2).',
+            %missionDisplayName, %typeDisplayName);
+        %game.gameOver();
+        loadMission(%mission, %missionType, false);
+
+    case "VoteChangeTimeLimit":
+        // check if this request was pending a vote
+        if (Vote.type $= "VoteChangeTimeLimit")
+            clearVotes();
+
+        %newLimit = %arg1;
+        if (%newLimit >= 999)
+            %display = "unlimited";
+        else if (%newLimit != 1)
+            %display = %newLimit SPC "minutes";
+        else
+            %display = %newLimit SPC "minute";
+
+        messageAll('MsgAdminForce',
+            '\c2An administrator has changed the mission time limit to %1.',
+            %display);
+        %game.handleNewTimeLimit(%newLimit);
+
+    case "VoteFfaMode":
+        // abort any active vote on map change
+        if (Vote.type !$= "")
+            clearVotes();
+
+        messageAll('MsgAdminForce',
+            '\c2An administrator has switched the server to free-for-all mode.');
+        setModeFFA($CurrentMission, $CurrentMissionType);
+
+    case "VoteMatchStart":
+        // check if this request was pending a vote
+        if (Vote.type $= "VoteMatchStart")
+            clearVotes();
+
+        %ready = forceTourneyMatchStart();
+        if (%ready)
+        {
+            messageAll('MsgMissionStart',
+                '\c2An administrator has forced the match to start.');
+            startTourneyCountdown();
+        }
+        else
+        {
+            messageClient(%client, 'MsgClient', '\c2No players are ready yet.');
+        }
+
+    case "VoteTeamDamage":
+        // check if this request was pending a vote
+        if (Vote.type $= "VoteTeamDamage")
+            clearVotes();
+
+        if ($TeamDamage)
+        {
+            messageAll('MsgAdminForce',
+                '\c2An administrator has disabled team damage.');
+            $Host::TeamDamageOn = $TeamDamage = 0;
+        }
+        else
+        {
+            messageAll('MsgAdminForce',
+                '\c2An administrator has enabled team damage.');
+            $Host::TeamDamageOn = $TeamDamage = 1;
+        }
+
+    case "VoteTournamentMode":
+        // abort any active vote on map change
+        if (Vote.type !$= "")
+            clearVotes();
+
+        %missionDisplayName = %arg1;
+        %typeDisplayName = %arg2;
+        %mission = $HostMissionFile[%arg3];
+        %missionType = $HostTypeName[%arg4];
+
+        messageAll('MsgAdminChangeMission',
+            '\c2An administrator has switched the server to tournament mode (%1; %2).',
+            %missionDisplayName, %typeDisplayName);
+        setModeTournament(%mission, %missionType);
+    }
+
+    return true;
+}
+
+function DefaultGame::notifyVote(%game, %client, %origin, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+    switch$ (%type)
+    {
+    case "VoteChangeMission":
+        %missionDisplayName = %arg1;
+        %typeDisplayName = %arg2;
+
+        messageClient(%client, 'VoteStarted',
+            '\c2%1 initiated a vote to change the mission to %2 (%3).',
+            %origin.name, %missionDisplayName, %typeDisplayName);
+
+    case "VoteChangeTimeLimit":
+        %newLimit = %arg1;
+        if (%newLimit >= 999)
+            %display = "unlimited";
+        else if (%newLimit != 1)
+            %display = %newLimit SPC "minutes";
+        else
+            %display = %newLimit SPC "minute";
+
+        messageClient(%client, 'VoteStarted',
+            '\c2%1 initiated a vote to change the mission time limit to %1.',
+            %origin.name, %display);
+
+    case "VoteFfaMode":
+        messageClient(%client, 'VoteStarted',
+            '\c2%1 initiated a vote to switch to free-for-all mode.',
+            %origin.name);
+
+    case "VoteMatchStart":
+        messageClient(%client, 'VoteStarted',
+            '\c2%1 initiated a vote to start the match.',
+            %origin.name);
+
+    case "VoteTeamDamage":
+        if ($TeamDamage)
+            messageClient(%client, 'VoteStarted',
+                '\c2%1 initiated a vote to disable team damage.',
+                %origin.name);
+        else
+            messageClient(%client, 'VoteStarted',
+                '\c2%1 initiated a vote to enable team damage.',
+                %origin.name);
+
+    case "VoteTournamentMode":
+        %missionDisplayName = %arg1;
+        %typeDisplayName = %arg2;
+
+        messageClient(%client, 'VoteStarted',
+            '\c2%1 initiated a vote to switch to tournament mode (%2; %3).',
+            %origin.name, %missionDisplayName, %typeDisplayName);
+
+    default:
+        error("unhandled vote-type in DefaultGame::notifyVote");
     }
 }
 
-function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName,
-        %typeDisplayName, %missionId, %missionTypeId)
+function DefaultGame::processVote(%game, %client, %type, %passed, %percentage,
+            %arg1, %arg2, %arg3, %arg4)
 {
-    %mission = $HostMissionFile[%missionId];
-    if (%mission $= "")
+    switch$ (%type)
     {
-        error("Invalid mission index passed to DefaultGame::voteChangeMission!");
-        return;
-    }
+    case "VoteChangeMission":
+        %missionDisplayName = %arg1;
+        %typeDisplayName = %arg2;
+        %mission = $HostMissionFile[%arg3];
+        %missionType = $HostTypeName[%arg4];
 
-    %missionType = $HostTypeName[%missionTypeId];
-    if (%missionType $= "")
-    {
-        error("Invalid mission type id passed to DefaultGame::voteChangeMission!");
-        return;
-    }
-
-    if (%admin)
-    {
-        messageAll('MsgAdminChangeMission',
-            '\c2The Admin has changed the mission to %1 (%2).',
-            %missionDisplayName, %typeDisplayName);
-        logEcho("mission changed to "@%missionDisplayName@"/"@%typeDisplayName@" (admin)");
-        %game.gameOver();
-        loadMission(%mission, %missionType, false);
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
+        if (%passed)
         {
             messageAll('MsgVotePassed',
                 '\c2The mission was changed to %1 (%2) by vote.',
                 %missionDisplayName, %typeDisplayName);
-            logEcho("mission changed to "@%missionDisplayName@"/"@%typeDisplayName@" (vote)");
             %game.gameOver();
             loadMission(%mission, %missionType, false);
         }
         else
             messageAll('MsgVoteFailed',
-                '\c2Change mission vote did not pass: %1 percent.',
-                mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-    }
-}
+                "\c2Vote to change the mission did not pass (" @ %percentage @ "\%).");
 
-//------------------------------------------------------------------------------
-function DefaultGame::voteTeamDamage(%game, %admin)
-{
-    %setto = "";
-    %cause = "";
-    if (%admin)
-    {
-        if ($teamDamage)
+    case "VoteChangeTimeLimit":
+        %newLimit = %arg1;
+        if (%newLimit >= 999)
+            %display = "unlimited";
+        else if (%newLimit != 1)
+            %display = %newLimit SPC "minutes";
+        else
+            %display = %newLimit SPC "minute";
+
+        if (%passed)
         {
-            messageAll('MsgAdminForce',
-                '\c2The Admin has disabled team damage.');
-            $Host::TeamDamageOn = $TeamDamage = 0;
-            %setto = "disabled";
+            messageAll('MsgVotePassed',
+                '\c2The mission time limit was set to %1 by vote.',
+                %display);
+            %game.handleNewTimeLimit(%newLimit);
         }
         else
+            messageAll('MsgVoteFailed',
+                "\c2Vote to change the mission time limit did not pass (" @ %percentage @ "\%).");
+
+    case "VoteFfaMode":
+        // drop vote if we somehow already moved out of tournament mode
+        if (!$Host::TournamentMode)
+            return false;
+
+        if (%passed)
         {
-            messageAll('MsgAdminForce',
-                '\c2The Admin has enabled team damage.');
-            $Host::TeamDamageOn = $TeamDamage = 1;
-            %setto = "enabled";
+            messageAll('MsgVotePassed',
+                '\c2Server switched to free-for-all mode by vote.');
+            setModeFFA($CurrentMission, $CurrentMissionType);
         }
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
+        else
+            messageAll('MsgVoteFailed',
+                "\c2Vote to switch to free-for-all mode did not pass (" @ %percentage @ "\%).");
+
+    case "VoteMatchStart":
+        // drop vote if we somehow already moved out of tournament mode or the
+        // match has already started/in-countdown
+        if (!$Host::TournamentMode || $MatchStarted || $CountdownStarted)
+            return false;
+
+        if (%passed)
         {
-            if ($teamDamage)
+            %ready = forceTourneyMatchStart();
+            if (%ready)
+            {
+                messageAll('MsgMissionStart',
+                    "\c2The match has been started by vote (" @ %percentage @ "\%).");
+                startTourneyCountdown();
+            }
+            else
+            {
+                messageClient(%client, 'MsgClient',
+                    '\c2Vote passed to start the match, but no players are ready yet.');
+            }
+        }
+        else
+            messageAll('MsgVoteFailed',
+                "\c2Vote to start the match did not pass (" @ %percentage @ "\%).");
+
+    case "VoteTeamDamage":
+        if (%passed)
+        {
+            if ($TeamDamage)
             {
                 messageAll('MsgVotePassed',
                     '\c2Team damage was disabled by vote.');
                 $Host::TeamDamageOn = $TeamDamage = 0;
-                %setto = "disabled";
             }
             else
             {
                 messageAll('MsgVotePassed',
                     '\c2Team damage was enabled by vote.');
                 $Host::TeamDamageOn = $TeamDamage = 1;
-                %setto = "enabled";
             }
-            %cause = "(vote)";
         }
         else
         {
-            if ($teamDamage)
+            if ($TeamDamage)
+            {
                 messageAll('MsgVoteFailed',
-                    '\c2Disable team damage vote did not pass: %1 percent.',
-                    mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
+                    "\c2Vote to disable team damage did not pass (" @ %percentage @ "\%).");
+            }
             else
+            {
                 messageAll('MsgVoteFailed',
-                    '\c2Enable team damage vote did not pass: %1 percent.',
-                    mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
+                    "\c2Vote to enable team damage did not pass (" @ %percentage @ "\%).");
+            }
         }
-    }
 
-    if (%setto !$= "")
-        logEcho("team damage "@%setto SPC %cause);
-}
+    case "VoteTournamentMode":
+        %mission = $HostMissionFile[%arg3];
+        %missionType = $HostTypeName[%arg4];
 
-//------------------------------------------------------------------------------
-function DefaultGame::voteTournamentMode(%game, %admin, %missionDisplayName,
-        %typeDisplayName, %missionId, %missionTypeId)
-{
-    %mission = $HostMissionFile[%missionId];
-    if (%mission $= "")
-    {
-        error("Invalid mission index passed to DefaultGame::voteTournamentMode!");
-        return;
-    }
-
-    %missionType = $HostTypeName[%missionTypeId];
-    if (%missionType $= "")
-    {
-        error("Invalid mission type id passed to DefaultGame::voteTournamentMode!");
-        return;
-    }
-
-    %cause = "";
-    if (%admin)
-    {
-        messageAll('MsgAdminForce',
-            '\c2The Admin has switched the server to Tournament mode (%1).',
-            %missionDisplayName);
-        setModeTournament(%mission, %missionType);
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
+        if (%passed)
         {
             messageAll('MsgVotePassed',
-                '\c2Server switched to Tournament mode by vote (%1): %2 percent.',
-                %missionDisplayName, mFloor(%game.totalVotesFor /
-                    (ClientGroup.getCount() - $HostGameBotCount) * 100));
+                '\c2Server switched to tournament mode by vote.');
             setModeTournament(%mission, %missionType);
-            %cause = "(vote)";
         }
         else
             messageAll('MsgVoteFailed',
-                '\c2Tournament mode vote did not pass: %1 percent.',
-                mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-    }
-
-    if (%cause !$= "")
-        logEcho("tournament mode set "@%cause);
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::voteMatchStart(%game, %admin)
-{
-    %cause = "";
-    %ready = forceTourneyMatchStart();
-    if (%admin)
-    {
-        if (!%ready)
-        {
-            messageClient(%client, 'msgClient', '\c2No players are ready yet.');
-            return;
-        }
-        else
-        {
-            messageAll('msgMissionStart',
-                '\c2The admin has forced the match to start.');
-            %cause = "(admin)";
-            startTourneyCountdown();
-        }
-    }
-    else
-    {
-        if (!%ready)
-        {
-            messageAll('msgClient',
-                '\c2Vote passed to start match, but no players are ready yet.');
-            return;
-        }
-        else
-        {
-            %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-            if (%totalVotes > 0 && (%game.totalVotesFor /
-                    (ClientGroup.getCount() - $HostGameBotCount)) >
-                    ($Host::VotePasspercent / 100))
-            {
-                messageAll('MsgVotePassed',
-                    '\c2The match has been started by vote: %1 percent.',
-                    mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-                startTourneyCountdown();
-            }
-            else
-                messageAll('MsgVoteFailed',
-                    '\c2Start Match vote did not pass: %1 percent.',
-                    mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-        }
-    }
-
-    if (%cause !$= "")
-        logEcho("start match "@%cause);
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::voteFFAMode(%game, %admin, %client)
-{
-    %cause = "";
-    %name = getTaggedString(%client.name);
-
-    if (%admin)
-    {
-        messageAll('MsgAdminForce',
-            '\c2The Admin has switched the server to Free For All mode.',
-            %client);
-        setModeFFA($CurrentMission, $CurrentMissionType);
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
-        {
-            messageAll('MsgVotePassed',
-                '\c2Server switched to Free For All mode by vote.', %client);
-            setModeFFA($CurrentMission, $CurrentMissionType);
-            %cause = "(vote)";
-        }
-        else
-            messageAll('MsgVoteFailed',
-                '\c2Free For All mode vote did not pass: %1 percent.',
-                mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-    }
-
-    if (%cause !$= "")
-        logEcho("free for all set "@%cause);
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
-{
-    if (%newLimit == 999)
-        %display = "unlimited";
-    else
-        %display = %newLimit;
-
-    %cause = "";
-    if (%admin)
-    {
-        messageAll('MsgAdminForce',
-            '\c2The Admin changed the mission time limit to %1 minutes.',
-            %display);
-        $Host::TimeLimit = %newLimit;
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
-        {
-            messageAll('MsgVotePassed',
-                '\c2The mission time limit was set to %1 minutes by vote.',
-                %display);
-            $Host::TimeLimit = %newLimit;
-            %cause = "(vote)";
-        }
-        else
-            messageAll('MsgVoteFailed',
-                '\c2The vote to change the mission time limit did not pass: %1 percent.',
-                mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-    }
-
-    // if the time limit was actually changed...
-    if (%cause !$= "")
-    {
-        logEcho("time limit set to "@%display SPC %cause);
-
-        // if the match has been started, reset the end of match countdown
-        if ($matchStarted)
-        {
-            // schedule the end of match countdown
-            %elapsedTimeMS = getSimTime() - $missionStartTime;
-            %curTimeLeftMS = ($Host::TimeLimit * 60 * 1000) - %elapsedTimeMS;
-            error("time limit="@$Host::TimeLimit@", elapsed="@(%elapsedTimeMS / 60000)@", curtimeleftms="@%curTimeLeftMS);
-            CancelEndCountdown();
-            EndCountdown(%curTimeLeftMS);
-            cancel(%game.timeSync);
-            %game.checkTimeLimit(true);
-        }
+                "\c2Vote to change to tournament mode did not pass (" @ %percentage @ "\%).");
     }
 }
 
 //------------------------------------------------------------------------------
-function DefaultGame::voteResetServer(%game, %admin, %client)
+function DefaultGame::handleNewTimeLimit(%game, %newLimit)
 {
-    %cause = "";
-    if (%admin)
-    {
-        messageAll('AdminResetServer', '\c2The Admin has reset the server.');
-        resetServerDefaults();
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
-        {
-            messageAll('MsgVotePassed', '\c2The Server has been reset by vote.');
-            resetServerDefaults();
-            %cause = "(vote)";
-        }
-        else
-            messageAll('MsgVoteFailed',
-                '\c2The vote to reset Server to defaults did not pass: %1 percent.',
-                mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount) * 100));
-    }
+    $Host::TimeLimit = %newLimit;
 
-    if (%cause !$= "")
-        logEcho("server reset "@%cause);
-}
+    // ignore if a new time limit occurred when the match has yet to be started
+    if (!$MatchStarted)
+        return;
 
-//------------------------------------------------------------------------------
-// all team based votes here
-function DefaultGame::voteKickPlayer(%game, %admin, %client)
-{
-    %cause = "";
-
-    if (%admin)
-    {
-        kick(%client, %admin, %client.guid);
-        %cause = "(admin)";
-    }
-    else
-    {
-        %team = %client.team;
-        %totalVotes = %game.votesFor[%game.kickTeam] + %game.votesAgainst[%game.kickTeam];
-        if (%totalVotes > 0 && (%game.votesFor[%game.kickTeam] /
-                %totalVotes) > ($Host::VotePasspercent / 100))
-        {
-            kick(%client, %admin, %game.kickGuid);
-            %cause = "(vote)";
-        }
-        else
-        {
-            for (%idx = 0; %idx < ClientGroup.getCount(); %idx++)
-            {
-                %cl = ClientGroup.getObject(%idx);
-
-                if (%cl.team == %game.kickTeam && !%cl.isAIControlled())
-                    messageClient(%cl, 'MsgVoteFailed',
-                        '\c2Kick player vote did not pass');
-            }
-        }
-    }
-
-    %game.kickTeam = "";
-    %game.kickGuid = "";
-    %game.kickClientName = "";
-
-    if (%cause !$= "")
-        logEcho(%name@" (cl " @ %game.kickClient @ ") kicked " @ %cause);
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::banPlayer(%game, %admin, %client)
-{
-    %cause = "";
-    %name = %client.nameBase;
-    if (%admin)
-    {
-        ban(%client, %admin);
-        %cause = "(admin)";
-    }
-
-    if (%cause !$= "")
-        logEcho(%name@" (cl "@%client@") banned "@%cause);
-}
-
-//------------------------------------------------------------------------------
-function DefaultGame::voteAdminPlayer(%game, %admin, %client)
-{
-    %cause = "";
-
-    if (%admin)
-    {
-        messageAll('MsgAdminAdminPlayer',
-            '\c2The Admin made %2 an admin.', %client, %client.name);
-        %client.isAdmin = 1;
-        %cause = "(admin)";
-    }
-    else
-    {
-        %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-        if (%totalVotes > 0 && (%game.totalVotesFor /
-                (ClientGroup.getCount() - $HostGameBotCount)) >
-                ($Host::VotePasspercent / 100))
-        {
-            messageAll('MsgAdminPlayer',
-                '\c2%2 was made an admin by vote.', %client, %client.name);
-            %client.isAdmin = 1;
-            %cause = "(vote)";
-        }
-        else
-            messageAll('MsgVoteFailed',
-                '\c2Vote to make %1 an admin did not pass.', %client.name);
-    }
-
-    if (%cause !$= "")
-        logEcho(%client.nameBase@" (cl "@%client@") made admin "@%cause);
+    // schedule the end of match countdown
+    %elapsedTimeMs = getSimTime() - $MissionStartTime;
+    %curTimeLeftMs = ($Host::TimeLimit * 60 * 1000) - %elapsedTimeMs;
+    cancelEndCountdown();
+    endCountdown(%curTimeLeftMs);
+    cancel(%game.timeSync);
+    %game.checkTimeLimit(true);
 }
 
 //------------------------------------------------------------------------------

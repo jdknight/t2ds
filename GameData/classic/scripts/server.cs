@@ -86,7 +86,7 @@ function CreateServer(%mission, %missionType)
     exec("scripts/supportClassic.cs"); // z0dd - ZOD, 5/13/02. Execute the support functions.
     exec("scripts/practice.cs"); // z0dd - ZOD, 3/13/02. Execute practice mode server functions.
     exec("scripts/serverTasks.cs");
-    exec("scripts/admin.cs");
+    exec("scripts/voting.cs");
     exec("prefs/banlist.cs");
 
     //automatically load any mission type that follows naming convention typeGame.name.cs
@@ -259,55 +259,73 @@ function DestroyServer()
         setGravity($DefaultGravity);
 }
 
-// we pass the guid as well, in case this guy leaves the server.
-function kick(%client, %admin, %guid)
+function kick(%client, %admin, %guid, %address, %name, %team)
 {
-    if (%admin) // z0dd - ZOD, 8/23/02. Let the player know who kicked him.
-        messageAll('MsgAdminForce', '\c2%2 has kicked %1.', Game.kickClientName, %admin.name);
+    if (%admin > 0)
+        messageAll('MsgAdminForce', '\c2%2 has kicked %1.', %name, %admin.name);
     else
-        messageAll('MsgVotePassed', '\c2%1 was kicked by vote.', Game.kickClientName);
+        messageAll('MsgVotePassed', '\c2%1 was kicked by vote.', %name);
 
-    messageClient(%client, 'onClientKicked', "");
-    messageAllExcept(%client, -1, 'MsgClientDrop', "", Game.kickClientName, %client);
-
-    if (%client.isAIControlled())
+    // check if client is still here
+    //  - first, pull most recent client identifier based off guid (if any)
+    //  - next, pull existing client with passed in client id
+    %target = 0;
+    if (%guid > 0)
     {
-        $HostGameBotCount--;
-        %client.drop();
-    }
-    else
-    {
-        %count = ClientGroup.getCount();
-        %found = false;
-        for (%i = 0; %i < %count; %i++) // see if this guy is still here...
+        for (%idx = 0; %idx < ClientGroup.getCount(); %idx++)
         {
-            %cl = ClientGroup.getObject(%i);
+            %cl = ClientGroup.getObject(%idx);
             if (%cl.guid == %guid)
             {
-                %found = true;
-
-                // kill and delete this client, their done in this server.
-                if (isObject(%cl.player))
-                    %cl.player.scriptKill(0);
-
-                if (isObject(%cl))
-                {
-                    if (%admin) // z0dd - ZOD, 8/23/02. Let the player know who kicked him.
-                        %cl.setDisconnectReason(%admin.nameBase @ "has kicked you out of the game.");
-                    else
-                        %cl.setDisconnectReason("You have been kicked out of the game.");
-
-                    %cl.schedule(700, "delete");
-                }
-
-                BanList::add(%guid, "0", $Host::KickBanTime);
+                %target = %cl;
+                break;
             }
         }
-
-        if (!%found)
-            // keep this guy out for a while since he left.
-            BanList::add(%guid, "0", $Host::KickBanTime);
     }
+
+    if (%target == 0)
+    {
+        for (%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+        {
+            %cl = ClientGroup.getObject(%idx);
+            if (%cl == %client)
+            {
+                %target = %cl;
+                break;
+            }
+        }
+    }
+
+    // is target client still in the server
+    if (%target > 0)
+    {
+        messageClient(%target, 'onClientKicked', "");
+        messageAllExcept(%target, -1, 'MsgClientDrop', "", %name, %target);
+
+        if (%target.isAIControlled())
+        {
+            $HostGameBotCount--;
+            %client.drop();
+        }
+        else
+        {
+            if (isObject(%target.player))
+                %target.player.scriptKill(0);
+
+            if (%admin > 0)
+                %msg = %admin.nameBase SPC "has kicked you out of the game.";
+            else
+                %msg = "You have been kicked out of the game.";
+
+            %target.setDisconnectReason(%msg);
+            %target.schedule(700, "delete");
+        }
+    }
+
+    if (%guid > 0)
+        BanList::add(%guid, "0", $Host::KickBanTime);
+    else if (%target > 0)
+        BanList::add(0, %address, $Host::KickBanTime);
 }
 
 function ban(%client, %admin)
@@ -327,7 +345,7 @@ function ban(%client, %admin)
     if (isObject(%client))
     {
         if (%admin) // z0dd - ZOD, 8/23/02. Let the player know who kicked him.
-            %client.setDisconnectReason(%admin.nameBase @ "has banned you from this server.");
+            %client.setDisconnectReason(%admin.nameBase SPC "has banned you from this server.");
         else
             %client.setDisconnectReason("You have been banned from this server.");
 
@@ -1159,6 +1177,11 @@ function serverCmdSAD(%client, %password)
                 return;
             }
 
+            // check if this request conflicts with pending a vote
+            if (Vote.targetClient == %client && (Vote.type $= "VoteAdminPlayer" ||
+                    Vote.type $= "VoteKickPlayer"))
+                clearVotes();
+
             %client.isAdmin = true;
             %client.isSuperAdmin = true;
             messageAll('MsgSuperAdminPlayer',
@@ -1175,6 +1198,11 @@ function serverCmdSAD(%client, %password)
                     '\c2Illegal Admin PW. You need to change the default \"$Host::AdminPassword\" value in \"ServerPrefs.cs\"!');
                 return;
             }
+
+            // check if this request conflicts with pending a vote
+            if (Vote.targetClient == %client && (Vote.type $= "VoteAdminPlayer" ||
+                    Vote.type $= "VoteKickPlayer"))
+                clearVotes();
 
             %client.isAdmin = true;
             %client.isSuperAdmin = false;
@@ -1546,7 +1574,7 @@ function GameConnection::waitTimeout(%this)
 
 function SpawnPosChange(%client)
 {
-    if (isObject(Game) && %client != Game.kickClient && $Host::TournamentMode && !$CountdownStarted)
+    if (isObject(Game) && $Host::TournamentMode && !$CountdownStarted)
     {
         if (!%client.isWaiting)
         {
@@ -1713,7 +1741,7 @@ function serverCmdPlayDeath(%client, %anim)
 function serverCmdClientTeamChange(%client)
 {
     // pass this to the game object to handle:
-    if (isObject(Game) && Game.kickClient != %client)
+    if (isObject(Game))
     {
         %fromObs = %client.team == 0;
 
@@ -1767,7 +1795,7 @@ function serverCmdClientJoinTeam(%client, %team, %admin)
             %team = 1;
     }
 
-    if (isObject(Game) && Game.kickClient != %client)
+    if (isObject(Game))
     {
         if (%client.team != %team)
         {
@@ -1849,13 +1877,13 @@ function serverCmdClientJoinGame(%client)
 
 function serverCmdClientMakeObserver(%client)
 {
-    if (isObject(Game) && Game.kickClient != %client)
+    if (isObject(Game))
         Game.forceObserver(%client, "playerChoose");
 }
 
 function serverCmdChangePlayersTeam(%clientRequesting, %client, %team)
 {
-    if (isObject(Game) && %client != Game.kickClient && %clientRequesting.isAdmin)
+    if (isObject(Game) && %clientRequesting.isAdmin)
     {
         // z0dd - ZOD, 6/22/02. Added admin variable to enable admins to teamchange
         // even players under the Wait timer.
@@ -1900,33 +1928,60 @@ function serverCmdChangePlayersTeam(%clientRequesting, %client, %team)
    }
 }
 
-//---------------------------------------------------------------------------------------------------------
-// z0dd - ZOD 4/18/02. Allow SuperAdmins to De-Admin normal Admins
-function serverCmdStripAdmin(%client, %admin)
+function serverCmdStripAdmin(%client, %requestedTarget)
 {
-    if (!%admin.isAdmin)
+    if (!%client.isSuperAdmin)
         return;
 
-    if (%client.isSuperAdmin)
+    %target = 0;
+    for (%idx = 0; %idx < ClientGroup.getCount(); %idx++)
     {
-        messageAll('MsgStripAdminPlayer',
-            '\c2%1 removed %2\'s admin privledges.',
-            %client.name, %admin.name, %admin);
-        messageClient(%admin, 'MsgStripAdminPlayer',
-            'You are being stripped of your admin privledges by %1.',
-            %client.name);
-        %admin.isAdmin = 0;
-        logEcho(%client.nameBase @ " stripped admin from " @ %admin.nameBase);
+        %cl = ClientGroup.getObject(%idx);
+        if (%cl.isAIControlled()) continue;
+
+        if (%cl == %requestedTarget)
+        {
+            %target = %cl;
+            break;
+        }
     }
-    else
-        messageClient(%client, 'MsgError',
-            '\c2Only Super Admins can use this command.');
+    if (%target == 0 || %target.isSuperAdmin || !%target.isAdmin) return;
+
+    messageAll('MsgStripAdminPlayer',
+        '\c2%1 removed %2\'s administrative privledges.',
+        %client.name, %target.name, %target);
+    messageClient(%target, 'MsgStripAdminPlayer',
+        'You are being stripped of your administrative privledges by %1.',
+        %client.name);
+    %target.isAdmin = 0;
 }
 
-// z0dd - ZOD 4/18/02. Allow Admins to warn players
-function serverCmdWarnPlayer(%client, %target)
+function serverCmdWarnPlayer(%client, %requestedTarget)
 {
-    if (%client.isAdmin)
+    if (!%client.isAdmin && !%client.isSuperAdmin)
+        return;
+
+    %target = 0;
+    for (%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+    {
+        %cl = ClientGroup.getObject(%idx);
+        if (%cl.isAIControlled()) continue;
+
+        if (%cl == %requestedTarget)
+        {
+            %target = %cl;
+            break;
+        }
+    }
+    if (%target == 0) return;
+
+    %outrankTarget = false;
+    if (%client.isSuperAdmin)
+        %outrankTarget = !%targetClient.isSuperAdmin;
+    else if (%client.isAdmin)
+        %outrankTarget = !%targetClient.isAdmin;
+
+    if (%outrankTarget)
     {
         messageAllExcept(%target, -1, 'MsgAdminForce',
             '%1 has been warned for inappropriate conduct by %2.',
@@ -1934,15 +1989,39 @@ function serverCmdWarnPlayer(%client, %target)
         messageClient(%target, 'MsgAdminForce',
             'You are recieving this warning for inappropriate conduct by %1. Behave or you will be kicked.~wfx/misc/lightning_impact.wav',
             %client.name);
-        centerprint(%target, "You are receiving this warning for inappropriate conduct.\nBehave or you will be kicked.", 10, 2);
-        logEcho(%client.nameBase @ " sent warning to " @ %target.nameBase);
+        centerPrint(%target,
+            "You are receiving this warning for inappropriate conduct.\nBehave or you will be kicked.",
+            10, 2);
     }
-    else
-        messageClient(%client, 'MsgError',
-            '\c2Only Admins can use this command.');
 }
 
-//---------------------------------------------------------------------------------------------------------
+function serverCmdPrivateMessageSent(%client, %requestedTarget, %text)
+{
+    if ((!%client.isAdmin && !%client.isSuperAdmin) || %text $= "" ||
+            spamAlert(%client))
+        return;
+
+    %target = 0;
+    for (%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+    {
+        %cl = ClientGroup.getObject(%idx);
+        if (%cl.isAIControlled()) continue;
+
+        if (%cl == %requestedTarget)
+        {
+            %target = %cl;
+            break;
+        }
+    }
+    if (%target == 0) return;
+
+    %snd = '~wfx/misc/diagnostic_on.wav';
+    if (strlen(%text) >= $Host::MaxMessageLen)
+        %text = getSubStr(%text, 0, $Host::MaxMessageLen);
+
+    messageClient(%target, 'MsgPrivate',
+        '\c5Message from %1: \c3%2%3', %client.name, %text, %snd);
+}
 
 function serverCmdForcePlayerToObserver(%clientRequesting, %client)
 {
@@ -1973,7 +2052,10 @@ function serverCmdTogglePlayerMute(%client, %who)
 function serverCmdGetVoteMenu(%client, %key)
 {
     if (isObject(Game))
+    {
         Game.sendGameVoteMenu(%client, %key);
+        Game.sendGameVoteMenuTail(%client, %key);
+    }
 }
 
 function serverCmdGetPlayerPopupMenu(%client, %targetClient, %key)
@@ -2364,12 +2446,8 @@ function checkTourneyMatchStart()
             ClearBottomPrint(%cl);
         }
 
-        if (Game.scheduleVote !$= "" && Game.voteType $= "VoteMatchStart")
-        {
-            messageAll('closeVoteHud', "");
-            cancel(Game.scheduleVote);
-            Game.scheduleVote = "";
-        }
+        if (Vote.type $= "VoteMatchStart")
+            clearVotes();
 
         Countdown(30 * 1000);
     }
@@ -2593,6 +2671,23 @@ function removeAllBots()
         else
             %client.delete();
     }
+}
+
+function rebootServer()
+{
+    while (ClientGroup.getCount())
+    {
+        %client = ClientGroup.getObject(0);
+        if (%client.isAIControlled())
+            %client.drop();
+        else
+        {
+            %client.setDisconnectReason("Server has been rebooted.");
+            %client.delete();
+        }
+    }
+
+    quit();
 }
 
 //------------------------------------------------------------------------------

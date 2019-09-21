@@ -163,26 +163,6 @@ function VehicleData::onCollision(%data, %obj, %col)
     //   %obj.playAudio(0, %data.hardImpactSound);
 }
 
-function serverCmdPrivateMessageSent(%client, %target, %text)
-{
-    // Client side:
-    //commandToServer('PrivateMessageSent', %target, %text);
-
-    if (%text $= "" || spamAlert(%client))
-        return;
-
-    if (%client.isAdmin)
-    {
-        %snd = '~wfx/misc/diagnostic_on.wav';
-        if (strlen(%text) >= $Host::MaxMessageLen)
-            %text = getSubStr(%text, 0, $Host::MaxMessageLen);
-
-        messageClient(%target, 'MsgPrivate', '\c5Message from %1: \c3%2%3', %client.name, %text, %snd);
-    }
-    else
-        messageClient(%client, 'MsgError', '\c4Only admins can send private messages');
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // z0dd - ZOD, 10/03/02. Part of flag collision bug hack.
 //////////////////////////////////////////////////////////////////////////////

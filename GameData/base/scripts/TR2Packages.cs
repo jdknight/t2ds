@@ -95,52 +95,6 @@ function serverCmdUse(%client, %data)
         %client.getControlObject().use(%data);
 }
 
-function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %playerVote)
-{
-    Parent::serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %playerVote);
-
-    if (%typeName $= "TogglePracticeMode" && %client.isAdmin)
-        TogglePracticeMode(%client);
-
-    if (%typeName $= "ToggleRoles" && %client.isAdmin)
-        TogglePlayerRoles(%client);
-
-    if (%typeName $= "ToggleCrowd" && %client.isAdmin)
-        ToggleCrowd(%client);
-
-    if (%typeName $= "getQueuePos")
-        messageQueueClient(%client);
-
-    if (%typeName $= "toggleSpecLock" && %client.isAdmin)
-        toggleSpectatorLock(%client);
-
-    if (%typeName $= "toggleSpecOnly")
-        toggleSpecOnly(%client);
-
-    if (%typeName $= "toggleSpecMode")
-        toggleSpectatorMode(%client);
-
-    if (%typeName $= "tr2JoinGame")
-    {
-        reindexQueue();
-        if (!$TR2::SpecLock && %client.queueSlot !$= "" &&
-                %client.queueSlot <= ((6 * 2) - getActiveCount()))
-        {
-            Game.assignClientTeam(%client);
-            Game.spawnPlayer(%client, $MatchStarted);
-        }
-    }
-
-    if (%typeName $= "tr2ForceFlagReturn")
-    {
-        if (%client.isAdmin && $TheFlag.carrier $= "" && (getSimTime() - $TheFlag.dropTime) >= 30000)
-        {
-            messageAll('MsgAdminForce', '\c0%1 forced the flag to return to the stand.', %client.name);
-            Game.flagReturn($TheFlag, 0);
-        }
-    }
-}
-
 function toggleSpectatorMode(%client)
 {
 	if (%client.team <= 0)
@@ -158,13 +112,6 @@ function toggleSpectatorMode(%client)
                 %client.camera.getDataBlock().setMode(%client.camera, "observerFly");
 		}
 	}
-}
-
-function toggleSpectatorLock(%client)
-{
-    $TR2::SpecLock = !$TR2::SpecLock;
-	%status = $TR2::SpecLock ? "locked spectators in observer mode." : "enabled the spectator queue.";
-	messageAll('MsgAdminForce', '\c0%1 %2.', %client.name, %status);
 }
 
 function toggleSpecOnly(%client)
@@ -191,23 +138,6 @@ function toggleSpecOnly(%client)
             '\c0You must wait %1 seconds before using this option again!~wfx/powered/station_denied.wav', mFloor((10000 - %time)/1000));
 }
 
-function TogglePlayerRoles(%client)
-{
-    $TR2::EnableRoles = !$TR2::EnableRoles;
-	%status = $TR2::EnableRoles ? "enabled player roles." : "disabled player roles.";
-	messageAll('MsgAdminForce', '\c2%1 %2', %client.name, %status);
-}
-
-function ToggleCrowd(%client)
-{
-    if ($TR2::EnableCrowd)
-        Game.stopCrowd();
-
-	$TR2::EnableCrowd = !$TR2::EnableCrowd;
-	%status = $TR2::EnableCrowd ? "enabled the crowd." : "disabled the crowd";
-    messageAll('MsgAdminForce', '\c2%1 %2', %client.name, %status);
-}
-
 function ToggleDisableDeath(%client)
 {
 	$TR2::DisableDeath = !$TR2::DisableDeath;
@@ -221,13 +151,6 @@ function ToggleDisableDeath(%client)
         %cl.knockedDown = false;
         cancel(%cl.knockdownThread);
     }
-}
-
-function TogglePracticeMode(%client)
-{
-	$TR2::PracticeMode = !$TR2::PracticeMode;
-	%status = $TR2::PracticeMode ? "enabled Practice Mode." : "disabled Practice Mode.";
-	messageAll('MsgAdminForce', '\c2%1 %2', %client.name, %status);
 }
 
 function Flag::shouldApplyImpulse(%data, %obj)

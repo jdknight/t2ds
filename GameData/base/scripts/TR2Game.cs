@@ -141,6 +141,8 @@ function TR2Game::initGameVars(%game)
     if (%game.oldCorpseTimeout $= "")
         %game.oldCorpseTimeout = $CorpseTimeoutValue;
 
+    %game.voteTeamManagementOverrides = true;
+
     $CorpseTimeoutValue = $TR2::CorpseTimeoutValue;
     %game.TR2FlagSmoke = 0;
     %game.addFlagTrail = "";
@@ -2431,74 +2433,146 @@ function TR2Game::resetTheField(%this, %team)
 
 function TR2Game::sendGameVoteMenu(%game, %client, %key)
 {
-	if ((($Host::TournamentMode && !$MatchStarted) || !$Host::TournamentMode) &&
-            !$TR2::SpecLock && %client.queueSlot !$= "" &&
-            %client.queueSlot <= ((6 * 2) - getActiveCount()))
-	{
-		messageClient(%client, 'MsgVoteItem', "", %key, 'tr2JoinGame',
-            'Join the game', 'Join the game');
-	}
+    %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
 
-	if (%client.isAdmin && $TheFlag.carrier $= "" &&
+	if (%isAdmin && $TheFlag.carrier $= "" &&
             (getSimTime() - $TheFlag.dropTime) >= 30000)
 	{
-		messageClient(%client, 'MsgVoteItem', "", %key, 'tr2ForceFlagReturn',
-            'Force the flag to return', 'Force the flag to return');
+		messageClient(%client, 'MsgVoteItem', "", %key,
+            'Tr2ForceFlagReturn', '', 'Force the Flag to Return');
 	}
 
 	DefaultGame::sendGameVoteMenu(%game, %client, %key);
 
-	if (%client.isAdmin)
+	if (%isAdmin)
 	{
         if ($TR2::PracticeMode)
-			messageClient(%client, 'MsgVoteItem', "", %key, 'TogglePracticeMode',
-                'Disable Practice Mode', 'Disable Practice Mode');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2TogglePracticeMode', '', 'Disable Practice Mode');
 		else
-			messageClient(%client, 'MsgVoteItem', "", %key, 'TogglePracticeMode',
-                'Enable Practice Mode', 'Enable Practice Mode');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2TogglePracticeMode', '', 'Enable Practice Mode');
 
 		if ($TR2::EnableRoles)
-			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleRoles',
-                'Disable Player Roles', 'Disable Player Roles');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleRoles', '', 'Disable Player Roles');
 		else
-			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleRoles',
-                'Enable Player Roles', 'Enable Player Roles');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleRoles', '', 'Enable Player Roles');
 
 		if ($TR2::EnableCrowd)
-			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleCrowd',
-                'Disable Crowd', 'Disable Crowd');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleCrowd', '', 'Disable Crowd');
 		else
-			messageClient(%client, 'MsgVoteItem', "", %key, 'ToggleCrowd',
-                'Enable Crowd', 'Enable Crowd');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleCrowd', '', 'Enable Crowd');
 
 		if ($TR2::SpecLock)
-			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecLock',
-                'Unlock Spectators', 'Unlock Spectators');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleSpecLock', '', 'Unlock Spectators');
 		else
-			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecLock',
-                'Lock Spectators', 'Lock Spectators');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleSpecLock', '', 'Lock Spectators');
 	}
 
  	if (%client.team == 0)
  	{
  		if (%client.queueSlot !$= "")
-			messageClient(%client, 'MsgVoteItem', "", %key, 'getQueuePos',
-                'Get your queue status', 'Get your queue status');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2GetQueuePos', '', 'Get your Queue Status');
 
 		if (!%client.specOnly)
-			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecOnly',
-                'Lock myself as a spectator', 'Lock myself as a spectator');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleSpecOnly', '', 'Lock Myself as a Spectator');
 		else
-			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecOnly',
-                'Enter the queue to join the game.', 'Enter the queue to join the game.');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleSpecOnly', '', 'Enter the Queue to Join the Game');
 
 		if (!%client.tr2SpecMode)
-			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecMode',
-                'Lock onto Flag/Carrier', 'Lock onto Flag/Carrier');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleSpecMode', '', 'Lock onto Flag/Carrier');
 		else
-			messageClient(%client, 'MsgVoteItem', "", %key, 'toggleSpecMode',
-                'Free-flight Observer Mode', 'Free-flight Observer Mode');
+			messageClient(%client, 'MsgVoteItem', "", %key,
+                'Tr2ToggleSpecMode', '', 'Free-flight Observer Mode');
 	}
+}
+
+function TR2Game::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+    %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
+
+    switch$ (%type)
+    {
+    case "Tr2ForceFlagReturn":
+        return (%isAdmin && $TheFlag.carrier $= "" &&
+                (getSimTime() - $TheFlag.dropTime) >= 30000);
+
+    case "Tr2GetQueuePos":        return (%client.team == 0);
+    case "Tr2ToggleCrowd":        return %isAdmin;
+    case "Tr2TogglePracticeMode": return %isAdmin;
+    case "Tr2ToggleRoles":        return %isAdmin;
+    case "Tr2ToggleSpecLock":     return %isAdmin;
+    case "Tr2ToggleSpecMode":     return (%client.team == 0);
+    case "Tr2ToggleSpecOnly":     return (%client.team == 0);
+    }
+
+    return DefaultGame::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4);
+}
+
+function TR2Game::preprocessVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+    switch$ (%type)
+    {
+    case "Tr2ForceFlagReturn":
+        messageAll('MsgAdminForce',
+            '\c0%1 forced the flag to return to the stand.', %client.name);
+        Game.flagReturn($TheFlag, 0);
+
+    case "Tr2GetQueuePos":
+        messageQueueClient(%client);
+
+    case "Tr2ToggleCrowd":
+        if ($TR2::EnableCrowd)
+            %game.stopCrowd();
+
+        $TR2::EnableCrowd = !$TR2::EnableCrowd;
+        %status = ($TR2::EnableCrowd ? "enabled the crowd." :
+            "disabled the crowd.");
+        messageAll('MsgAdminForce', '\c2%1 %2', %client.name, %status);
+
+    case "Tr2TogglePracticeMode":
+        $TR2::PracticeMode = !$TR2::PracticeMode;
+        %status = ($TR2::PracticeMode ? "enabled practice mode." :
+            "disabled practice mode.");
+        messageAll('MsgAdminForce', '\c2%1 %2', %client.name, %status);
+
+    case "Tr2ToggleRoles":
+        $TR2::EnableRoles = !$TR2::EnableRoles;
+        %status = ($TR2::EnableRoles ? "enabled player roles." :
+            "disabled player roles.");
+        messageAll('MsgAdminForce', '\c2%1 %2', %client.name, %status);
+
+    case "Tr2ToggleSpecLock":
+        $TR2::SpecLock = !$TR2::SpecLock;
+        %status = ($TR2::SpecLock ? "locked spectators in observer mode." :
+            "enabled the spectator queue.");
+        messageAll('MsgAdminForceTrivial', '\c0%1 %2', %client.name, %status);
+
+    case "Tr2ToggleSpecMode":
+        toggleSpectatorMode(%client);
+
+    case "Tr2ToggleSpecOnly":
+        toggleSpecOnly(%client);
+
+    default:
+        return DefaultGame::preprocessVote(%game, %client, %type,
+            %arg1, %arg2, %arg3, %arg4);
+    }
+
+    return true;
 }
 
 function TR2Game::clientChangeTeam(%game, %client, %team, %fromObs)

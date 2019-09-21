@@ -398,41 +398,42 @@ function TeamHuntersGame::playerDroppedFlag(%game, %player)
 	HuntersGame::playerDroppedFlag(%game, %player);
 }
 
-//-----------------------------------------------------------------------------
-//VOTING functions
 function TeamHuntersGame::sendGameVoteMenu(%game, %client, %key)
 {
-    // Don't send any options if a vote is already running:
-    if (%game.scheduleVote $= "")
-    {
-        // First send the common options:
-        DefaultGame::sendGameVoteMenu(%game, %client, %key);
-
-        // Now send the Hunters-specific options:
-        if (%game.GreedMode)
-            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
-                'disable greed mode', 'Disable GREED Mode');
-        else
-            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteGreedMode',
-                'enable greed mode', 'Enable GREED Mode');
-
-        if (%game.HoardMode)
-            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
-                'disable hoard mode', 'Disable HOARD Mode');
-        else
-            messageClient(%client, 'MsgVoteItem', "", %key, 'VoteHoardMode',
-                'enable hoard mode', 'Enable HOARD Mode');
-    }
+	HuntersGame::sendGameVoteMenu(%game, %client, %key);
 }
 
-function TeamHuntersGame::voteGreedMode(%game, %admin, %player)
+function TeamHuntersGame::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
 {
-	HuntersGame::voteGreedMode(%game, %admin, %player);
+	return HuntersGame::isValidVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4);
 }
 
-function TeamHuntersGame::voteHoardMode(%game, %admin, %player)
+function TeamHuntersGame::preprocessVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4)
 {
-	HuntersGame::voteHoardMode(%game, %admin, %player);
+	return HuntersGame::preprocessVote(%game, %client, %type,
+        %arg1, %arg2, %arg3, %arg4);
+}
+
+function TeamHuntersGame::notifyVote(%game, %client, %origin, %type,
+        %arg1, %arg2, %arg3, %arg4)
+{
+	HuntersGame::notifyVote(%game, %client, %origin, %type,
+        %arg1, %arg2, %arg3, %arg4);
+}
+
+function TeamHuntersGame::processVote(%game, %client, %type, %passed,
+        %percentage, %arg1, %arg2, %arg3, %arg4)
+{
+	HuntersGame::processVote(%game, %client, %type, %passed, %percentage,
+            %arg1, %arg2, %arg3, %arg4);
+}
+
+function TeamHuntersGame::handleNewTimeLimit(%game, %newLimit)
+{
+    HuntersGame::handleNewTimeLimit(%game, %newLimit);
 }
 
 function TeamHuntersGame::throwFlags(%game, %player)
