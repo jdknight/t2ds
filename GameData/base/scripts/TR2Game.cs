@@ -84,7 +84,7 @@ $DamageType::OOB = 204;
 $InvincibleTime = 3;
 $TR2::validatingQueue = true;
 
-$TR2::JoinMotd = "<just:center><color:CDAD00>Team Rabbit 2 (<color:778899>build 095<color:CDAD00>)\n" @
+$TR2::JoinMotd = "<just:center><color:CDAD00>Team Rabbit 2 (<color:778899>build 095-t2ds<color:CDAD00>)\n" @
 						"Created by Codality, Inc.\nhttp://www.codality.com";
 
 

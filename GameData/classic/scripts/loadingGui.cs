@@ -205,7 +205,7 @@ function sendModInfoToClient(%client)
     else
         %nmis = "<color:556B2F>Next mission: <color:8FBC8F>Randomly selected";
 
-    %modName = "Classic  1.1";
+    %modName = "Classic  1.1-t2ds";
     %ModCnt = 1;
     %ModLine[0] = "<color:556B2F>Developers: <color:8FBC8F><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
 
