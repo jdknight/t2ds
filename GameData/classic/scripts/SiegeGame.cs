@@ -186,19 +186,9 @@ function SimGroup::findTurretBase(%this)
         %this.getObject(%i).findTurretBase();
 }
 
-function InteriorInstance::findTurretBase(%this)
+function SimObject::findTurretBase(%this)
 {
-    // sorry, we're not looking for interiors
-}
-
-function AIObjective::findTurretBase(%this)
-{
-    // prevent console error spam
-}
-
-function TSStatic::findTurretBase(%this)
-{
-    // prevent console error spam
+    // allows implementers to override a "findTurretBase" event
 }
 
 function GameBase::findTurretBase(%this)
@@ -207,11 +197,6 @@ function GameBase::findTurretBase(%this)
     // barrel gets replaced. :(So we have to save it again under "originalBarrel".
     if (%this.getDatablock().getName() $= "TurretBaseLarge")
         %this.originalBarrel = %this.initialBarrel;
-}
-
-function TSStatic::findTurretBase(%this)
-{
-    // prevent console error spam
 }
 
 function SiegeGame::selectSpawnSphere(%game, %team)
@@ -742,6 +727,11 @@ function SiegeGame::groupObjectRestore(%game, %this)
         %this.getObject(%i).objectRestore();
 }
 
+function SimObject::objectRestore(%this)
+{
+    // allows implementers to override a "objectRestore" event
+}
+
 function SiegeGame::shapeObjectRestore(%game, %object)
 {
     //if (%object.getDatablock().getName() $= FlipFlop)
@@ -770,26 +760,6 @@ function SiegeGame::shapeObjectRestore(%game, %object)
             }
         }
     }
-}
-
-function InteriorInstance::objectRestore(%this)
-{
-    // avoid console error spam
-}
-
-function Trigger::objectRestore(%this)
-{
-    // avoid console error spam
-}
-
-function TSStatic::objectRestore(%this)
-{
-    // avoid console error spam
-}
-
-function ForceFieldBare::objectRestore(%this)
-{
-    // avoid console error spam
 }
 
 // ------------------------------------------------------------------------
