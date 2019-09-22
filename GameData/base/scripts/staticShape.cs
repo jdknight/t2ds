@@ -110,6 +110,11 @@ function ShapeBaseData::onEndSequence()
 {
 }
 
+function ShapeBaseData::onPickup(%this, %obj, %player, %amount)
+{
+    // allows implementers to override an "onPickup" event
+}
+
 //******************************************************************************
 //* Example explosion
 //******************************************************************************

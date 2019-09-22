@@ -55,8 +55,3 @@ function MissileBarrelPackImage::onDeactivate(%data, %obj, %slot)
 {
     %obj.setImageTrigger($BackpackSlot, false);
 }
-
-function MissileBarrelPack::onPickup(%this, %obj, %shape, %amount)
-{
-	// created to prevent console errors
-}

@@ -726,8 +726,3 @@ function SatchelChargeThrown::damageObject(%data, %targetObject, %sourceObject,
         }
     }
 }
-
-function SatchelCharge::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}

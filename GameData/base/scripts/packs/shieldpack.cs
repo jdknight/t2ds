@@ -84,8 +84,3 @@ function ShieldPackImage::onDeactivate(%data, %obj, %slot)
     %obj.isShielded = "";
     commandToClient(%obj.client, 'setShieldIconOff');
 }
-
-function ShieldPack::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}

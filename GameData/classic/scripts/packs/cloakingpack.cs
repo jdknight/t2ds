@@ -137,11 +137,6 @@ function CloakingPackImage::onDeactivate(%data, %obj, %slot)
     commandToClient(%obj.client, 'setCloakIconOff');
 }
 
-function CloakingPack::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}
-
 function ShapeBaseData::onForceUncloak(%this, %obj, %reason)
 {
     // dummy

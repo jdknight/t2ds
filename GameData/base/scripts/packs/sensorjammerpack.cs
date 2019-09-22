@@ -106,8 +106,3 @@ function SensorJammerPackImage::onDeactivate(%data, %obj, %slot)
 
     %obj.setJammerFX(false);
 }
-
-function SensorJammerPack::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}

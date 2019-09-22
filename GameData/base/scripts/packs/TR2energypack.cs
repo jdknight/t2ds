@@ -66,8 +66,3 @@ function TR2EnergyPackImage::onDeactivate(%data, %obj, %slot)
     //%obj.isShielded = "";
     //commandToClient(%obj.client, 'setShieldIconOff');
 }
-
-function TR2EnergyPack::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}

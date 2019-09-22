@@ -43,8 +43,3 @@ function EnergyPackImage::onUnmount(%data, %obj, %node)
     %obj.setRechargeRate(%obj.getRechargeRate() - %data.rechargeRateBoost);
     %obj.hasEnergyPack = "";
 }
-
-function EnergyPack::onPickup(%this, %obj, %shape, %amount)
-{
-	// created to prevent console errors
-}

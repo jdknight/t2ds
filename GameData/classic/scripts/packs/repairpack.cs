@@ -662,8 +662,3 @@ function startRepairing(%player, %self)
         MissionCleanup.add(%player.repairProjectile);
     }
 }
-
-function RepairPack::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}

@@ -731,11 +731,6 @@ function SatchelChargeThrown::damageObject(%data, %targetObject, %sourceObject,
     }
 }
 
-function SatchelCharge::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}
-
 //**************************************************************
 // STICKY SATCHEL FUNCTIONS: z0dd - ZOD, 5/16/02
 //**************************************************************

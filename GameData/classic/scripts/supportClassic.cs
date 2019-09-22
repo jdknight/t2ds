@@ -62,16 +62,6 @@ function ForceFieldBareData::damageObject(%data, %targetObject, %position, %sour
     // created to prevent console errors
 }
 
-function ItemData::onPickup(%this, %obj, %player, %amount)
-{
-    // %this = Object datablock
-    // %obj = Object ID number
-    // %player = player
-    // %amount = amount picked up (1)
-
-    // Created to prevent console errors related to picking up items
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Random Teams code by Founder (founder@mechina.com) 6/13/02 ///////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////

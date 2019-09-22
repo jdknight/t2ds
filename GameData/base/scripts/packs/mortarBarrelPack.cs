@@ -55,8 +55,3 @@ function MortarBarrelPackImage::onDeactivate(%data, %obj, %slot)
 {
 	%obj.setImageTrigger($BackpackSlot, false);
 }
-
-function MortarBarrelPack::onPickup(%this, %obj, %shape, %amount)
-{
-	// created to prevent console errors
-}

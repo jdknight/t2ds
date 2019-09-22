@@ -53,8 +53,3 @@ function ELFBarrelPackImage::onDeactivate(%data, %obj, %slot)
 {
 	%obj.setImageTrigger($BackpackSlot, false);
 }
-
-function ELFBarrelPack::onPickup(%this, %obj, %shape, %amount)
-{
-	// created to prevent console errors
-}

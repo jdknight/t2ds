@@ -1304,21 +1304,6 @@ function TurretIndoorDeployableImage::getInitialRotation(%item, %plyr)
         %item.deployed = TurretDeployedFloorIndoor;
 }
 
-function TurretIndoorDeployable::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}
-
-function TurretOutdoorDeployable::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}
-
-function InventoryDeployable::onPickup(%this, %obj, %shape, %amount)
-{
-    // created to prevent console errors
-}
-
 // ---------------------------------------------------------------------------------------
 // deployed station functions
 function DeployedStationInventory::onEndSequence(%data, %obj, %thread)
