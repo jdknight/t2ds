@@ -14,8 +14,6 @@
 //    inv[Item] = Count of item in inventory
 //----------------------------------------------------------------------------
 
-$TestCheats = 0;
-
 function serverCmdUse(%client, %data)
 {
     // Item names from the client must converted
@@ -203,10 +201,7 @@ function ShapeBase::hasInventory(%this, %data)
 
 function ShapeBase::maxInventory(%this, %data)
 {
-    if ($TestCheats)
-        return 999;
-    else
-        return %this.getDatablock().max[%data.getName()];
+    return %this.getDatablock().max[%data.getName()];
 }
 
 function ShapeBase::incInventory(%this, %data, %amount)
@@ -537,42 +532,4 @@ function ShapeBase::selectWeaponSlot(%this, %data)
         return;
 
     %this.use(%this.weaponSlot[%data]);
-}
-
-//----------------------------------------------------------------------------
-
-function serverCmdGiveAll(%client)
-{
-    if ($TestCheats)
-    {
-        %player = %client.player;
-        %player.setInventory(RepairKit, 999);
-        %player.setInventory(Mine, 999);
-        //%player.setInventory(MineAir, 999);
-        //%player.setInventory(MineLand, 999);
-        //%player.setInventory(MineSticky, 999);
-        %player.setInventory(Grenade, 999);
-        %player.setInventory(FlashGrenade, 999);
-        %player.setInventory(FlareGrenade, 999);
-        %player.setInventory(ConcussionGrenade, 999);
-        %player.setInventory(CameraGrenade, 999);
-        %player.setInventory(Blaster, 1);
-        %player.setInventory(Plasma, 1);
-        %player.setInventory(Chaingun, 1);
-        %player.setInventory(Disc, 1);
-        %player.setInventory(GrenadeLauncher, 1);
-        %player.setInventory(SniperRifle, 1);
-        %player.setInventory(ELFGun, 1);
-        %player.setInventory(Mortar, 1);
-        %player.setInventory(MissileLauncher, 1);
-        %player.setInventory(ShockLance, 1);
-        %player.setInventory(TargetingLaser, 1);
-        %player.setInventory(MissileLauncherAmmo, 999);
-        %player.setInventory(GrenadeLauncherAmmo, 999);
-        %player.setInventory(MortarAmmo, 999);
-        %player.setInventory(PlasmaAmmo, 999);
-        %player.setInventory(ChaingunAmmo, 999);
-        %player.setInventory(DiscAmmo, 999);
-        %player.setInventory(Beacon, 999);
-    }
 }

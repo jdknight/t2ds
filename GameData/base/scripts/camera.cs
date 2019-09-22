@@ -525,15 +525,6 @@ function findPrevObserveClient(%client)
         return -1;
 }
 
-function observeClient(%client)
-{
-    if ($testcheats)
-    {
-        // pass in -1 to choose any client...
-        commandToServer('observeClient', %client);
-    }
-}
-
 function serverCmdObserveClient(%client, %target)
 {
     // clear the observer fly mode var...

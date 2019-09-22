@@ -5,5 +5,14 @@
 //------------------------------------------------------------------------------
 
 // suppress warnings on obsolete server commands
-function serverCmdGetTeamList(%client, %key) {}
-function serverCmdPlayAnim(%client, %anim) {}
+function serverCmdDropCameraAtPlayer() {}
+function serverCmdDropPlayerAtCamera() {}
+function serverCmdGetTeamList() {}
+function serverCmdGiveAll() {}
+function serverCmdPlayAnim() {}
+function serverCmdPlayCel() {}
+function serverCmdPlayDeath() {}
+function serverCmdToggleArmor() {}
+function serverCmdToggleCamera() {}
+function serverCmdToggleGender() {}
+function serverCmdToggleRace() {}
