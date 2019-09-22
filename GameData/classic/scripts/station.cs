@@ -342,7 +342,7 @@ function StationInventory::stationReady(%data, %obj)
 
 function StationInventory::beginPersonalInvEffect(%data, %obj)
 {
-    if (!%obj.isDisabled())
+    if (isObject(%obj) && !%obj.isDisabled())
     {
         %fx = new StationFXPersonal()
         {
