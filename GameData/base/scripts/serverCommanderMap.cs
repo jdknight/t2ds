@@ -105,6 +105,25 @@ function serverCmdControlObject(%client, %targetId)
 
     %client.setControlObject(%obj);
     commandToClient(%client, 'ControlObjectResponse', true, getControlObjectType(%obj));
+
+    // change turrets name to controller's name
+    if ((%obj.getType() & $TypeMasks::TurretObjectType) && !%client.isAIControlled())
+    {
+        %client.turretControl = %obj;
+
+        if (!%obj.originalTag)
+        {
+            %obj.originalTag = %obj.nameTag;
+        }
+
+        // reset the turrets target and build a new one
+        freeTarget(%obj.getTarget());
+        %obj.nameTag = addTaggedString(getTaggedString(%obj.nameTag) @
+            " (" @ %client.nameBase @ ")");
+        %obj.target = createTarget(%obj, %obj.nameTag, "", "",
+            %obj.getDatablock().targetTypeTag, %obj.team, 0);
+        setTargetSensorGroup(%obj.target, %obj.team);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -119,6 +138,27 @@ function resetControlObject(%client)
         %client.setControlObject(%client.player);
     else
         %client.setControlObject(%client.camera);
+
+    // restore a turret's name if its name was overridden by a controller
+    if (%client.turretControl !$= "")
+    {
+        %turret = %client.turretControl;
+        %client.turretControl = "";
+
+        if (isObject(%turret))
+        {
+            %obsoleteTag = %turret.nameTag;
+            %turret.nameTag = %turret.originalTag;
+
+            // reset the turret's target
+            freeTarget(%turret.getTarget());
+            %turret.target = createTarget(%turret, %turret.nameTag, "", "",
+                %turret.getDatablock().targetTypeTag, %turret.team, 0);
+            setTargetSensorGroup(%turret.target, %turret.team);
+
+            removeTaggedString(%obsoleteTag);
+        }
+    }
 }
 
 function serverCmdResetControlObject(%client)
