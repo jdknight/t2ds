@@ -52,7 +52,9 @@ function serverCmdTogglePack(%client, %data)
 
 function serverCmdThrowFlag(%client)
 {
-    //Game.playerDroppedFlag(%client.player);
+    if (!isObject(%client.player))
+        return;
+
     Game.dropFlag(%client.player);
 }
 

@@ -1885,6 +1885,11 @@ function DefaultGame::onClientEnterObserverMode(%game, %client)
     // Default game doesn't care...
 }
 
+function DefaultGame::dropFlag(%game, %player)
+{
+    // allows implementers to override a "dropFlag" event
+}
+
 // from 'item.cs'
 function DefaultGame::playerTouchFlag(%game, %player, %flag)
 {
