@@ -43,7 +43,7 @@ function serverCmdControlObject(%client, %targetId)
     }
 
     // can control:
-    if (!%obj.getDataBlock().canControl)
+    if (!%obj.getDataBlock().canControl || %obj.getMountedImage(0).restrictControl)
     {
         commandToClient(%client, 'ControlObjectResponse', false,
             "object cannot be controlled.");

@@ -113,6 +113,8 @@ datablock TurretImageData(MissileBarrelLarge)
     emap = true;
     minTargetingDistance = 40;
 
+    restrictControl = true;
+
     // Turret parameters
     activationMS      = 175; // z0dd - ZOD, 3/27/02. Was 250. Amount of time it takes turret to unfold
     deactivateDelayMS = 500;

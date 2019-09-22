@@ -43,7 +43,7 @@ function serverCmdControlObject(%client, %targetId)
     }
 
     // can control:
-    if (!%obj.getDataBlock().canControl || %obj.getMountedImage(0).getName() $= "MissileBarrelLarge") // z0dd - ZOD 4/18/02. Prevent missile barrels from being controlled
+    if (!%obj.getDataBlock().canControl || %obj.getMountedImage(0).restrictControl) // z0dd - ZOD 4/18/02. Prevent missile barrels from being controlled
     {
         commandToClient(%client, 'ControlObjectResponse', false,
             "object cannot be controlled.");
