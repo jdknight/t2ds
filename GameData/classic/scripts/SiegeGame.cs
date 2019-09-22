@@ -71,7 +71,6 @@ function FlipFlop::playerTouch(%data, %flipflop, %player)
         '\c2%1 captured the %2 base!~wfx/misc/flipflop_lost.wav',
         %player.client.name, $TeamName[%defTeam]);
 
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") captured team "@%defTeam@" base");
     Game.allObjectivesCompleted();
 }
 
@@ -248,7 +247,6 @@ function SiegeGame::allObjectivesCompleted(%game)
         // game is over
         messageAll('MsgSiegeMisDone', '\c2Mission complete.');
     }
-    logEcho("objective completed in "@%game.timeLimitMS);
 
     //setup the second half...
     // MES -- per MarkF, scheduling for 0 seconds will prevent player deletion-related crashes
@@ -276,7 +274,6 @@ function SiegeGame::timeLimitReached(%game)
         messageAll('MsgSiegeMisDone', '\c2Mission complete.');
     }
 
-    logEcho("time limit reached");
     %game.halftime('time');
 }
 
@@ -325,7 +322,6 @@ function SiegeGame::startSecondHalf(%game)
         %game.timeSync = %game.schedule(20000, "checkTimeLimit");
     else
         %game.timeSync = %game.schedule(%game.timeLimitMS, "checkTimeLimit");
-    logEcho("start second half");
 
     EndCountdown(%game.timeLimitMS);
 

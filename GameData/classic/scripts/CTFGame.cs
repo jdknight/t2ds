@@ -362,7 +362,6 @@ function SimObject::clearFlagWaypoints(%this)
 
 function WayPoint::clearFlagWaypoints(%this)
 {
-    logEcho("Removing flag waypoint: " @ %this);
     if (%this.nameTag $= "Flag")
         %this.delete();
 }
@@ -466,7 +465,6 @@ function CTFGame::missionLoadDone(%game)
     $dontScoreTimer[1] = false;
     $dontScoreTimer[2] = false;
 
-    echo("starting camp thread...");
     %game.campThread_1 = schedule(1000, 0, "checkVehicleCamping", 1);
     %game.campThread_2 = schedule(1000, 0, "checkVehicleCamping", 2);
 }
@@ -569,7 +567,6 @@ function CTFGame::playerTouchEnemyFlag(%game, %player, %flag)
     messageClient(%client, 'MsgCTFFlagTaken',
         '\c2You took the %2 flag.~wfx/misc/flag_snatch.wav',
         %client.name, %teamName, %flag.team, %client.nameBase);
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") took team "@%flag.team@" flag");
 
     // call the AI function
     %game.AIplayerTouchEnemyFlag(%player, %flag);
@@ -639,7 +636,6 @@ function CTFGame::playerDroppedFlag(%game, %player)
             '\c2You dropped the %2 flag. (Held: %4)~wfx/misc/flag_drop.wav',
             %client.name, %teamName, %flag.team, %held); // z0dd - ZOD, 8/15/02. How long flag was held
                                                          // Yogi, 8/18/02. 3rd param changed 0 -> %client.name
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") dropped team "@%flag.team@" flag"@" (Held: "@%held@")");
 
     // don't duplicate the schedule if there's already one in progress...
     if ($FlagReturnTimer[%flag] <= 0)
@@ -674,7 +670,6 @@ function CTFGame::flagCap(%game, %player)
         '\c2You captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav',
         %client.name, %teamName, %flag.team, %client.team, %held); // Yogi, 8/18/02.  3rd param changed 0 -> %client.name
 
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") capped team "@%client.team@" flag"@" (Held: "@%held@")");
     %player.holdingFlag = ""; // no longer holding it.
     %player.unMountImage($FlagSlot);
     %game.awardScoreFlagCap(%client, %flag);
@@ -734,7 +729,6 @@ function CTFGame::flagReturn(%game, %flag, %player)
         messageClient(%client, 'MsgCTFFlagReturned',
             '\c2You returned your flag.~wfx/misc/flag_return.wav',
             %client.name, %teamName, %flag.team); // Yogi, 8/18/02. 3rd param changed 0 -> %client.name
-        logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") returned team "@%flag.team@" flag");
 
         if (%game.stalemate)
         {
@@ -764,7 +758,6 @@ function CTFGame::flagReturn(%game, %flag, %player)
         messageTeam(0, 'MsgCTFFlagReturned',
             '\c2The %2 flag was returned to base.~wfx/misc/flag_return.wav',
             0, %teamName, %flag.team);
-        logEcho("team "@%flag.team@" flag returned (timeout)");
     }
 
     %game.flagReset(%flag);
@@ -880,14 +873,12 @@ function CTFGame::flagReset(%game, %flag)
 
 function CTFGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
 
 function CTFGame::scoreLimitReached(%game)
 {
-    logEcho("game over (scorelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -1938,7 +1929,6 @@ function CTFGame::enterMissionArea(%game, %playerData, %player)
     %player.client.outOfBounds = false;
     messageClient(%player.client, 'EnterMissionArea',
         '\c1You are back in the mission area.');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") entered mission area");
 
     // the instant a player leaves the mission boundary, the flag is dropped,
     // and the return is scheduled...
@@ -1963,7 +1953,6 @@ function CTFGame::leaveMissionArea(%game, %playerData, %player)
     else
         messageClient(%player.client, 'MsgLeaveMissionArea',
             '\c1You have left the mission area.~wfx/misc/warning_beep.wav');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") left mission area");
 }
 
 function CTFGame::boundaryLoseFlag(%game, %player)
@@ -2019,7 +2008,6 @@ function CTFGame::boundaryLoseFlag(%game, %player)
     messageClient(%player.client, 'MsgCTFFlagDropped',
         '\c1You have left the mission area and lost the flag. (Held: %4)~wfx/misc/flag_drop.wav',
         %client.name, 0, %flag.team, %held); // Yogi, 8/18/02. 3rd param changed 0 -> %client.name
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") lost flag (out of bounds)"@" (Held: "@%held@")");
 }
 
 function CTFGame::dropFlag(%game, %player)

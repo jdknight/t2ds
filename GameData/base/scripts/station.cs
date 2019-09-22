@@ -682,7 +682,6 @@ function StationVehiclePad::onAdd(%this, %obj)
 
     // z0dd - ZOD - Founder. Schedule the vehicle station creation.
     // Don't create the station if the pad is hidden by the current mission type.
-    //error("CURRENT MISSION TYPE: " @ $CurrentMissionType @ ", ALLOWED TYPE: " @ %obj.missionTypesList);
     if ($CurrentMissionType $= %obj.missionTypesList || %obj.missionTypesList $= "")
         %this.schedule(0, "createStationVehicle", %obj);
 }

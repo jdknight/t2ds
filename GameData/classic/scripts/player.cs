@@ -2055,15 +2055,6 @@ function Armor::onAdd(%data, %obj)
 
 function Armor::onRemove(%this, %obj)
 {
-    //Frohny asked me to remove this - all players are deleted now on
-    //mission cycle...
-    //if (%obj.getState() !$= "Dead")
-    //{
-    //   error("ERROR PLAYER REMOVED WITHOUT DEATH - TRACE:");
-    //   trace(1);
-    //   schedule(0,0,trace,0);
-    //}
-
     if (%obj.client.player == %obj)
         %obj.client.player = 0;
 }
@@ -3030,7 +3021,6 @@ function Player::setArmor(%this, %size)
         %armor = %size @ "Male" @ %client.race @ Armor;
     else
         %armor = %size @ %client.sex @ %client.race @ Armor;
-    //echo("Player::armor: " @ %armor);
     %this.setDataBlock(%armor);
     %client.armor = %size;
 }

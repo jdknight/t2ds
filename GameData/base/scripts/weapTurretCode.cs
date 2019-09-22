@@ -282,8 +282,6 @@ function VehicleTurret::onEndSequence(%data, %obj, %thread)
 
 function BomberTurret::onTrigger(%data, %obj, %trigger, %state)
 {
-    //error("onTrigger: trigger = " @ %trigger @ ", state = " @ %state);
-    //error("obj = " @ %obj @ ", class " @ %obj.getClassName());
     switch (%trigger)
     {
     case 0:
@@ -909,7 +907,6 @@ function MineDeployed::onCollision(%data, %obj, %col)
     %struck = %col.getClassName();
     if (%struck $= "Player" || %struck $= "WheeledVehicle" || %struck $= "FlyingVehicle")
     {
-        //error("Mine detonated due to collision with #"@%col@" ("@%struck@"); armed = "@%obj.armed);
         explodeMine(%obj, false);
     }
 }

@@ -257,7 +257,6 @@ function VehicleData::onDestroyed(%data, %obj, %prevState)
             %zVel = (getRandom() * 100.0) + 50.0;
             %flingVel = %xVel @ " " @ %yVel @ " " @ %zVel;
             %flingee.applyImpulse(%flingee.getTransform(), %flingVel);
-            echo("got player..." @ %flingee.getClassName());
             %flingee.damage(0, %obj.getPosition(), 0.4, $DamageType::Crash);
         }
     }

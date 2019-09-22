@@ -837,7 +837,6 @@ function ShapeBase::throwObject(%this, %obj)
         //%flag.applyImpulse(%flag.getPosition(), %newVel);
         %vec = vectorScale(%vec, $TR2_GeneralFlagBoost);
         //%vec = %newVel;
-        //echo("applying flag impulse:  " @ %vec);
 
         // Remember the throw velocity in case T2's flag re-catch bug rears
         // its ugly head, and we need to re-boost it

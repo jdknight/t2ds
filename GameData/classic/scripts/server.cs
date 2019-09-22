@@ -8,13 +8,6 @@ $Classic::gravSetting = -26.9; // z0dd - ZOD, 9/13/02. Classic Gravity setting
 $Classic::cameraSpeed = 50;
 $Camera::movementSpeed = $Classic::cameraSpeed; // z0dd - ZOD, 9/13/02. Classic camera speed.
 
-function logEcho(%msg)
-{
-    // z0dd - ZOD, 4/10/02. Changed from $ClassicLogEchoEnabled, allow server owners to modify
-    if ($Host::ClassicLogEchoEnabled)
-        echo("LOG: " @ %msg);
-}
-
 //--------------------------------------------------------------------------
 // z0dd - ZOD, 3/27/02. Auto restart server after specified time
 
@@ -25,7 +18,7 @@ function AutoRestart()
         $AutoRestart = 1;
         centerPrintAll("<color:ff0000><font:Arial:12>SERVER WILL BE AUTO REBOOTING NEXT MISSION.", 5, 1);
         messageAll('MsgServerRestart', '\c2SERVER WILL BE AUTO REBOOTING NEXT MISSION.~wfx/misc/red_alert.wav');
-        logEcho("Automatic server restart on mission end beginning.");
+        error("automatic server restart on next mission");
     }
     else
         schedule(300000, 0, "AutoRestart"); // Check back in 5 minutes
@@ -130,8 +123,6 @@ function CreateServer(%mission, %missionType)
 
 function initGameBots(%mission, %mType)
 {
-    echo("adding bots...");
-
     AISystemEnabled(false);
     if ($Host::BotCount > 0)
     {
@@ -205,7 +196,7 @@ function findNextCycleMission()
 
 function CycleMissions()
 {
-    echo("cycling mission. " @ ClientGroup.getCount() @ " clients in game.");
+    echo("cycling mission (" @ ClientGroup.getCount() @ " clients in game)");
     %nextMission = findNextCycleMission();
     messageAll('MsgClient', 'Loading %1 (%2)...',
         %nextMission, $MissionTypeDisplayName);
@@ -418,7 +409,6 @@ function GameConnection::onConnect(%client, %name, %raceGender, %skin, %voice,
         %client.sex = "Male";
         %client.race = "Bioderm";
     default:
-        error("Invalid race/gender combo passed: " @ %raceGender);
         %client.sex = "Male";
         %client.race = "Human";
     }
@@ -741,7 +731,7 @@ function loadMission(%missionName, %missionType, %firstMission)
         $AutoRestart = 0;
         messageAll('MsgServerRestart',
             '\c2SERVER IS AUTO REBOOTING! COME BACK IN 5 MINUTES.~wfx/misc/red_alert.wav');
-        logEcho("Auto server restart commencing.");
+        error("auto-server restart commencing...");
         //schedule(10000, 0, "CreateServer", %missionName, %missionType); // this wasn't working as a cure for servers with NULLs
         schedule(10000, 0, quit);
     }
@@ -841,7 +831,6 @@ function loadMissionStage1(%missionName, %missionType, %firstMission)
 function loadMissionStage2()
 {
     // create the mission group off the ServerGroup
-    echo("Stage 2 load");
     $instantGroup = ServerGroup;
 
     new SimGroup (MissionCleanup);
@@ -888,7 +877,7 @@ function loadMissionStage2()
     // pre-game mission stuff
     if (!isObject(MissionGroup))
     {
-        error("No 'MissionGroup' found in mission \"" @ $missionName @ "\".");
+        error("no 'MissionGroup' found in mission \"" @ $missionName @ "\"");
         schedule(3000, ServerGroup, CycleMissions);
         return;
     }
@@ -1003,7 +992,6 @@ function serverCmdMissionStartPhase1Done(%client, %seq)
 
 function GameConnection::dataBlocksDone(%client, %missionSequence)
 {
-    echo("GOT DATA BLOCKS DONE FOR: " @ %client);
     if (%missionSequence != $missionSequence)
         return;
 
@@ -1186,7 +1174,6 @@ function serverCmdSAD(%client, %password)
             %client.isSuperAdmin = true;
             messageAll('MsgSuperAdminPlayer',
                 '\c2%2 has become a Super Admin by force.', %client, %name);
-            logEcho(%client.nameBase @ " has become a Super Admin by force.");
         }
 
     case $Host::AdminPassword:
@@ -1207,7 +1194,6 @@ function serverCmdSAD(%client, %password)
             %client.isAdmin = true;
             %client.isSuperAdmin = false;
             messageAll('MsgAdminForce', '\c2%2 has become a Admin by force.', %client, %name);
-            logEcho(%client.nameBase @ " has become an Admin by force.");
         }
 
     default:
@@ -1228,7 +1214,6 @@ function serverCmdSAD(%client, %password)
             %client.setDisconnectReason('For attempting to exploit SAD to gain unauthorized Admin by entering\ntoo many passwords, you are being Banned.');
             %client.schedule(700, "delete");
             BanList::add(%client.guid, %client.getAddress(), $Host::BanTime);
-            logEcho(%client.nameBase @ " " @ %client.guid @ " has been banned for excessive use of SAD");
         }
     }
 }
@@ -1350,14 +1335,12 @@ function serverCmdSet(%client, %type, %val)
         messageClient(%client, 'MsgSuperPassword',
             '\c2\"Super Admin\" PW changed to: \c3%1\c2.',
             addTaggedString(%val));
-        logEcho(%client.nameBase @ " changed the Super Admin password.");
 
     case "adminpw":
         $Host::AdminPassword = %val;
         export("$Host::*", "prefs/ServerPrefs.cs", false);
         messageClient(%client, 'MsgAdminPassword',
             '\c2\"Admin\" PW changed to: \c3%1\c2.', addTaggedString(%val));
-        logEcho(%client.nameBase @ " changed the Admin password.");
 
     case "joinpw":
         if (%val $= "remove")
@@ -1374,7 +1357,6 @@ function serverCmdSet(%client, %type, %val)
         else
             messageClient(%client, 'MsgServerPassword',
                 '\c2Join PW changed to: \c3%1\c2.', addTaggedString(%val));
-        logEcho(%client.nameBase @ " changed the join password.");
 
     case "maxplayers":
         if (isNumber(%val) && %val > 0)
@@ -1384,7 +1366,6 @@ function serverCmdSet(%client, %type, %val)
             messageAll('MsgMaxPlayersSet',
                 '\c3%1\c2: PLAYER LIMIT CHANGED TO: \c3%2\c2.~wfx/misc/diagnostic_on.wav',
                 %name, %val);
-            logEcho(%client.nameBase @ " changed the Player Limit.");
         }
         else
         {
@@ -1409,7 +1390,6 @@ function serverCmdSet(%client, %type, %val)
             schedule(20000, 0, "messageAll", 'MsgServerRestart',
                 '\c2SERVER WILL REBOOT IN 10 SECONDS!.~wfx/misc/hunters_10.wav');
             schedule(30000, 0, quit);
-            logEcho(%client.nameBase @ " forced a server restrart.");
         }
         else
         {
@@ -1432,7 +1412,6 @@ function serverCmdSet(%client, %type, %val)
             messageAll('MsgRandomTeams',
                 '\c3%1\c2: RANDOM TEAMS %2. Changes will take place next mission.~wfx/misc/diagnostic_on.wav',
                 %name, %detail);
-            logEcho(%client.nameBase @ " " @ %detail @ " random teams.");
         }
         else
         {
@@ -1456,7 +1435,6 @@ function serverCmdSet(%client, %type, %val)
             messageAll('MsgRandomTeams',
                 '\c3%1\c2: FAIR TEAMS %2.~wfx/misc/diagnostic_on.wav',
                 %name, %detail);
-            logEcho(%client.nameBase @ " " @ %detail @ " fair teams.");
         }
         else
         {
@@ -1516,7 +1494,6 @@ function serverCmdAutoPWSetup(%client, %type, %val)
         {
             $Host::ClassicAutoPWEnabled = 1;
             messageClient(%client, 'MsgAdmin', '\c2Auto-password enabled.');
-            logEcho(%client.nameBase @ " enabled Auto-password.");
         }
         else
         {
@@ -1539,7 +1516,6 @@ function serverCmdAutoPWSetup(%client, %type, %val)
         messageClient(%client, 'MsgServerPassword',
             '\c2Server Auto-password PW changed to: \c3%1\c2.',
             addTaggedString(%val));
-        logEcho(%client.nameBase @ " changed the Auto-password PW.");
 
     case "autopwcount":
         if (%val !$= "" && %val !$= "0")
@@ -1557,7 +1533,6 @@ function serverCmdAutoPWSetup(%client, %type, %val)
         messageClient(%client, 'MsgServerPassword',
             '\c2Server Auto-password player count changed to: \c3%1\c2.',
             addTaggedString(%val));
-        logEcho(%client.nameBase @ " changed the Auto-password player count.");
     }
 }
 
@@ -2103,11 +2078,6 @@ function getServerStatusString()
     return isObject(Game) ? Game.getServerStatusString() : "NoGame";
 }
 
-function dumpGameString()
-{
-    error(getServerStatusString());
-}
-
 function isOnAdminList(%client)
 {
     if (!%totalRecords = getFieldCount($Host::AdminList))
@@ -2163,7 +2133,6 @@ function serverCmdAddToAdminList(%admin, %client)
     messageClient(%admin, 'MsgAdmin',
         '\c3\"%1\"\c2 added to Admin list: \c3%2\c2.',
         getTaggedString(%client.name), %client.guid);
-    logEcho(getTaggedString(%admin.name) @ " added " @ getTaggedString(%client.name) @ " " @ %client.guid @ " to Admin list.");
 }
 
 function serverCmdAddToSuperAdminList(%admin, %client)
@@ -2191,7 +2160,6 @@ function serverCmdAddToSuperAdminList(%admin, %client)
     messageClient(%admin, 'MsgAdmin',
         '\c3\"%1\"\c2 added to Super Admin list: \c3%2\c2.',
         getTaggedString(%client.name), %client.guid);
-    logEcho(getTaggedString(%admin.name) @ " added " @ getTaggedString(%client.name) @ " " @ %client.guid @ " to Super Admin list.");
 }
 
 function setModeFFA(%mission, %missionType)
@@ -2385,8 +2353,6 @@ function Countdown(%timeMS)
     if ($countdownStarted)
         return;
 
-    echo("starting mission countdown...");
-
     if (isObject(Game))
         %game = Game.getId();
     else
@@ -2418,8 +2384,6 @@ function Countdown(%timeMS)
 
 function EndCountdown(%timeMS)
 {
-    echo("mission end countdown...");
-
     if (isObject(Game))
         %game = Game.getId();
     else
@@ -2512,7 +2476,7 @@ function CancelEndCountdown()
 function resetServerDefaults()
 {
     $resettingServer = true;
-    echo("Resetting server defaults...");
+    echo("resetting server defaults...");
 
     if (isObject(Game))
         Game.gameOver();
@@ -2554,7 +2518,7 @@ function resetServerDefaults()
     // load the missions
     loadMission($Host::Map, $Host::MissionType);
     $resettingServer = false;
-    echo("Server reset complete.");
+    echo("server reset complete");
 }
 
 function removeAllBots()

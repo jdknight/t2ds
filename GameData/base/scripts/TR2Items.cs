@@ -103,7 +103,6 @@ datablock StaticShapeData(Launcher)
 
 function Launcher::onCollision(%this, %obj, %col)
 {
-    //echo("LAUNCHER:  " @ %col);
     %newVel = %col.getVelocity();
     %normVel = VectorNormalize(%newVel);
     %speed = %col.getSpeed();

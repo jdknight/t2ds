@@ -63,7 +63,7 @@ function allocClientTarget(%client, %nameTag, %skinTag, %voiceTag, %typeTag,
 {
     if (%voicePitch $= "" || %voicePitch == 0)
         %voicePitch = 1.0;
-    echo("allocating client target - skin = " @ getTaggedString(%skinTag));
+
     %target = allocTarget(%nameTag, %skinTag, %voiceTag, %typeTag, %sensorGroup,
         %datablock, %voicePitch, %skinTag);
 

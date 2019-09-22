@@ -165,7 +165,7 @@ function TR2Game::trySetRole(%game, %player, %role)
         // Debug the decrement
         if ($numPlayers[%player.client.currentRole @ %team] < 0)
         {
-            echo("**ROLE CHANGE ERROR:  negative role count");
+            error("**ROLE CHANGE ERROR:  negative role count");
             $numPlayers[%player.client.currentRole @ %team] = 0;
         }
     }

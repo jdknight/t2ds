@@ -17,10 +17,7 @@ function serverCmdCannedChat(%client, %command, %fromAI)
         %cmdString = getTaggedString(%cmdCode);
 
     if (!isObject($ChatTable[%cmdId]))
-    {
-        error(%cmdString @ " is not a recognized canned chat command.");
         return;
-    }
 
     %chatItem = $ChatTable[%cmdId];
 

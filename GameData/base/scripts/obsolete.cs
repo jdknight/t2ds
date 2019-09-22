@@ -16,3 +16,6 @@ function serverCmdToggleArmor() {}
 function serverCmdToggleCamera() {}
 function serverCmdToggleGender() {}
 function serverCmdToggleRace() {}
+
+// misc.
+function logEcho() {}

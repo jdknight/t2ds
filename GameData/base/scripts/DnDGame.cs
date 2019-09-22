@@ -545,14 +545,12 @@ function DnDGame::getScoreLimit(%game, %team)
 
 function DnDGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
 
 function DnDGame::scoreLimitReached(%game)
 {
-    logEcho("game over (scorelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -883,7 +881,6 @@ function DnDGame::awardScoreVehicleDestroyed(%game, %client, %vehicleType,
 
 function DnDGame::shareScore(%game, %client, %amount)
 {
-    //error("share score of"SPC %amount SPC "from client:" SPC %client);
     // all of the player in the bomber and tank share the points
     // gained from any of the others
     %vehicle = %client.vehicleMounted;
@@ -1336,7 +1333,6 @@ function DnDGame::enterMissionArea(%game, %playerData, %player)
     %player.client.outOfBounds = false;
     messageClient(%player.client, 'EnterMissionArea',
         '\c1You are back in the mission area.');
-    logEcho(%player.client.nameBase @ " (pl " @ %player @ "/cl "@%player.client @ ") entered mission area");
     cancel(%player.alertThread);
 }
 
@@ -1348,7 +1344,6 @@ function DnDGame::leaveMissionArea(%game, %playerData, %player)
     %player.client.outOfBounds = true;
     messageClient(%player.client, 'LeaveMissionArea',
         '\c1You have left the mission area. Return or take damage.~wfx/misc/warning_beep.wav');
-    logEcho(%player.client.nameBase @ " (pl " @ %player @ "/cl " @ %player.client @ ") left mission area");
     %player.alertThread = %game.schedule(1000, "DMAlertPlayer", 3, %player);
 }
 

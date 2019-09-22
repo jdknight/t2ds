@@ -43,7 +43,6 @@ $Host::ClassicTelnet = 0;                             // Enable/disable Telnet a
 $Host::ClassicTelnetPort = 666;                       // Telnet port, must be open on host
 $Host::ClassicTelnetPassword = "FullAccessPassword";  // Full access telnet password, can send commands to server
 $Host::ClassicTelnetListenPass = "ListenOnyPassword"; // Read only telnet password, cannot send commands to server
-$Host::ClassicLogEchoEnabled = 0;                     // Print special messages to server console
 $Host::ClassicRandomMissions = 0;                     // Randomly load missions of the same type
 $Host::ClassicMaxTelepads = 3;                        // How many special practice CTF pads each player gets
 $Host::ClassicRandomizeTeams = 0;                     // Random team selection for players

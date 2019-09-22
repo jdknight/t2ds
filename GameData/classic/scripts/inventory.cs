@@ -175,9 +175,6 @@ function ShapeBase::throw(%this, %data)
 
 function ShapeBase::use(%this, %data)
 {
-    //if (%data.class $= "Weapon") {
-    // error("ShapeBase::use " @ %data);
-    //}
     if (%data $= Grenade)
     {
         // figure out which grenade type you're using

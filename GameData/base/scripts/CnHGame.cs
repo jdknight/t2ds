@@ -94,14 +94,12 @@ function CnHGame::getScoreLimit(%game)
 
 function CnHGame::scoreLimitReached(%game)
 {
-    logEcho("game over (scorelimit)");
     %game.gameOver();
     cycleMissions();
 }
 
 function CnHGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -390,11 +388,6 @@ function CnHGame::awardScoreTeamFFHold(%game, %team, %this)
         messageAll('MsgCnHTeamCap', "", $TeamName[%team],
             %game.SCORE_PER_TEAM_FLIPFLOP_HOLD, %game.cleanWord(%this.name),
             %team, $teamScore[%team], %sLimit);
-
-    // if either team's score is divisible by 100, send a console log message
-    if (($TeamScore[%team] / 100) == (mFloor($TeamScore[%team] / 100)))
-        for (%i = 1; %i <= %game.numTeams; %i++)
-            logEcho("team "@%i@" score "@$TeamScore[%i]);
 
     %game.checkScoreLimit(%team);
 

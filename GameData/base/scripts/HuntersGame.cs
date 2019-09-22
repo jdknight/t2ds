@@ -295,7 +295,6 @@ function HuntersGame::notifyHoardStart(%game, %seconds)
         {
             messageAll('MsgHuntHoardNotifyStarted',
                 '\c2The HOARD period has begun.~wfx/misc/hunters_horde.wav');
-            logEcho("hoard mode start");
             %game.setNexusDisabled();
             cancel(%game.greedNexusFlash);
         }
@@ -317,7 +316,6 @@ function HuntersGame::notifyHoardEnd(%game, %seconds)
         {
             messageAll('MsgHuntersHoardNotifyEnded',
                 '\c2The HOARD period has ended!~wfx/misc/hunters_greed.wav');
-            logEcho("hoard mode end");
             %game.setNexusEnabled();
             cancel(%game.greedNexusFlash);
         }
@@ -643,9 +641,6 @@ function HuntersGame::playerTouchFlag(%game, %player, %flag)
             %game.flagMsgDelayMS, "sendFlagCountMessage", %client);
         messageClient(%client, 'MsgHuntYouHaveFlags', "", %client.flagCount - 1);
 
-        // update the log...
-        logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") has "@%client.flagCount-1@" flags");
-
         // play the sound pickup in 3D
         %player.playAudio(0, HuntersFlagPickupSound);
 
@@ -706,7 +701,6 @@ function HuntersGame::checkTimeLimit(%game)
 
 function HuntersGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -894,14 +888,12 @@ function Nexus::onCollision(%data, %obj, %colObj)
         if (Game.teamMode)
         {
             $teamScore[%client.team] += %totalScore;
-            logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") score "@%numToScore@" flags worth "@%totalScore@" pts for team "@%client.team);
             messageAll('MsgTeamScoreIs', "", %client.team, $teamScore[%client.team]);
             Game.recalcTeamRanks(%client.team);
         }
         else
         {
             %client.flagPoints += %totalScore;
-            logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") score "@%numToScore@" flags worth "@%totalScore@" pts");
             Game.recalcScore(%client);
 
             // see if we should set the highest for the mission here
@@ -1610,8 +1602,6 @@ function HuntersGame::dropFlag(%game, %player)
         messageClient(%client, 'MsgHuntYouDroppedFlags',
             '\c0You dropped %1 flags.', %numFlags);
     }
-
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") dropped "@%numFlags@" flags");
 }
 
 function HuntersGame::enterMissionArea(%game, %playerData, %player)
@@ -1624,7 +1614,6 @@ function HuntersGame::enterMissionArea(%game, %playerData, %player)
     cancel(%client.oobSched);
     messageClient(%player.client, 'MsgEnterMissionArea',
         '\c1You are back in the mission area.');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") entered mission area");
     cancel(%player.alertThread);
 }
 
@@ -1644,7 +1633,6 @@ function HuntersGame::leaveMissionArea(%game, %playerData, %player)
             '\c1You have left the mission area.~wfx/misc/warning_beep.wav');
 
     %client.oobSched = %game.schedule(%game.oobThrowFlagsDelayMS, "outOfBoundsThrowFlags", %client);
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") left mission area");
 }
 
 function HuntersGame::outOfBoundsThrowFlags(%game, %client)

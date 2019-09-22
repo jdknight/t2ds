@@ -14,12 +14,6 @@ function serverCMDpracticeHudInitialize(%client, %val)
     // Thou shall not spam
 }
 
-function logEcho(%msg)
-{
-    if ($LogEchoEnabled)
-        echo("LOG: " @ %msg);
-}
-
 function CreateServer(%mission, %missionType)
 {
     DestroyServer();
@@ -105,8 +99,6 @@ function CreateServer(%mission, %missionType)
 
 function initGameBots(%mission, %mType)
 {
-    echo("adding bots...");
-
     AISystemEnabled(false);
     if ($Host::BotCount > 0)
     {
@@ -180,7 +172,7 @@ function findNextCycleMission()
 
 function CycleMissions()
 {
-    echo("cycling mission. " @ ClientGroup.getCount() @ " clients in game.");
+    echo("cycling mission (" @ ClientGroup.getCount() @ " clients in game)");
     %nextMission = findNextCycleMission();
     messageAll('MsgClient', 'Loading %1 (%2)...',
         %nextMission, $MissionTypeDisplayName);
@@ -393,7 +385,6 @@ function GameConnection::onConnect(%client, %name, %raceGender, %skin, %voice,
         %client.sex = "Male";
         %client.race = "Bioderm";
     default:
-        error("Invalid race/gender combo passed: " @ %raceGender);
         %client.sex = "Male";
         %client.race = "Human";
     }
@@ -763,7 +754,6 @@ function loadMissionStage1(%missionName, %missionType, %firstMission)
 function loadMissionStage2()
 {
     // create the mission group off the ServerGroup
-    echo("Stage 2 load");
     $instantGroup = ServerGroup;
 
     new SimGroup (MissionCleanup);
@@ -810,7 +800,7 @@ function loadMissionStage2()
     // pre-game mission stuff
     if (!isObject(MissionGroup))
     {
-        error("No 'MissionGroup' found in mission \"" @ $missionName @ "\".");
+        error("no 'MissionGroup' found in mission \"" @ $missionName @ "\"");
         schedule(3000, ServerGroup, CycleMissions);
         return;
     }
@@ -921,7 +911,6 @@ function serverCmdMissionStartPhase1Done(%client, %seq)
 
 function GameConnection::dataBlocksDone(%client, %missionSequence)
 {
-    echo("GOT DATA BLOCKS DONE FOR: " @ %client);
     if (%missionSequence != $missionSequence)
         return;
 
@@ -1102,7 +1091,6 @@ function serverCmdSADSetPassword(%client, %password)
         export("$Host::*", "prefs/ServerPrefs.cs", false);
         messageClient(%client, 'MsgAdmin',
             '\c2\"Super Admin\" PW changed to: \c3%1\c2.', %password);
-        logEcho(getTaggedString(%client.name) @ " changed Super Admin password to: " @ %password);
     }
 }
 
@@ -1555,11 +1543,6 @@ function getServerStatusString()
     return isObject(Game) ? Game.getServerStatusString() : "NoGame";
 }
 
-function dumpGameString()
-{
-    error(getServerStatusString());
-}
-
 function isOnAdminList(%client)
 {
     if (!%totalRecords = getFieldCount($Host::AdminList))
@@ -1615,7 +1598,6 @@ function serverCmdAddToAdminList(%admin, %client)
     messageClient(%admin, 'MsgAdmin',
         '\c3\"%1\"\c2 added to Admin list: \c3%2\c2.',
         getTaggedString(%client.name), %client.guid);
-    logEcho(getTaggedString(%admin.name) @ " added " @ getTaggedString(%client.name) @ " " @ %client.guid @ " to Admin list.");
 }
 
 function serverCmdAddToSuperAdminList(%admin, %client)
@@ -1643,7 +1625,6 @@ function serverCmdAddToSuperAdminList(%admin, %client)
     messageClient(%admin, 'MsgAdmin',
         '\c3\"%1\"\c2 added to Super Admin list: \c3%2\c2.',
         getTaggedString(%client.name), %client.guid);
-    logEcho(getTaggedString(%admin.name) @ " added " @ getTaggedString(%client.name) @ " " @ %client.guid @ " to Super Admin list.");
 }
 
 function setModeFFA(%mission, %missionType)
@@ -1837,8 +1818,6 @@ function Countdown(%timeMS)
     if ($countdownStarted)
         return;
 
-    echo("starting mission countdown...");
-
     if (isObject(Game))
         %game = Game.getId();
     else
@@ -1870,8 +1849,6 @@ function Countdown(%timeMS)
 
 function EndCountdown(%timeMS)
 {
-    echo("mission end countdown...");
-
     if (isObject(Game))
         %game = Game.getId();
     else
@@ -1964,7 +1941,7 @@ function CancelEndCountdown()
 function resetServerDefaults()
 {
     $resettingServer = true;
-    echo("Resetting server defaults...");
+    echo("resetting server defaults...");
 
     if (isObject(Game))
         Game.gameOver();
@@ -2006,7 +1983,7 @@ function resetServerDefaults()
     // load the missions
     loadMission($Host::Map, $Host::MissionType);
     $resettingServer = false;
-    echo("Server reset complete.");
+    echo("server reset complete");
 }
 
 function removeAllBots()

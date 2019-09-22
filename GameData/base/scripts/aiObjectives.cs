@@ -66,8 +66,6 @@ function AICountObjectives(%team)
         else
             %objCount++;
     }
-
-    error("DEBUG" SPC %team SPC "has" SPC %objCount SPC "objectives.");
 }
 
 function AIAddTableObjective(%objective, %weight, %level, %bump, %position)
@@ -2891,9 +2889,6 @@ function AIDeployEquipment::monitor(%task, %client)
         // find a new assignment - and remove this one from the Queue
         if (%task == %client.objectiveTask)
         {
-            error(%client SPC "from team" SPC %client.team SPC
-                "is invalidating objective:" SPC %client.objective SPC
-                "UNABLE TO DEPLOY EQUIPMENT");
             %client.objective.isInvalid = true;
             AIUnassignClient(%client);
             Game.AIChooseGameObjective(%client);

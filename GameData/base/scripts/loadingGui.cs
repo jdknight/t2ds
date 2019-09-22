@@ -85,7 +85,7 @@ function buildLoadInfo(%mission, %missionType)
                         }
                     }
                     else
-                        error("Invalid mission objective line - \"" @ %line @ "\"");
+                        error("invalid mission objective line - \"" @ %line @ "\"");
                 }
             }
             else if (%state $= "blurb")

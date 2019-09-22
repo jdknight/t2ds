@@ -137,8 +137,6 @@ function BountyGame::assignClientTeam(%game, %client)
         %client.name, "", %client, 1);
 
     updateCanListenState(%client);
-
-    logEcho(%client.nameBase@" (cl "@%client@") entered game");
 }
 
 function BountyGame::playerSpawned(%game, %player, %armor)
@@ -341,7 +339,6 @@ function BountyGame::nextObjective(%game, %client)
         %client.damagedTargetTime = 0;
         cancel(%client.waypointSchedule);
         %game.showTargetWaypoint(%client);
-        logEcho(%client.nameBase@" (pl "@%client.player@"/cl "@%client@") assigned objective");
     }
     else
     {
@@ -838,7 +835,6 @@ function BountyGame::enterMissionArea(%game, %playerData, %player)
     messageClient(%player.client, 'EnterMissionArea',
         '\c1You are back in the mission area.');
     cancel(%player.alertThread);
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") entered mission area");
 }
 
 function BountyGame::leaveMissionArea(%game, %playerData, %player)
@@ -850,7 +846,6 @@ function BountyGame::leaveMissionArea(%game, %playerData, %player)
     messageClient(%player.client, 'LeaveMissionArea',
         '\c1You have left the mission area. Return or take damage.~wfx/misc/warning_beep.wav');
     %player.alertThread = %game.schedule(1000, "AlertPlayer", 3, %player);
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") left mission area");
 }
 
 function BountyGame::AlertPlayer(%game, %count, %player)

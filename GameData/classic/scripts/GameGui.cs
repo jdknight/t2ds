@@ -189,7 +189,7 @@ function AddMapToList(%map, %client)
 
     if (%found)
     {
-        error("Mission " @ %map @ " allready exists in skip list!");
+        error("mission " @ %map @ " already exists in skip list");
         return;
     }
 
@@ -303,7 +303,7 @@ function AddTypeToList(%type, %client)
     }
     if (%found)
     {
-        error("Game type " @ %type @ " already exists in skip list!");
+        error("game type " @ %type @ " already exists in skip list");
         return;
     }
     if ($TypeSkip::count $= "")

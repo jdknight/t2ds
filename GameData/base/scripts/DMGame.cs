@@ -243,14 +243,12 @@ function DMGame::recalcScore(%game, %client)
 
 function DMGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
 
 function DMGame::scoreLimitReached(%game)
 {
-    logEcho("game over (scorelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -294,7 +292,6 @@ function DMGame::enterMissionArea(%game, %playerData, %player)
     %player.client.outOfBounds = false;
     messageClient(%player.client, 'EnterMissionArea',
         '\c1You are back in the mission area.');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") entered mission area");
     cancel(%player.alertThread);
 }
 

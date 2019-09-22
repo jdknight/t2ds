@@ -625,7 +625,6 @@ package PracticeCTFGame
     {
         if (%type > 3)  // 1-3 are water, 4+ is lava and quicksand(?)
         {
-            //error("flag("@%obj@") is in liquid type" SPC %type);
             if ($PracticeCtf::AutoFlagReturn) // z0dd - ZOD: Test automatic flag returns
                 Game.flagReturn(%obj);
             else
@@ -917,7 +916,6 @@ function PracticeCTFGame::missionLoadDone(%game)
     $dontScoreTimer[1] = false;
     $dontScoreTimer[2] = false;
 
-    echo("starting camp thread...");
     %game.campThread_1 = schedule(1000, 0, "checkVehicleCamping", 1);
     %game.campThread_2 = schedule(1000, 0, "checkVehicleCamping", 2);
 
@@ -1024,7 +1022,6 @@ function PracticeCTFGame::playerTouchEnemyFlag(%game, %player, %flag)
     messageClient(%client, 'MsgCTFFlagTaken',
         '\c2You took the %2 flag.~wfx/misc/flag_snatch.wav',
         %client.name, %teamName, %flag.team, %client.nameBase);
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") took team "@%flag.team@" flag");
 
     // call the AI function
     %game.AIplayerTouchEnemyFlag(%player, %flag);
@@ -1094,7 +1091,6 @@ function PracticeCTFGame::playerDroppedFlag(%game, %player)
             '\c2You dropped the %2 flag. (Held: %4)~wfx/misc/flag_drop.wav',
                 %client.name, %teamName, %flag.team, %held); // z0dd - ZOD, 8/15/02. How long flag was held
                                                              // Yogi, 8/18/02. 3rd param changed 0 -> %client.name
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") dropped team "@%flag.team@" flag"@" (Held: "@%held@")");
 
     // z0dd - ZOD: Check for auto flag returns
     if ($PracticeCtf::AutoFlagReturn)
@@ -1137,7 +1133,6 @@ function PracticeCTFGame::flagCap(%game, %player)
         '\c2You captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav',
         %client.name, %teamName, %flag.team, %client.team, %held); // z0dd - ZOD, 8/19/02. Yogi. 3rd param changed from 0 to %client.name
 
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") capped team "@%client.team@" flag"@" (Held: "@%held@")");
     %player.holdingFlag = ""; //no longer holding it.
     %player.unMountImage($FlagSlot);
     %game.awardScoreFlagCap(%client, %flag);
@@ -1200,7 +1195,6 @@ function PracticeCTFGame::flagReturn(%game, %flag, %player)
         messageClient(%client, 'MsgCTFFlagReturned',
             '\c2You returned your flag.~wfx/misc/flag_return.wav',
             %client.name, %teamName, %flag.team); // z0dd - ZOD, 8/19/02. Yogi. 3rd param changed from 0 to %client.name
-        logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") returned team "@%flag.team@" flag");
 
         // find out what type of return it is
         // stalemate return?
@@ -1234,7 +1228,6 @@ function PracticeCTFGame::flagReturn(%game, %flag, %player)
         messageTeam(0, 'MsgCTFFlagReturned',
             '\c2The %2 flag was returned to base.~wfx/misc/flag_return.wav',
             0, %teamName, %flag.team);
-        logEcho("team "@%flag.team@" flag returned (timeout)");
     }
 
     %game.flagReset(%flag);
@@ -1348,14 +1341,12 @@ function PracticeCTFGame::flagReset(%game, %flag)
 
 function PracticeCTFGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
 
 function PracticeCTFGame::scoreLimitReached(%game)
 {
-    logEcho("game over (scorelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -1669,17 +1660,14 @@ function PracticeCTFGame::testValidRepair(%game, %obj)
 {
     if (!%obj.wasDisabled)
     {
-        //error(%obj SPC "was never disabled");
         return false;
     }
     else if (%obj.lastDamagedByTeam == %obj.team)
     {
-        //error(%obj SPC "was last damaged by a friendly");
         return false;
     }
     else if (%obj.team != %obj.repairedBy.team)
     {
-        //error(%obj SPC "was repaired by an enemy");
         return false;
     }
     else
@@ -2432,7 +2420,6 @@ function PracticeCTFGame::enterMissionArea(%game, %playerData, %player)
     %player.client.outOfBounds = false;
     messageClient(%player.client, 'EnterMissionArea',
         '\c1You are back in the mission area.');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") entered mission area");
 
     // the instant a player leaves the mission boundary, the flag is dropped,
     // and the return is scheduled...
@@ -2458,7 +2445,6 @@ function PracticeCTFGame::leaveMissionArea(%game, %playerData, %player)
     else
         messageClient(%player.client, 'MsgLeaveMissionArea',
             '\c1You have left the mission area.~wfx/misc/warning_beep.wav');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") left mission area");
 }
 
 function PracticeCTFGame::boundaryLoseFlag(%game, %player)
@@ -2513,7 +2499,6 @@ function PracticeCTFGame::boundaryLoseFlag(%game, %player)
     messageClient(%player.client, 'MsgCTFFlagDropped',
         '\c1You have left the mission area and lost the flag. (Held: %4)~wfx/misc/flag_drop.wav',
         %client.name, 0, %flag.team, %held); // z0dd - ZOD, 8/19/02. yogi. 3rd param changed from 0 to %client.name
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") lost flag (out of bounds)"@" (Held: "@%held@")");
 }
 
 function PracticeCTFGame::dropFlag(%game, %player)
@@ -2652,7 +2637,6 @@ function PracticeCTFGame::shareScore(%game, %client, %amount)
 {
     // z0dd - ZOD, 9/29/02. Removed T2 demo code from here
 
-    //error("share score of"SPC %amount SPC "from client:" SPC %client);
     // all of the player in the bomber and tank share the points
     // gained from any of the others
     %vehicle = %client.vehicleMounted;
@@ -2848,7 +2832,6 @@ function PracticeCTFGame::refreshAll(%game)
     %group.objectRestore();
 
     %count = ClientGroup.getCount();
-    echo("-----------count=" @ %count);
     for (%cl = 0; %cl < %count; %cl++)
     {
         %client = ClientGroup.getObject(%cl);

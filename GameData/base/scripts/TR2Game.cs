@@ -185,8 +185,6 @@ function TR2Game::onClientLeaveGame(%game, %client)
 	//cancel a scheduled call...
 	cancel(%client.respawnTimer);
 	%client.respawnTimer = "";
-
-	logEcho(%client.nameBase@" (cl "@%client@") dropped");
 }
 
 //--------------------------------------------------------------------------
@@ -197,7 +195,6 @@ function SimObject::clearFlagWaypoints(%this)
 
 function WayPoint::clearFlagWaypoints(%this)
 {
-	logEcho("Removing flag waypoint: " @ %this);
 	if (%this.nameTag $= "Flag")
 		%this.delete();
 }
@@ -227,14 +224,12 @@ function TR2Game::getTeamSkin(%game, %team)
     }
     else
     {
-        //error("TR2Game::getTeamSkin");
         if (!$host::useCustomSkins)
         {
         }
         else
             %skin = $teamSkin[%team];
 
-        //error("%skin = " SPC getTaggedString(%skin));
         return %skin;
     }
 }
@@ -443,7 +438,6 @@ function TR2Game::startMatch(%game)
 
 function TR2Game::dynamicUpdate(%game)
 {
-	//echo("DYNAMIC:  Start update");
 	// Keep checking for flag and flag carrier oob because T2's enter/leave
 	// mission callbacks aren't reliable
 	//%game.keepFlagInBounds(true);
@@ -471,7 +465,6 @@ function TR2Game::dynamicUpdate(%game)
 		%game.evaluateCrowdLevel();
 
 	%game.dynamicUpdateThread = %game.schedule($TR2::dynamicUpdateFrequency, "dynamicUpdate");
-	//echo("DYNAMIC:  End update");
 }
 
 function TR2Game::keepFlagInBounds(%game, %firstTime)
@@ -529,7 +522,6 @@ function TR2Game::endMission(%game)
 
 function TR2Game::playerTouchFlag(%game, %player, %flag)
 {
-	//echo("playerTouchFlag()	(client = " @ %player.client @ ")");
 	%client = %player.client;
 
     if (%player.getState() $= "Dead")
@@ -551,7 +543,6 @@ function TR2Game::playerTouchFlag(%game, %player, %flag)
 	// TR2:  Try to fix the infamous flag re-catch bug
 	//if (%player == %flag.dropper && %grabTime - %flag.dropTime <= 200)
 	//{
-	//	echo("	 RE-CATCH BUG DETECTED!");
 		//%flag.setVelocity(%flag.throwVelocity);
 		//return;
 	//}
@@ -630,8 +621,6 @@ function TR2Game::playerTouchFlag(%game, %player, %flag)
                 messageTeam(0, 'MsgTR2FlagTaken',
                     '\c3%1 caught the flag.~wfx/misc/Flagfriend.wav',
                     %client.name, %teamName, %flag.team, %client.nameBase);
-
-            logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") took team "@%flag.team@" flag");
         }
 
         //call the AI function
@@ -716,7 +705,6 @@ function TR2Game::UpdateCarrierHealth(%game, %player)
 	// update observers (green = team 1, red = team 2)
 	messageTeam(0,  'MsgTR2CarrierHealth', "", %amt / 100, %player.client.team);
 
-	//echo("Carrier health: " @ %amt @ " - Damage Level: " @ %health);
 	%game.updateCarrierHealthThread = %game.schedule(700, "UpdateCarrierHealth", %player);
 }
 
@@ -778,9 +766,6 @@ function TR2Game::playerDroppedFlag(%game, %player)
 	//%dotxy = VectorDot(VectorNormalize(%playerVelxy), VectorNormalize(%playerRotxy));
 	//%dotxz = VectorDot(VectorNormalize(%playerVelxz), VectorNormalize(%playerRotxz));
 	//%dotyz = VectorDot(VectorNormalize(%playerVelyz), VectorNormalize(%playerRotyz));
-	//echo(" *********VEL dot ROT (xy) = " @ %dotxy);
-	//echo(" *********VEL dot ROT (xz) = " @ %dotxz);
-	//echo(" *********VEL dot ROT (yz) = " @ %dotyz);
 	//%testDirection = VectorDot(VectorNormalize(%playerVel), VectorNormalize(%playerRot));
 	//%playerVel = VectorScale(%playerVel, 80);
 	//%playerRot = VectorScale(%playerRot, 975);
@@ -824,7 +809,6 @@ function TR2Game::playerDroppedFlag(%game, %player)
 		messageClient(%client, 'MsgTR2FlagDropped',
             '\c2You dropped the flag.~wfx/misc/flagflap.wav',
             0, %teamName, %flag.team);
-	logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") dropped team "@%flag.team@" flag");
 
 	// TR2:  Cancel hot potato thread
 	cancel(%game.hotPotatoThread);
@@ -944,14 +928,12 @@ function TR2Game::flagReset(%game, %flag)
 
 function TR2Game::timeLimitReached(%game)
 {
-	logEcho("game over (timelimit)");
 	%game.gameOver();
 	cycleMissions();
 }
 
 function TR2Game::scoreLimitReached(%game)
 {
-	logEcho("game over (scorelimit)");
 	%game.gameOver();
 	cycleMissions();
 }
@@ -1240,7 +1222,6 @@ function TR2Game::clientMissionDropReady(%game, %client)
 
 	// were ready to go.
 	%client.matchStartReady = true;
-	echo("TR2: Client" SPC %client SPC "is ready.");
 }
 
 function TR2Game::resetScore(%game, %client)
@@ -1305,7 +1286,6 @@ function TR2Game::boundaryLoseFlag(%game, %player)
 	messageClient(%player.client, 'MsgTR2FlagDropped',
         '\c1You have left the mission area and lost the flag.~wfx/misc/flag_drop.wav',
         0, 0, %player.holdingFlag.team);
-	logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") lost flag (out of bounds)");
 }
 
 function TR2Game::dropFlag(%game, %player)
@@ -1635,7 +1615,6 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 	if (%damageType == $DamageType::TouchedOwnGoal)
 	{
 		messageAll('msgTouchedOwnGoal', '\c0%1 respawns for touching %3 own goal.', %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
-		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by own goal.");
 	}
 	else if (%damageType == $DamageType::Grid)
 	{
@@ -1643,18 +1622,15 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 			'\c0%1 was knocked down by the Grid.' :
 			'\c0%1 was killed by the Grid.';
 		messageAll('msgGrid', %message, %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
-		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by Grid.");
 	}
 	else if (%damageType == $DamageType::OOB)
 	{
 		%message = '\c0%1 was thrown outside the Grid.';
 		messageAll('msgGrid', %message, %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
-		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed for OOB.");
 	}
 	else if (%damageType == $DamageType::respawnAfterScoring)
 	{
 		//messageClient(%clVictim, 'msgRespawnAfterScoring', '\c0Your team scored!  Forcing respawn...', %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
-		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") forced to respawn.");
 	}
 	else if (%damageType == $DamageType::Suicide)
 	{
@@ -1662,7 +1638,6 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 			'\c1%1 knocks %2self out.' :
 			'\c1%1 is respawning...';
 		messageAll('msgSuicide', %message, %victimName, %victimGender, %victimPoss, %killerName, %killerGender, %killerPoss, %damageType);
-		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") is respawning.");
 	}
 	else if (%damageType == $DamageType::HotPotato)
 	{
@@ -1670,7 +1645,6 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 		messageAll('msgHotPotato', '\c1%1 held onto the flag for too long!',
             %victimName, %victimGender, %victimPoss, %killerName, %killerGender,
             %killerPoss, %damageType);
-		logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by hot potato.");
 	}
 	else if (%damageType == $DamageType::G4)
 	{
@@ -1681,7 +1655,6 @@ function TR2Game::displayDeathMessages(%game, %clVictim, %clKiller, %damageType,
 		messageAll('msgTR2Knockdown', '\c0%4 knocks down %1.',
             %victimName, %victimGender, %victimPoss, %killerName,
             %killerGender, %killerPoss, %damageType);
-		//logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") knocked down by " @c%clKiller.nameBase);
 	}
 	else
 		DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller, %damageType, %implement);
@@ -1695,7 +1668,6 @@ function TR2Game::createPlayer(%game, %client, %spawnLoc, %respawn)
 
 	if (%client $= "" || %client <= 0)
 	{
-		error("Invalid client sent to createPlayer()");
 		return;
 	}
 
@@ -2075,15 +2047,6 @@ function AddTR2FlagSmoke(%obj)
 	}
 	else
 		Game.TR2FlagSmoke = 0;
-}
-
-function aodebug()
-{
-	for (%i = 0; %i <= 20; %i++)
-	{
-		%status = isObject(Game.dropSmoke[%i]) ? "exists" : "does NOT exist";
-		echo("*** Flag smoke " @ %i @ " " @ %status);
-	}
 }
 
 function TR2Flag::onThrow(%data, %obj, %src)
@@ -2974,10 +2937,7 @@ function TR2Game::selectSpawnMarker(%game, %team)
 
 					  // If nobody's at this spawn, use it
 					  if (%marker > 0 && !%game.teammateNear(%team, %marker.getPosition()))
-					  {
-						  //echo("SPAWN FOUND for team " @ %team @ " (" @ %try @ " tries)");
 						  return %marker.getTransform();
-					  }
 
 					  // Otherwise, cycle through looking for the next available slot
 					  %markerIndex++;
@@ -2989,7 +2949,7 @@ function TR2Game::selectSpawnMarker(%game, %team)
                       %markerAttempts++;
 				 }
 			}
-			echo("**SPAWN ERROR:  spawn not found.");
+			error("**SPAWN ERROR:  spawn not found.");
 		}
 		else
 			error("No spawn markers found in " @ %teamDropsGroup);

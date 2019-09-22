@@ -620,8 +620,6 @@ function detonateSatchelCharge(%player)
     if (!%satchelCharge.armed)
         return;
 
-    //error("Detonating satchel charge #" @ %satchelCharge @ " for player #" @ %player);
-
     if (%satchelCharge.getDamageState() !$= Destroyed)
     {
         %satchelCharge.setDamageState(Destroyed);

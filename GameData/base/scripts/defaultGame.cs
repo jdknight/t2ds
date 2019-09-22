@@ -88,8 +88,6 @@ function FlipFlop::playerTouch(%data, %flipflop, %player)
         '\c2%1 claimed %2 for %3.~wfx/misc/flipflop_lost.wav',
         %client.name, Game.cleanWord(%flipflop.name), %teamName);
 
-    logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") claimed flipflop "@%flipflop@" for team "@%client.team);
-
     // change the skin on the switch to claiming team's logo
     setTargetSkin(%flipflop.getTarget(), game.getTeamSkin(%player.team));
     setTargetSensorGroup(%flipflop.getTarget(), %player.team);
@@ -262,7 +260,7 @@ function DefaultGame::pickTeamSpawn(%game, %team)
     // early exit if no nav graph
     if (!navGraphExists())
     {
-        echo("No navigation graph is present.  Build one.");
+        error("no navigation graph is present (" @ $currentMission @ ")");
         return -1;
     }
 
@@ -275,7 +273,7 @@ function DefaultGame::pickTeamSpawn(%game, %team)
         %sphere = %game.selectSpawnSphere(%team);
         if (%sphere == -1)
         {
-            echo("No spawn spheres found for team " @ %team);
+            error("no spawn spheres found for team " @ %team);
             return -1;
         }
 
@@ -340,7 +338,7 @@ function DefaultGame::pickObserverSpawn(%game, %client, %next)
 
     if (!%count || %group == -1)
     {
-        echo("no observer spawn points found");
+        error("no observer spawn points found");
         return -1;
     }
 
@@ -445,8 +443,6 @@ function DefaultGame::createPlayer(%game, %client, %spawnLoc, %respawn)
     // defaultplayerarmor is in 'players.cs'
     if (%spawnLoc == -1)
         %spawnLoc = "0 0 300 1 0 0 0";
-    //else
-    //  echo("Spawning player at " @ %spawnLoc);
 
     // copied from player.cs
     if (%client.race $= "Bioderm")
@@ -562,8 +558,6 @@ function DefaultGame::startMatch(%game)
 
                     if (isObject(%cl.player))
                         %cl.setControlObject(%cl.player);
-                    else
-                        echo("can't set control for client: " @ %cl @ ", no player object found!");
                 }
                 else
                     %cl.observerMode = "observerFly";
@@ -1030,7 +1024,6 @@ function DefaultGame::forceObserver(%game, %client, %reason)
         messageClient(%client, 'MsgClientJoinTeam',
             '\c2You have become an observer.',
             %client.name, %game.getTeamName(0), %client, 0);
-        logEcho(%client.nameBase@" (cl "@%client@") entered observer mode");
         %client.lastTeam = %client.team;
 
     case "AdminForce":
@@ -1038,7 +1031,6 @@ function DefaultGame::forceObserver(%game, %client, %reason)
         messageClient(%client, 'MsgClientJoinTeam',
             '\c2You have been forced into observer mode by the admin.',
             %client.name, %game.getTeamName(0), %client, 0);
-        logEcho(%client.nameBase@" (cl "@%client@") was forced into observer mode by admin");
         %client.lastTeam = %client.team;
         %adminForce = 1;
 
@@ -1064,7 +1056,6 @@ function DefaultGame::forceObserver(%game, %client, %reason)
         messageClient(%client, 'MsgClientJoinTeam',
             '\c2You have been placed in observer mode due to delay in respawning.',
             %client.name, %game.getTeamName(0), %client, 0);
-        logEcho(%client.nameBase@" (cl "@%client@") was placed in observer mode due to spawn delay");
         // save the team the player was on - only if this was a delay in respawning
         %client.lastTeam = %client.team;
     }
@@ -1113,7 +1104,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
     %killerPoss = (%clKiller.sex $= "Male" ? 'his' : 'her');
     %victimName = %clVictim.name;
     %killerName = %clKiller.name;
-    //error("DamageType = " @ %damageType @ ", implement = " @ %implement @ ", implement class = " @ %implement.getClassName() @ ", is controlled = " @ %implement.getControllingClient());
 
     if (%damageType == $DamageType::Explosion)
     {
@@ -1122,7 +1112,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by a nearby explosion.");
     }
     // player presses ctrl-k
     else if (%damageType == $DamageType::Suicide)
@@ -1132,7 +1121,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") committed suicide (CTRL-K)");
     }
     else if (%damageType == $DamageType::VehicleSpawn)
     {
@@ -1141,7 +1129,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by vehicle spawn");
     }
     else if (%damageType == $DamageType::ForceFieldPowerup)
     {
@@ -1150,7 +1137,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by Force Field Powerup");
     }
     else if (%damageType == $DamageType::Crash)
     {
@@ -1160,7 +1146,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                 %victimName, %victimGender, %victimPoss,
                 %killerName, %killerGender, %killerPoss,
                 %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") crashes a vehicle.");
     }
     // run down by vehicle
     else if (%damageType == $DamageType::Impact)
@@ -1175,7 +1160,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                 %victimName, %victimGender, %victimPoss,
                 %killerName, %killerGender, %killerPoss,
                 %damageType, $DamageTypeText[%damageType]);
-            logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by a vehicle controlled by "@%controller);
         }
         else
         {
@@ -1184,7 +1168,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                 %victimName, %victimGender, %victimPoss,
                 %killerName, %killerGender, %killerPoss,
                 %damageType, $DamageTypeText[%damageType]);
-            logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by a vehicle (unmanned)");
         }
     }
     // player killed by a turret
@@ -1221,7 +1204,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                     %victimName, %victimGender, %victimPoss,
                     %killerName, %killerGender, %killerPoss,
                     %damageType, $DamageTypeText[%damageType]);
-            logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by a turret controlled by "@%controller);
         }
         // use the handle associated with the deployed object to verify
         // valid owner
@@ -1248,7 +1230,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                     %victimName, %victimGender, %victimPoss,
                     %killerName, %killerGender, %killerPoss,
                     %damageType, $DamageTypeText[%damageType]);
-            logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") was killed by turret (automated)");
         }
         // turret is not a placed (owned) turret (or owner is no longer on it's
         // team), and is not being controlled
@@ -1259,7 +1240,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                 %victimName, %victimGender, %victimPoss,
                 %killerName, %killerGender, %killerPoss,
                 %damageType, $DamageTypeText[%damageType]);
-            logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by turret");
         }
     }
     // player killed himself or fell to death
@@ -1270,7 +1250,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed self ("@getTaggedString($DamageTypeText[%damageType])@")");
     }
     // killer died due to Out-of-Bounds damage
     else if (%damageType == $DamageType::OutOfBounds)
@@ -1280,7 +1259,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by out-of-bounds damage");
     }
     // victim died from camping near the nexus...
     else if (%damageType == $DamageType::NexusCamping)
@@ -1290,7 +1268,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed for nexus camping");
     }
     // was a TK
     else if (%clKiller.team == %clVictim.team)
@@ -1300,7 +1277,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") teamkilled by "@%clKiller.nameBase@" (pl "@%clKiller.player@"/cl "@%clKiller@")");
     }
     // player died by falling in lava
     else if (%damageType == $DamageType::Lava)
@@ -1310,7 +1286,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by lava");
     }
     // player was struck by lightning
     else if (%damageType == $DamageType::Lightning)
@@ -1320,11 +1295,9 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
             %victimName, %victimGender, %victimPoss,
             %killerName, %killerGender, %killerPoss,
             %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by lightning");
     }
     else if (%damageType == $DamageType::Mine && !isObject(%clKiller))
     {
-        error("Mine kill w/o source");
         messageAll('MsgRogueMineKill',
             $DeathMessageRogueMine[%damageType, mFloor(getRandom() * $DeathMessageRogueMineCount)],
             %victimName, %victimGender, %victimPoss,
@@ -1348,7 +1321,6 @@ function DefaultGame::displayDeathMessages(%game, %clVictim, %clKiller,
                 %victimName, %victimGender, %victimPoss,
                 %killerName, %killerGender, %killerPoss,
                 %damageType, $DamageTypeText[%damageType]);
-        logEcho(%clVictim.nameBase@" (pl "@%clVictim.player@"/cl "@%clVictim@") killed by "@%clKiller.nameBase@" (pl "@%clKiller.player@"/cl "@%clKiller@") using "@getTaggedString($DamageTypeText[%damageType]));
     }
 }
 
@@ -1427,8 +1399,6 @@ function DefaultGame::assignClientTeam(%game, %client, %respawn)
         %game.getTeamName(%client.team), %client, %client.team);
 
     updateCanListenState(%client);
-
-    logEcho(%client.nameBase@" (cl "@%client@") joined team "@%client.team);
 }
 
 function DefaultGame::getTeamSkin(%game, %team)
@@ -1466,8 +1436,6 @@ function DefaultGame::clientJoinTeam(%game, %client, %team, %respawn)
         %client.name, %game.getTeamName(%client.team), %client, %client.team);
 
     updateCanListenState(%client);
-
-    logEcho(%client.nameBase@" (cl "@%client@") joined team "@%client.team);
 }
 
 function DefaultGame::AIHasJoined(%game, %client)
@@ -1601,7 +1569,6 @@ function DefaultGame::clientChangeTeam(%game, %client, %team, %fromObs)
 
     // MES - switch objective hud lines when client switches teams
     messageClient(%client, 'MsgCheckTeamLines', "", %client.team);
-    logEcho(%client.nameBase@" (cl "@%client@") switched to team "@%client.team);
 }
 
 // missioncleanup and missiongroup are checked prior to entering game code
@@ -1669,7 +1636,6 @@ function DefaultGame::missionLoadDone(%game)
     // Save off respawn or Siege Team switch information...
     if (%game.class !$= "SiegeGame")
         MissionGroup.setupPositionMarkers(true);
-    echo("Default game mission load done.");
 }
 
 function DefaultGame::onClientLeaveGame(%game, %client)
@@ -1684,7 +1650,6 @@ function DefaultGame::onClientLeaveGame(%game, %client)
 
     // remove them from the team rank arrays
     %game.removeFromTeamRankArray(%client);
-    logEcho(%client.nameBase@" (cl "@%client@") dropped");
 }
 
 function DefaultGame::clientMissionDropReady(%game, %client)
@@ -1766,7 +1731,6 @@ function DefaultGame::clientMissionDropReady(%game, %client)
 
     // were ready to go.
     %client.matchStartReady = true;
-    echo("Client" SPC %client SPC "is ready.");
 }
 
 function DefaultGame::sendClientTeamList(%game, %client)
@@ -1988,8 +1952,6 @@ function SimGroup::setTeam(%this, %team)
 
                 if (%team != %found)
                     Game.claimSpawn(%obj, %team, %found);
-                else
-                    error("spawn "@%obj@" is already on team "@%team@"!");
             }
             else
                 Game.claimSpawn(%obj, %team, "");

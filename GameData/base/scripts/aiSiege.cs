@@ -26,7 +26,6 @@ function SiegeGame::AIInit(%game)
             MissionCleanup.add($ObjectiveQ[%i]);
         }
 
-        error("team " @ %i @ " objectives load...");
         $ObjectiveQ[%i].clear();
         AIInitObjectives(%i, %game);
     }

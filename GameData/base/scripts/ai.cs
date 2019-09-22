@@ -477,7 +477,6 @@ function AIConnection::onAIConnect(%client, %name, %team, %skill, %offense,
     %client.name = addTaggedString("\cp\c9" @ %name @ "\co");
     %client.nameBase = %name;
 
-    echo(%client.name);
     echo("CADD: " @ %client @ " " @ %client.getAddress());
     $HostGamePlayerCount++;
 

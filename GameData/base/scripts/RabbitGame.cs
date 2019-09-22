@@ -245,7 +245,6 @@ function RabbitGame::playerDroppedFlag(%game, %player)
     if (!%player.outArea)
         messageClient(%player.client, 'MsgRabbitFlagDropped',
         '\c2You dropped the flag!~wfx/misc/flag_drop.wav');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") dropped flag");
 
     %flag.returnThread = %game.schedule(
         %game.flagReturnTime, "returnFlag", %flag);
@@ -266,7 +265,6 @@ function RabbitGame::playerTouchFlag(%game, %player, %flag)
         messageAll('MsgRabbitFlagTaken',
             '\c2%1 has taken the flag!~wfx/misc/flag_snatch.wav',
             %player.client.name);
-        logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") took flag");
         %player.client.team = $RabbitTeam;
         %player.client.setSensorGroup($RabbitTeam);
         setTargetSensorGroup(%player.getTarget(), $RabbitTeam);
@@ -300,7 +298,6 @@ function RabbitGame::returnFlag(%game, %flag)
 {
     messageAll('MsgRabbitFlagReturned',
         '\c2The flag was returned to its starting point.~wfx/misc/flag_return.wav');
-    logEcho("flag return (timeout)");
     %game.resetFlag(%flag);
 }
 
@@ -318,14 +315,12 @@ function RabbitGame::resetFlag(%game, %flag)
 
 function RabbitGame::timeLimitReached(%game)
 {
-    logEcho("game over (timelimit)");
     %game.gameOver();
     cycleMissions();
 }
 
 function RabbitGame::scoreLimitReached(%game)
 {
-    logEcho("game over (scorelimit)");
     %game.gameOver();
     cycleMissions();
 }
@@ -377,7 +372,6 @@ function RabbitGame::enterMissionArea(%game, %playerData, %player)
     %player.client.outOfBounds = false;
     messageClient(%player.client, 'EnterMissionArea',
         '\c1You are back in the mission area.');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") entered mission area");
     cancel(%player.alertThread);
 }
 
@@ -393,7 +387,6 @@ function RabbitGame::leaveMissionArea(%game, %playerData, %player)
     else
         messageClient(%player.client, 'LeaveMissionArea',
             '\c1You have left the mission area.~wfx/misc/warning_beep.wav');
-    logEcho(%player.client.nameBase@" (pl "@%player@"/cl "@%player.client@") left mission area");
     %player.alertThread = %game.schedule(1000, "AlertPlayer", 3, %player);
 }
 

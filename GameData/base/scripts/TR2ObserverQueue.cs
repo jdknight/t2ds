@@ -157,7 +157,6 @@ function reindexQueue()
 		%client = %node.id;
 		if (!isObject(%client))
 		{
-			error("Client " @ %client @ " does not exist!! Removing from queue.");
 			if (isObject(%node))
 			{
 				ObserverQueue.pushToBack(%node);
@@ -253,7 +252,6 @@ function TR2Game::forceObserver(%game, %client, %reason)
         messageClient(%client, 'MsgClientJoinTeam',
             '\c2You have become an observer.',
             %client.name, %game.getTeamName(0), %client, 0);
-        echo(%client.nameBase@" (cl "@%client@") entered observer mode");
         %client.lastTeam = %client.team;
         %client.specOnly = true; // this guy wants to sit out...
 
@@ -261,7 +259,6 @@ function TR2Game::forceObserver(%game, %client, %reason)
         messageClient(%client, 'MsgClientJoinTeam',
             '\c2You have been forced into observer mode by the admin.',
             %client.name, %game.getTeamName(0), %client, 0);
-        echo(%client.nameBase@" (cl "@%client@") was forced into observer mode by admin");
         %client.lastTeam = %client.team;
         %adminForce = 1;
 
@@ -286,7 +283,6 @@ function TR2Game::forceObserver(%game, %client, %reason)
         messageClient(%client, 'MsgClientJoinTeam',
             '\c2You have been placed in observer mode due to delay in respawning.',
             %client.name, %game.getTeamName(0), %client, 0);
-        echo(%client.nameBase@" (cl "@%client@") was placed in observer mode due to spawn delay");
         // save the team the player was on - only if this was a delay in respawning
         %client.lastTeam = %client.team;
         %client.specOnly = true; // why force an afk player back into the game?
@@ -433,13 +429,11 @@ function TR2Game::clientJoinTeam(%game, %client, %team, %fromObs)
 
         // MES - switch objective hud lines when client switches teams
         messageClient(%client, 'MsgCheckTeamLines', "", %client.team);
-        logEcho(%client.nameBase@" (cl "@%client@") switched to team "@%client.team);
 
         removeFromQueue(%client);
     }
     else
     {
-        //error("Forced to observer: " @%client.nameBase @ " via JoinTeam");
         %game.forceObserver(%client, "gameForce");
     }
 }
@@ -497,13 +491,9 @@ function TR2Game::assignClientTeam(%game, %client, %respawn)
 		updateCanListenState(%client);
 
 		clearBottomPrint(%client); // clear out the observer hud...
-
-		echo(%client.nameBase@" (cl "@%client@") joined team "@%client.team);
-		//error("Assigned: " @%client.nameBase @ " to team: " @ %team @ " via AssignTeam");
 	}
 	else
 	{
-		//error("Forced to observer: " @%client.nameBase @ " via AssignTeam");
 		%game.forceObserver(%client, "teamsMaxed");
 	}
 	// hes been checked for team join ability..
