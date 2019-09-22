@@ -88,9 +88,6 @@ function TeamHuntersGame::missionLoadDone(%game)
         $HuntersYardSaleSet = new SimSet("HuntersYardSaleSet");
         MissionCleanup.add($HuntersYardSaleSet);
 	}
-
-	// make a game object for the Nexus (functions defined in HuntersGame.cs)
-	MissionGroup.findNexus();
 }
 
 function TeamHuntersGame::initGameVars(%game)
