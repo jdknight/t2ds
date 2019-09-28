@@ -4,6 +4,28 @@
 //
 //------------------------------------------------------------------------------
 
+function onExit() {}
+for ($i = 1; $i < $Game::argc; $i++)
+{
+    $arg = $Game::argv[$i];
+    if ($arg $= "-help" || $arg $= "--help")
+    {
+        enableWinConsole(true);
+
+        echo("Tribes 2 Dedicated Server Options");
+        echo(" ");
+        echo("  --bot <count>               override initial bot count");
+        echo("  --help                      show this help");
+        echo("  --mission <map> <type>      load a specific map on start");
+        echo("  --serverprefs <file>        override server preferences file");
+        echo("                               (default prefs/serverPrefs.cs)");
+        echo("  --telnetParams <port> <password> <listen-password>");
+        echo("                              configure telnet options");
+        quit();
+        return;
+    }
+}
+
 // cleanup pre-compiled dso's
 //
 // Utility method to delete script files to help reduce issues when introducing
