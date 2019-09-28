@@ -14,9 +14,11 @@ for ($i = 1; $i < $Game::argc; $i++)
 
         echo("Tribes 2 Dedicated Server Options");
         echo(" ");
+        echo("  --bind <address>            override the address to bind to");
         echo("  --bot <count>               override initial bot count");
         echo("  --help                      show this help");
         echo("  --mission <map> <type>      load a specific map on start");
+        echo("  --port <port>               override the server port");
         echo("  --serverprefs <file>        override server preferences file");
         echo("                               (default prefs/serverPrefs.cs)");
         echo("  --telnetParams <port> <password> <listen-password>");
@@ -142,7 +144,13 @@ for ($i = 1; $i < $Game::argc; $i++)
     $has2NextArgs = $Game::argc - $i > 2;
     $has3NextArgs = $Game::argc - $i > 3;
 
-    if (($arg $= "-mod" || $arg $= "--mod") && $hasNextArg)
+    if (($arg $= "-bind" || $arg $= "--bind") && $hasNextArg)
+    {
+        $i++;
+        if ($nextArg !$= "")
+            $ServerBind = $nextArg;
+    }
+    else if (($arg $= "-mod" || $arg $= "--mod") && $hasNextArg)
     {
         $i++;
         if ($nextArg !$= "")
@@ -166,6 +174,12 @@ for ($i = 1; $i < $Game::argc; $i++)
             $mission = $nextArg;
             $missionType = $nextArg2;
         }
+    }
+    else if (($arg $= "-port" || $arg $= "--port") && $hasNextArg)
+    {
+        $i++;
+        if ($nextArg !$= "")
+            $ServerPort = $nextArg;
     }
     else if (($arg $= "-telnetParams" || $arg $= "--telnetParams")
                 && $has3NextArgs)

@@ -62,8 +62,18 @@ function loadPostModScripts()
 if ($mission !$= "" && $missionType !$= "")
     validateMissionAndType($mission, $missionType);
 
+if ($ServerBind !$= "")
+{
+    $Host::BindAddress = $ServerBind;
+}
+
+if ($ServerPort $= "")
+{
+    $ServerPort = $Host::Port;
+}
+
 $Host::Dedicated = true;
 $ServerName = $Host::GameName;
 initializeTelnet();
-setNetPort($Host::Port);
+setNetPort($ServerPort);
 CreateServer($Host::Map, $Host::MissionType);
