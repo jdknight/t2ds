@@ -15,6 +15,9 @@ function cleanupDsos()
 }
 cleanupDsos();
 
+// disable asserts from generating a message box (fail for restart, if possible)
+$FP::DisableAsserts = true;
+
 // enable logging information to the console
 enableWinConsole(true);
 
