@@ -514,7 +514,7 @@ function ShapeBase::cycleWeapon(%this, %data)
     %mountedImage = %this.getMountedImage($WeaponSlot);
     if (%mountedImage != 0)
     {
-        if (%mountedImage.item)
+        if (%mountedImage.item !$= "")
         {
             %curWeapon = %mountedImage.item.getName();
             for (%i = 0; %i < %this.weaponSlotCount; %i++)
