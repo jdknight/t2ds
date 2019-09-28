@@ -111,16 +111,20 @@ function serverCmdControlObject(%client, %targetId)
     {
         %client.turretControl = %obj;
 
-        if (!%obj.originalTag)
+        if (%obj.nameTag !$= "")
         {
-            %obj.originalTag = %obj.nameTag;
+            %nameTag = %obj.nameTag;
+        }
+        else
+        {
+            %nameTag = %obj.getDataBlock().targetNameTag;
         }
 
         // reset the turrets target and build a new one
         freeTarget(%obj.getTarget());
-        %obj.nameTag = addTaggedString(getTaggedString(%obj.nameTag) @
+        %obj.interimTag = addTaggedString(getTaggedString(%nameTag) @
             " (" @ %client.nameBase @ ")");
-        %obj.target = createTarget(%obj, %obj.nameTag, "", "",
+        %obj.target = createTarget(%obj, %obj.interimTag, "", "",
             %obj.getDatablock().targetTypeTag, %obj.team, 0);
         setTargetSensorGroup(%obj.target, %obj.team);
     }
@@ -147,16 +151,23 @@ function resetControlObject(%client)
 
         if (isObject(%turret))
         {
-            %obsoleteTag = %turret.nameTag;
-            %turret.nameTag = %turret.originalTag;
+            if (%turret.nameTag !$= "")
+            {
+                %nameTag = %turret.nameTag;
+            }
+            else
+            {
+                %nameTag = %turret.getDataBlock().targetNameTag;
+            }
 
             // reset the turret's target
             freeTarget(%turret.getTarget());
-            %turret.target = createTarget(%turret, %turret.nameTag, "", "",
+            %turret.target = createTarget(%turret, %nameTag, "", "",
                 %turret.getDatablock().targetTypeTag, %turret.team, 0);
             setTargetSensorGroup(%turret.target, %turret.team);
 
-            removeTaggedString(%obsoleteTag);
+            removeTaggedString(%turret.interimTag);
+            %turret.interimTag = "";
         }
     }
 }

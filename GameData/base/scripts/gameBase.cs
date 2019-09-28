@@ -26,6 +26,8 @@ function GameBaseData::onRemove(%data, %obj)
     // first 32 targets are team targets
     if (%target >= 32)
     {
+        if (%obj.interimTag !$= "")
+            removeTaggedString(%obj.interimTag);
         if (%obj.nameTag !$= "")
             removeTaggedString(%obj.nameTag);
         freeTarget(%target);
