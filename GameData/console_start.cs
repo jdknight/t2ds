@@ -118,35 +118,49 @@ for ($i = 1; $i < $Game::argc; $i++)
     $nextArg2 = $Game::argv[$i+2];
     $hasNextArg = $Game::argc - $i > 1;
     $has2NextArgs = $Game::argc - $i > 2;
+    $has3NextArgs = $Game::argc - $i > 3;
 
     if (($arg $= "-mod" || $arg $= "--mod") && $hasNextArg)
     {
-        setModPaths($nextArg);
-        $i += 2;
+        $i++;
+        if ($nextArg !$= "")
+        {
+            setModPaths($nextArg);
+        }
     }
     else if (($arg $= "-serverprefs" || $arg $= "--serverprefs") && $hasNextArg)
     {
         $i++;
-        $serverprefs = $nextArg;
+        if ($nextArg !$= "")
+        {
+            $serverprefs = $nextArg;
+        }
     }
     else if (($arg $= "-mission" || $arg $= "--mission") && $has2NextArgs)
     {
         $i += 2;
-        $mission = $nextArg;
-        $missionType = $nextArg2;
+        if ($nextArg !$= "" && $nextArg2 !$= "")
+        {
+            $mission = $nextArg;
+            $missionType = $nextArg2;
+        }
     }
     else if (($arg $= "-telnetParams" || $arg $= "--telnetParams")
-                && $has2NextArgs)
+                && $has3NextArgs)
     {
         $i += 3;
-        $telnetPort = $nextArg;
-        $telnetPassword = $nextArg2;
-        $telnetListenPass = $nextArg3;
+        if ($nextArg !$= "" && $nextArg2 !$= "" && $nextArg3 !$= "")
+        {
+            $telnetPort = $nextArg;
+            $telnetPassword = $nextArg2;
+            $telnetListenPass = $nextArg3;
+        }
     }
     else if (($arg $= "-bot" || $arg $= "--bot") && $hasNextArg)
     {
         $i++;
-        $CmdLineBotCount = $nextArg;
+        if ($nextArg !$= "")
+            $CmdLineBotCount = $nextArg;
     }
     else if ($arg $= "-quit" || $arg $= "--quit")
     {
