@@ -1,0 +1,15 @@
+# ignore git tree
+.git
+
+# ignore engine compiled script files
+*.dso
+
+# ignore documentation
+Documentation/
+
+# ignore default preference scripts
+GameData/*/prefs/*
+
+# ignore default override scripts
+GameData/*/autoexec.cs
+GameData/*/autojournal.cs

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# default prompt
+export PS1="t2ds% "
+
+# helper aliases
+alias jump="cd /opt/t2ds/"
+alias ll="ls -alF "
+
+# start in t2ds folder
+cd /opt/t2ds/ 2>/dev/null

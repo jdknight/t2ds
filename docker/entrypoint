@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+
+# check if invoker wishes to start a more interactive session
+if [ "$T2DS_INTERACTIVE" == "1" ]; then
+    WINECMD=wineconsole
+else
+    WINECMD=wine
+fi
+
+# apply lazy mount overrides to t2ds' GameData
+#
+# Users can mount and manipulate a single volume "/run/t2ds-overrides" (if
+# desired) to help easily add/override contents inside stock mods like base and
+# classic. Provides an alternative if users do not want to setup specific file
+# mounts for each package being installed or directly mount on a path and deal
+# with assets provided by this image.
+if [ -d /run/t2ds-overrides ]; then
+    rsync -a /run/t2ds-overrides/ /opt/t2ds
+fi
+
+# prepare arguments
+args=
+[[ -n "$T2DS_BIND" ]] && args="$args --bind $T2DS_BIND"
+[[ -n "$T2DS_MOD"  ]] && args="$args --mod  $T2DS_MOD"
+[[ -n "$T2DS_PORT" ]] && args="$args --port $T2DS_PORT"
+args="$args $T2DS_ARGS"
+
+# start tribes 2
+exec $WINECMD Tribes2.exe $args
